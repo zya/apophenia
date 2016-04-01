@@ -5,7 +5,9 @@
   "main": "index.js",
   "dependencies": {
     "lodash": "^4.7.0",
-    "ptjs": "github:williamngan/pt"
+    "ptjs": "github:williamngan/pt",
+    "random-int": "^1.0.0",
+    "teoria": "^2.2.0"
   },
   "devDependencies": {
     "browserify": "^13.0.0",
