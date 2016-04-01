@@ -1,0 +1,20 @@
+{
+  "name": "pt-play",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "lodash": "^4.7.0",
+    "ptjs": "github:williamngan/pt"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.0",
+    "watchify": "^3.7.0"
+  },
+  "scripts": {
+    "watch": "watchify index.js -o build/build.js",
+    "build": "browserify index.js -o build/build.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
