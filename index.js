@@ -34,22 +34,27 @@ var g3 = teoria.note('g3');
 var scale = g3.scale('minorpentatonic');
 var notes = scale.notes();
 
-var currentChord = [];
+var currentlyPlaying = [];
+var currentPoints = [];
 
-function change(points) {
-  currentChord.forEach(function(note) {
+function change(toAdd, toRemove) {
+  console.log(toAdd, toRemove);
+
+  toRemove.forEach(function(point) {
     var now = context.currentTime;
-    note.gain.gain.cancelScheduledValues(now);
-    note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-    note.gain.gain.exponentialRampToValueAtTime(0.000001, now + 4);
-    note.gain.gain.setValueAtTime(0, now + 5);
-    note.osc.stop(now + 6);
+    point.gain.gain.cancelScheduledValues(now);
+    point.gain.gain.setValueAtTime(point.gain.gain.value, now);
+    point.gain.gain.exponentialRampToValueAtTime(0.000001, now + 5);
+    point.gain.gain.setValueAtTime(0, now + 5.1);
+    point.osc.stop(now + 6.4);
     setTimeout(function() {
-      note.gain.disconnect();
-    }, 6000);
+      point.gain.disconnect();
+    }, 7000);
+    var indexToDelete = currentlyPlaying.indexOf(point);
+    currentlyPlaying.splice(indexToDelete, 1);
   });
-  currentChord = [];
-  points.forEach(function(point) {
+
+  toAdd.forEach(function(point) {
     var osc = context.createOscillator();
     var gain = context.createGain();
 
@@ -60,15 +65,17 @@ function change(points) {
     osc.start(0);
     envelope(gain.gain, context.currentTime, {
       start: 0,
-      peak: 0.01,
-      attack: 3,
+      peak: 0.03,
+      attack: 4,
       type: 'exponential'
     });
-    currentChord.push({
-      osc: osc,
-      gain: gain
-    });
+
+    point.osc = osc;
+    point.gain = gain;
+    currentlyPlaying.push(point);
   });
+
+  console.log('current notes', currentlyPlaying.length);
 }
 
 var dot = new pt.Circle(250, 250).setRadius(space.size.x / 13);
@@ -95,7 +102,6 @@ for (var i = 0; i < 70; i++) {
   points.push(point);
 }
 
-var currentPoints = [];
 var bot = {
   animate: function(time, fs, context) {
     form.fill(backgroundColor).stroke(false);
@@ -130,7 +136,10 @@ var bot = {
     });
 
     if (!_.isEqual(currentPoints, pointsInsideCircle)) {
-      change(pointsInsideCircle);
+      var toRemove = _.difference(currentPoints, pointsInsideCircle);
+      var toAdd = _.difference(pointsInsideCircle, currentPoints);
+      console.log(toAdd, toRemove);
+      change(toAdd, toRemove);
     }
     currentPoints = pointsInsideCircle;
   },
