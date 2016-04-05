@@ -41,7 +41,8 @@ function change(points) {
     var now = context.currentTime;
     note.gain.gain.cancelScheduledValues(now);
     note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-    note.gain.gain.linearRampToValueAtTime(0, now + 4);
+    note.gain.gain.exponentialRampToValueAtTime(0.000001, now + 4);
+    note.gain.gain.setValueAtTime(0, now + 5);
     note.osc.stop(now + 6);
     setTimeout(function() {
       note.gain.disconnect();
@@ -60,7 +61,8 @@ function change(points) {
     envelope(gain.gain, context.currentTime, {
       start: 0,
       peak: 0.01,
-      attack: 3
+      attack: 3,
+      type: 'exponential'
     });
     currentChord.push({
       osc: osc,
