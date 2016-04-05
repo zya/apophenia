@@ -36,8 +36,7 @@ var space = new pt.CanvasSpace('canvas', darkNavyBlue).display('#pt', function (
 space.autoResize(true);
 var form = new pt.Form(space);
 
-var dot = new pt.Circle(250, 250).setRadius(space.size.x / 13);
-var smallDot = new pt.Circle().setRadius(3);
+var dot = new pt.Circle(250, 250).setRadius(space.size.x / 21);
 
 var g3 = teoria.note('g3');
 var scale = g3.scale('minorpentatonic');
@@ -45,6 +44,7 @@ var notes = scale.notes();
 
 var currentlyPlaying = [];
 var currentPoints = [];
+var trash = [];
 
 function createPoints(amount) {
   var points = [];
@@ -62,7 +62,6 @@ function createPoints(amount) {
 
 var points = createPoints(80);
 
-
 function change(toAdd, toRemove) {
   var intersected = _.intersectionBy(currentlyPlaying, toRemove, 'id');
 
@@ -71,6 +70,7 @@ function change(toAdd, toRemove) {
       now: context.currentTime,
       release: 5
     });
+
     var indexToDelete = currentlyPlaying.indexOf(voice);
     currentlyPlaying.splice(indexToDelete, 1);
   });
@@ -87,14 +87,13 @@ function change(toAdd, toRemove) {
 }
 
 window.addEventListener('resize', function () {
-  dot.radius = space.size.x / 13;
+  dot.radius = space.size.x / 21;
   points = createPoints(80);
 });
 
 window.addEventListener('mousemove', function (evt) {
   if (evt.target.id !== 'pt') {}
 });
-
 
 var bot = {
   animate: function (time, fs, context) {
