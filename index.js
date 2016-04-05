@@ -10,6 +10,7 @@ var load = require('./lib/load');
 
 var limiter = context.createDynamicsCompressor();
 var convolver = context.createConvolver();
+convolver.normalize = false;
 var synthGain = context.createGain();
 
 limiter.ratio.value = 40;
@@ -21,7 +22,7 @@ limiter.connect(context.destination);
 convolver.connect(limiter);
 synthGain.connect(convolver);
 
-load('./assets/ir.mp3', function (buffer) {
+load('./assets/ir3.mp3', function (buffer) {
   convolver.buffer = buffer;
 });
 
@@ -67,7 +68,7 @@ function change(toAdd, toRemove) {
   intersected.forEach(function (voice) {
     voice.stop({
       now: context.currentTime,
-      release: 5
+      release: 3
     });
 
     var indexToDelete = currentlyPlaying.indexOf(voice);
@@ -86,7 +87,7 @@ function change(toAdd, toRemove) {
 }
 
 window.addEventListener('resize', function () {
-  dot.radius = space.size.x / 21;
+  dot.radius = space.size.x / 15;
   points = createPoints(80);
 });
 
