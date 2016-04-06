@@ -2,11 +2,13 @@ var pt = require('ptjs');
 var _ = require('lodash');
 var teoria = require('teoria');
 var randomInt = require('random-int');
+var randomFloat = require('random-float');
 var uuid = require('node-uuid');
 
 var Voice = require('./lib/voice');
 var context = require('./lib/context');
 var load = require('./lib/load');
+var envelope = require('./lib/envelope');
 
 var limiter = context.createDynamicsCompressor();
 var convolver = context.createConvolver();
@@ -138,6 +140,32 @@ var bot = {
   onMouseAction: function (type, x, y) {
     if (type === 'move') {
       dot.set(x, y);
+    } else if (type === 'down') {
+      currentPoints.forEach(function(point, index) {
+        var osc = context.createOscillator();
+        var gain = context.createGain();
+        var now = context.currentTime;
+
+        var startTime = now + (index * 0.5);
+        if (index > 0) {
+          startTime += randomFloat(-0.2, 0.2);
+        }
+        osc.start(startTime);
+        osc.frequency.value = point.fq * 4;
+        osc.connect(gain);
+        gain.connect(synthGain);
+        envelope(gain.gain, startTime, {
+          start: 0,
+          peak: 0.02,
+          attack: 0.01,
+          type: 'exponential',
+          release: 0.4
+        });
+        osc.stop(startTime + 2);
+        setTimeout(function(){
+          gain.disconnect();
+        }, 4000);
+      });
     }
   },
   onTouchAction: function (type, x, y, evt) {

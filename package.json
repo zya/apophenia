@@ -7,6 +7,7 @@
     "lodash": "^4.7.0",
     "node-uuid": "^1.4.7",
     "ptjs": "github:williamngan/pt",
+    "random-float": "^1.0.0",
     "random-int": "^1.0.0",
     "teoria": "^2.2.0"
   },
