@@ -39,7 +39,8 @@ var space = new pt.CanvasSpace('canvas', darkNavyBlue).display('#pt', function (
 space.autoResize(true);
 var form = new pt.Form(space);
 
-var dot = new pt.Circle(250, 250).setRadius(space.size.x / 21);
+var spotLight = new pt.Circle(250, 250).setRadius(space.size.x / 21);
+var smallCircle = new pt.Circle(250, 250).setRadius(2);
 
 var g3 = teoria.note('g3');
 var scale = g3.scale('minorpentatonic');
@@ -58,6 +59,8 @@ function createPoints(amount) {
 
     point.fq = randomNote.fq() * multipliers[randomInt(0, 2)];
     point.id = uuid.v1();
+    point.colour = lightBlue;
+    point.circle = new pt.Circle(250, 250).setRadius(1.1);
     points.push(point);
   }
   return points;
@@ -82,37 +85,65 @@ function change(toAdd, toRemove) {
     var voice = new Voice(point.id, point.fq, synthGain);
     voice.start({
       now: context.currentTime,
-      peak: 0.03,
+      peak: 0.02,
       attack: 6
     });
     currentlyPlaying.push(voice);
   });
 }
 
-window.addEventListener('resize', function () {
-  dot.radius = space.size.x / 15;
-  points = createPoints(80);
-});
+function playLead(point, index) {
+  var osc = context.createOscillator();
+  var gain = context.createGain();
+  var now = context.currentTime;
 
-window.addEventListener('mousemove', function (evt) {
-  if (evt.target.id !== 'pt') {}
-});
+  var startTime = now + (index * 0.5);
+  if (index > 0) {
+    startTime += randomFloat(-0.2, 0.2);
+  }
+  osc.start(startTime);
+  osc.frequency.value = point.fq * 4;
+  osc.connect(gain);
+  gain.connect(synthGain);
+  envelope(gain.gain, startTime, {
+    start: 0,
+    peak: 0.02,
+    attack: 0.01,
+    type: 'exponential',
+    release: 0.4
+  });
+  osc.stop(startTime + 1.5);
+  setTimeout(function(){
+    gain.disconnect();
+  }, 4000);
+
+  setTimeout(function(){
+    if (_.isEqual(point.colour, red)) point.colour = lightBlue;
+    else point.colour = red;
+  }, (startTime - context.currentTime) * 1000);
+}
 
 var bot = {
   animate: function (time, fs, context) {
     form.fill(backgroundColor).stroke(false);
-    form.circle(dot);
+    form.circle(spotLight);
+
     var pointsInsideCircle = [];
     points.forEach(function (pt) {
+
       pt.set(pt.x + (Math.random() - 0.5), pt.y + (Math.random() - 0.5));
-      var intersected = dot.intersectPoint(pt);
+      pt.circle.set(pt.x, pt.y);
+
+      var intersected = spotLight.intersectPoint(pt);
       if (intersected) {
-        form.fill(red).stroke(false);
+        form.fill(pt.colour).stroke(false);
         pointsInsideCircle.push(pt);
-        form.point(pt, 2);
+        pt.circle.setRadius(2.2);
+        form.circle(pt.circle);
       } else {
-        form.fill(lightBlue).stroke(false);
-        form.point(pt, 1);
+        form.fill(pt.colour).stroke(false);
+        pt.circle.setRadius(1.1);
+        form.circle(pt.circle);
       }
     });
 
@@ -139,44 +170,36 @@ var bot = {
     currentPoints = pointsInsideCircle;
   },
   onMouseAction: function (type, x, y) {
-    if (type === 'move') {
-      dot.set(x, y);
-    } else if (type === 'down') {
-      currentPoints.forEach(function(point, index) {
-        var osc = context.createOscillator();
-        var gain = context.createGain();
-        var now = context.currentTime;
-
-        var startTime = now + (index * 0.5);
-        if (index > 0) {
-          startTime += randomFloat(-0.2, 0.2);
-        }
-        osc.start(startTime);
-        osc.frequency.value = point.fq * 4;
-        osc.connect(gain);
-        gain.connect(synthGain);
-        envelope(gain.gain, startTime, {
-          start: 0,
-          peak: 0.02,
-          attack: 0.01,
-          type: 'exponential',
-          release: 0.4
-        });
-        osc.stop(startTime + 2);
-        setTimeout(function(){
-          gain.disconnect();
-        }, 4000);
-      });
+    switch (type) {
+      case 'move':
+        spotLight.set(x, y);
+        break;
+      case 'down':
+        spotLight.setRadius(spotLight.radius - 2);
+        currentPoints.forEach(playLead);
+        break;
+        case 'up':
+          spotLight.setRadius(spotLight.radius + 1.5);
+        break;
     }
   },
   onTouchAction: function (type, x, y, evt) {
     if (type === 'move') {
       var offsetX = (window.innerWidth - evt.target.offsetWidth) / 2;
-      dot.set(x - offsetX, y);
+      spotLight.set(x - offsetX, y);
     }
     evt.preventDefault();
   }
 };
+
+window.addEventListener('resize', function () {
+  spotLight.radius = space.size.x / 15;
+  points = createPoints(80);
+});
+
+window.addEventListener('mousemove', function (evt) {
+  if (evt.target.id !== 'pt') {}
+});
 
 space.add(bot);
 space.bindMouse();
@@ -14666,7 +14689,7 @@ module.exports={
   "_args": [
     [
       "elliptic@^6.0.0",
-      "/Users/ziyae01/code/map/node_modules/browserify-sign"
+      "/Users/ziyae01/code/pt-play/node_modules/browserify-sign"
     ]
   ],
   "_from": "elliptic@>=6.0.0 <7.0.0",
@@ -14697,7 +14720,7 @@ module.exports={
   "_shasum": "18e46d7306b0951275a2d42063270a14b74ebe99",
   "_shrinkwrap": null,
   "_spec": "elliptic@^6.0.0",
-  "_where": "/Users/ziyae01/code/map/node_modules/browserify-sign",
+  "_where": "/Users/ziyae01/code/pt-play/node_modules/browserify-sign",
   "author": {
     "email": "fedor@indutny.com",
     "name": "Fedor Indutny"
@@ -16503,7 +16526,7 @@ module.exports = function (obj) {
 (function (global){
 /**
  * @license
- * lodash 4.8.2 (Custom Build) <https://lodash.com/>
+ * lodash 4.7.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash -d -o ./foo/lodash.js`
  * Copyright jQuery Foundation and other contributors <https://jquery.org/>
  * Released under MIT license <https://lodash.com/license>
@@ -16516,7 +16539,7 @@ module.exports = function (obj) {
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.8.2';
+  var VERSION = '4.7.0';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -16622,10 +16645,7 @@ module.exports = function (obj) {
       reIsPlainProp = /^\w*$/,
       rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]/g;
 
-  /**
-   * Used to match `RegExp`
-   * [syntax characters](http://ecma-international.org/ecma-262/6.0/#sec-patterns).
-   */
+  /** Used to match `RegExp` [syntax characters](http://ecma-international.org/ecma-262/6.0/#sec-patterns). */
   var reRegExpChar = /[\\^$.*+?()[\]{}|]/g,
       reHasRegExpChar = RegExp(reRegExpChar.source);
 
@@ -16637,10 +16657,7 @@ module.exports = function (obj) {
   /** Used to match backslashes in property paths. */
   var reEscapeChar = /\\(\\)?/g;
 
-  /**
-   * Used to match
-   * [ES template delimiters](http://ecma-international.org/ecma-262/6.0/#sec-template-literal-lexical-components).
-   */
+  /** Used to match [ES template delimiters](http://ecma-international.org/ecma-262/6.0/#sec-template-literal-lexical-components). */
   var reEsTemplate = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g;
 
   /** Used to match `RegExp` flags from their coerced string values. */
@@ -16919,7 +16936,7 @@ module.exports = function (obj) {
    * @private
    * @param {Function} func The function to invoke.
    * @param {*} thisArg The `this` binding of `func`.
-   * @param {Array} args The arguments to invoke `func` with.
+   * @param {...*} args The arguments to invoke `func` with.
    * @returns {*} Returns the result of `func`.
    */
   function apply(func, thisArg, args) {
@@ -17900,8 +17917,7 @@ module.exports = function (obj) {
     var objectCtorString = funcToString.call(Object);
 
     /**
-     * Used to resolve the
-     * [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+     * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
      * of values.
      */
     var objectToString = objectProto.toString;
@@ -17960,11 +17976,11 @@ module.exports = function (obj) {
     var realNames = {};
 
     /** Used to detect maps, sets, and weakmaps. */
-    var dataViewCtorString = toSource(DataView),
-        mapCtorString = toSource(Map),
-        promiseCtorString = toSource(Promise),
-        setCtorString = toSource(Set),
-        weakMapCtorString = toSource(WeakMap);
+    var dataViewCtorString = DataView ? (DataView + '') : '',
+        mapCtorString = Map ? funcToString.call(Map) : '',
+        promiseCtorString = Promise ? funcToString.call(Promise) : '',
+        setCtorString = Set ? funcToString.call(Set) : '',
+        weakMapCtorString = WeakMap ? funcToString.call(WeakMap) : '';
 
     /** Used to convert symbols to primitives and strings. */
     var symbolProto = Symbol ? Symbol.prototype : undefined,
@@ -19700,7 +19716,16 @@ module.exports = function (obj) {
     function baseMatches(source) {
       var matchData = getMatchData(source);
       if (matchData.length == 1 && matchData[0][2]) {
-        return matchesStrictComparable(matchData[0][0], matchData[0][1]);
+        var key = matchData[0][0],
+            value = matchData[0][1];
+
+        return function(object) {
+          if (object == null) {
+            return false;
+          }
+          return object[key] === value &&
+            (value !== undefined || (key in Object(object)));
+        };
       }
       return function(object) {
         return object === source || baseIsMatch(object, source, matchData);
@@ -19716,9 +19741,6 @@ module.exports = function (obj) {
      * @returns {Function} Returns the new function.
      */
     function baseMatchesProperty(path, srcValue) {
-      if (isKey(path) && isStrictComparable(srcValue)) {
-        return matchesStrictComparable(path, srcValue);
-      }
       return function(object) {
         var objValue = get(object, path);
         return (objValue === undefined && objValue === srcValue)
@@ -20890,8 +20912,8 @@ module.exports = function (obj) {
      */
     function createCtorWrapper(Ctor) {
       return function() {
-        // Use a `switch` statement to work with class constructors. See
-        // http://ecma-international.org/ecma-262/6.0/#sec-ecmascript-function-objects-call-thisargument-argumentslist
+        // Use a `switch` statement to work with class constructors.
+        // See http://ecma-international.org/ecma-262/6.0/#sec-ecmascript-function-objects-call-thisargument-argumentslist
         // for more details.
         var args = arguments;
         switch (args.length) {
@@ -21145,8 +21167,9 @@ module.exports = function (obj) {
     }
 
     /**
-     * Creates a function that wraps `func` to invoke it with the `this` binding
-     * of `thisArg` and `partials` prepended to the arguments it receives.
+     * Creates a function that wraps `func` to invoke it with the optional `this`
+     * binding of `thisArg` and the `partials` prepended to those provided to
+     * the wrapper.
      *
      * @private
      * @param {Function} func The function to wrap.
@@ -21489,8 +21512,7 @@ module.exports = function (obj) {
         case regexpTag:
         case stringTag:
           // Coerce regexes to strings and treat strings, primitives and objects,
-          // as equal. See http://www.ecma-international.org/ecma-262/6.0/#sec-regexp.prototype.tostring
-          // for more details.
+          // as equal. See https://es5.github.io/#x15.10.6.4 for more details.
           return object == (other + '');
 
         case mapTag:
@@ -21657,7 +21679,7 @@ module.exports = function (obj) {
     /**
      * Gets the appropriate "iteratee" function. If the `_.iteratee` method is
      * customized this function returns the custom method, otherwise it returns
-     * `baseIteratee`. If arguments are provided, the chosen function is invoked
+     * `baseIteratee`. If arguments are provided the chosen function is invoked
      * with them and its result is returned.
      *
      * @private
@@ -21795,7 +21817,7 @@ module.exports = function (obj) {
       getTag = function(value) {
         var result = objectToString.call(value),
             Ctor = result == objectTag ? value.constructor : null,
-            ctorString = toSource(Ctor);
+            ctorString = typeof Ctor == 'function' ? funcToString.call(Ctor) : '';
 
         if (ctorString) {
           switch (ctorString) {
@@ -21848,25 +21870,29 @@ module.exports = function (obj) {
      * @returns {boolean} Returns `true` if `path` exists, else `false`.
      */
     function hasPath(object, path, hasFunc) {
-      path = isKey(path, object) ? [path] : baseCastPath(path);
+      if (object == null) {
+        return false;
+      }
+      var result = hasFunc(object, path);
+      if (!result && !isKey(path)) {
+        path = baseCastPath(path);
 
-      var result,
-          index = -1,
-          length = path.length;
+        var index = -1,
+            length = path.length;
 
-      while (++index < length) {
-        var key = path[index];
-        if (!(result = object != null && hasFunc(object, key))) {
-          break;
+        while (object != null && ++index < length) {
+          var key = path[index];
+          if (!(result = hasFunc(object, key))) {
+            break;
+          }
+          object = object[key];
         }
-        object = object[key];
       }
-      if (result) {
-        return result;
-      }
-      var length = object ? object.length : 0;
-      return !!length && isLength(length) && isIndex(key, length) &&
-        (isArray(object) || isString(object) || isArguments(object));
+      var length = object ? object.length : undefined;
+      return result || (
+        !!length && isLength(length) && isIndex(path, length) &&
+        (isArray(object) || isString(object) || isArguments(object))
+      );
     }
 
     /**
@@ -22071,25 +22097,6 @@ module.exports = function (obj) {
     }
 
     /**
-     * A specialized version of `matchesProperty` for source values suitable
-     * for strict equality comparisons, i.e. `===`.
-     *
-     * @private
-     * @param {string} key The key of the property to get.
-     * @param {*} srcValue The value to match.
-     * @returns {Function} Returns the new function.
-     */
-    function matchesStrictComparable(key, srcValue) {
-      return function(object) {
-        if (object == null) {
-          return false;
-        }
-        return object[key] === srcValue &&
-          (srcValue !== undefined || (key in Object(object)));
-      };
-    }
-
-    /**
      * Merges the function metadata of `source` into `data`.
      *
      * Merging metadata reduces the number of wrappers used to invoke a function.
@@ -22264,22 +22271,6 @@ module.exports = function (obj) {
     });
 
     /**
-     * Converts `func` to its source code.
-     *
-     * @private
-     * @param {Function} func The function to process.
-     * @returns {string} Returns the source code.
-     */
-    function toSource(func) {
-      if (isFunction(func)) {
-        try {
-          return funcToString.call(func);
-        } catch (e) {}
-      }
-      return toString(func);
-    }
-
-    /**
      * Creates a clone of `wrapper`.
      *
      * @private
@@ -22309,8 +22300,7 @@ module.exports = function (obj) {
      * @since 3.0.0
      * @category Array
      * @param {Array} array The array to process.
-     * @param {number} [size=1] The length of each chunk
-     * @param- {Object} [guard] Enables use as an iteratee for methods like `_.map`.
+     * @param {number} [size=0] The length of each chunk.
      * @returns {Array} Returns the new array containing chunks.
      * @example
      *
@@ -22320,12 +22310,9 @@ module.exports = function (obj) {
      * _.chunk(['a', 'b', 'c', 'd'], 3);
      * // => [['a', 'b', 'c'], ['d']]
      */
-    function chunk(array, size, guard) {
-      if ((guard ? isIterateeCall(array, size, guard) : size === undefined)) {
-        size = 1;
-      } else {
-        size = nativeMax(toInteger(size), 0);
-      }
+    function chunk(array, size) {
+      size = nativeMax(toInteger(size), 0);
+
       var length = array ? array.length : 0;
       if (!length || size < 1) {
         return [];
@@ -24507,9 +24494,9 @@ module.exports = function (obj) {
 
     /**
      * Creates an object composed of keys generated from the results of running
-     * each element of `collection` thru `iteratee`. The corresponding value of
-     * each key is the number of times the key was returned by `iteratee`. The
-     * iteratee is invoked with one argument: (value).
+     * each element of `collection` through `iteratee`. The corresponding value
+     * of each key is the number of times the key was returned by `iteratee`.
+     * The iteratee is invoked with one argument: (value).
      *
      * @static
      * @memberOf _
@@ -24691,8 +24678,8 @@ module.exports = function (obj) {
 
     /**
      * Creates a flattened array of values by running each element in `collection`
-     * thru `iteratee` and flattening the mapped results. The iteratee is invoked
-     * with three arguments: (value, index|key, collection).
+     * through `iteratee` and flattening the mapped results. The iteratee is
+     * invoked with three arguments: (value, index|key, collection).
      *
      * @static
      * @memberOf _
@@ -24829,9 +24816,9 @@ module.exports = function (obj) {
 
     /**
      * Creates an object composed of keys generated from the results of running
-     * each element of `collection` thru `iteratee`. The corresponding value of
-     * each key is an array of elements responsible for generating the key. The
-     * iteratee is invoked with one argument: (value).
+     * each element of `collection` through `iteratee`. The corresponding value
+     * of each key is an array of elements responsible for generating the key.
+     * The iteratee is invoked with one argument: (value).
      *
      * @static
      * @memberOf _
@@ -24939,8 +24926,8 @@ module.exports = function (obj) {
 
     /**
      * Creates an object composed of keys generated from the results of running
-     * each element of `collection` thru `iteratee`. The corresponding value of
-     * each key is the last element responsible for generating the key. The
+     * each element of `collection` through `iteratee`. The corresponding value
+     * of each key is the last element responsible for generating the key. The
      * iteratee is invoked with one argument: (value).
      *
      * @static
@@ -24971,7 +24958,7 @@ module.exports = function (obj) {
     });
 
     /**
-     * Creates an array of values by running each element in `collection` thru
+     * Creates an array of values by running each element in `collection` through
      * `iteratee`. The iteratee is invoked with three arguments:
      * (value, index|key, collection).
      *
@@ -24979,10 +24966,10 @@ module.exports = function (obj) {
      * `_.every`, `_.filter`, `_.map`, `_.mapValues`, `_.reject`, and `_.some`.
      *
      * The guarded methods are:
-     * `ary`, `chunk`, `curry`, `curryRight`, `drop`, `dropRight`, `every`,
-     * `fill`, `invert`, `parseInt`, `random`, `range`, `rangeRight`, `repeat`,
-     * `sampleSize`, `slice`, `some`, `sortBy`, `take`, `takeRight`, `template`,
-     * `trim`, `trimEnd`, `trimStart`, and `words`
+     * `ary`, `curry`, `curryRight`, `drop`, `dropRight`, `every`, `fill`,
+     * `invert`, `parseInt`, `random`, `range`, `rangeRight`, `slice`, `some`,
+     * `sortBy`, `take`, `takeRight`, `template`, `trim`, `trimEnd`, `trimStart`,
+     * and `words`
      *
      * @static
      * @memberOf _
@@ -25104,7 +25091,7 @@ module.exports = function (obj) {
 
     /**
      * Reduces `collection` to a value which is the accumulated result of running
-     * each element in `collection` thru `iteratee`, where each successive
+     * each element in `collection` through `iteratee`, where each successive
      * invocation is supplied the return value of the previous. If `accumulator`
      * is not given the first element of `collection` is used as the initial
      * value. The iteratee is invoked with four arguments:
@@ -25245,8 +25232,7 @@ module.exports = function (obj) {
      * @since 4.0.0
      * @category Collection
      * @param {Array|Object} collection The collection to sample.
-     * @param {number} [n=1] The number of elements to sample.
-     * @param- {Object} [guard] Enables use as an iteratee for methods like `_.map`.
+     * @param {number} [n=0] The number of elements to sample.
      * @returns {Array} Returns the random elements.
      * @example
      *
@@ -25256,17 +25242,13 @@ module.exports = function (obj) {
      * _.sampleSize([1, 2, 3], 4);
      * // => [2, 3, 1]
      */
-    function sampleSize(collection, n, guard) {
+    function sampleSize(collection, n) {
       var index = -1,
           result = toArray(collection),
           length = result.length,
           lastIndex = length - 1;
 
-      if ((guard ? isIterateeCall(collection, n, guard) : n === undefined)) {
-        n = 1;
-      } else {
-        n = baseClamp(toInteger(n), 0, length);
-      }
+      n = baseClamp(toInteger(n), 0, length);
       while (++index < n) {
         var rand = baseRandom(index, lastIndex),
             value = result[rand];
@@ -25382,7 +25364,7 @@ module.exports = function (obj) {
 
     /**
      * Creates an array of elements, sorted in ascending order by the results of
-     * running each element in a collection thru each iteratee. This method
+     * running each element in a collection through each iteratee. This method
      * performs a stable sort, that is, it preserves the original sort order of
      * equal elements. The iteratees are invoked with one argument: (value).
      *
@@ -25488,8 +25470,8 @@ module.exports = function (obj) {
     }
 
     /**
-     * Creates a function that invokes `func`, with up to `n` arguments,
-     * ignoring any additional arguments.
+     * Creates a function that accepts up to `n` arguments, ignoring any
+     * additional arguments.
      *
      * @static
      * @memberOf _
@@ -25546,7 +25528,8 @@ module.exports = function (obj) {
 
     /**
      * Creates a function that invokes `func` with the `this` binding of `thisArg`
-     * and `partials` prepended to the arguments it receives.
+     * and prepends any additional `_.bind` arguments to those provided to the
+     * bound function.
      *
      * The `_.bind.placeholder` value, which defaults to `_` in monolithic builds,
      * may be used as a placeholder for partially applied arguments.
@@ -25589,8 +25572,8 @@ module.exports = function (obj) {
     });
 
     /**
-     * Creates a function that invokes the method at `object[key]` with `partials`
-     * prepended to the arguments it receives.
+     * Creates a function that invokes the method at `object[key]` and prepends
+     * any additional `_.bindKey` arguments to those provided to the bound function.
      *
      * This method differs from `_.bind` by allowing bound functions to reference
      * methods that may be redefined or don't yet exist. See
@@ -26096,7 +26079,7 @@ module.exports = function (obj) {
      * @memberOf _
      * @category Function
      * @param {Function} func The function to wrap.
-     * @param {...(Function|Function[])} [transforms] The functions to transform.
+     * @param {...(Function|Function[])} [transforms] The functions to transform
      * arguments, specified individually or in arrays.
      * @returns {Function} Returns the new function.
      * @example
@@ -26135,9 +26118,9 @@ module.exports = function (obj) {
     });
 
     /**
-     * Creates a function that invokes `func` with `partials` prepended to the
-     * arguments it receives. This method is like `_.bind` except it does **not**
-     * alter the `this` binding.
+     * Creates a function that invokes `func` with `partial` arguments prepended
+     * to those provided to the new function. This method is like `_.bind` except
+     * it does **not** alter the `this` binding.
      *
      * The `_.partial.placeholder` value, which defaults to `_` in monolithic
      * builds, may be used as a placeholder for partially applied arguments.
@@ -26174,7 +26157,7 @@ module.exports = function (obj) {
 
     /**
      * This method is like `_.partial` except that partially applied arguments
-     * are appended to the arguments it receives.
+     * are appended to those provided to the new function.
      *
      * The `_.partialRight.placeholder` value, which defaults to `_` in monolithic
      * builds, may be used as a placeholder for partially applied arguments.
@@ -26211,7 +26194,7 @@ module.exports = function (obj) {
 
     /**
      * Creates a function that invokes `func` with arguments arranged according
-     * to the specified `indexes` where the argument value at the first index is
+     * to the specified indexes where the argument value at the first index is
      * provided as the first argument, the argument value at the second index is
      * provided as the second argument, and so on.
      *
@@ -26293,7 +26276,7 @@ module.exports = function (obj) {
     /**
      * Creates a function that invokes `func` with the `this` binding of the
      * create function and an array of arguments much like
-     * [`Function#apply`](http://www.ecma-international.org/ecma-262/6.0/#sec-function.prototype.apply).
+     * [`Function#apply`](https://es5.github.io/#x15.3.4.3).
      *
      * **Note:** This method is based on the
      * [spread operator](https://mdn.io/spread_operator).
@@ -27182,9 +27165,8 @@ module.exports = function (obj) {
     }
 
     /**
-     * Checks if `value` is the
-     * [language type](http://www.ecma-international.org/ecma-262/6.0/#sec-ecmascript-language-types)
-     * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+     * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+     * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
      *
      * @static
      * @memberOf _
@@ -27329,10 +27311,9 @@ module.exports = function (obj) {
     /**
      * Checks if `value` is `NaN`.
      *
-     * **Note:** This method is based on
-     * [`Number.isNaN`](https://mdn.io/Number/isNaN) and is not the same as
-     * global [`isNaN`](https://mdn.io/isNaN) which returns `true` for
-     * `undefined` and other non-number values.
+     * **Note:** This method is not the same as
+     * [`isNaN`](https://es5.github.io/#x15.1.2.4) which returns `true` for
+     * `undefined` and other non-numeric values.
      *
      * @static
      * @memberOf _
@@ -27380,11 +27361,14 @@ module.exports = function (obj) {
      * // => false
      */
     function isNative(value) {
-      if (!isObject(value)) {
+      if (value == null) {
         return false;
       }
-      var pattern = (isFunction(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
-      return pattern.test(toSource(value));
+      if (isFunction(value)) {
+        return reIsNative.test(funcToString.call(value));
+      }
+      return isObjectLike(value) &&
+        (isHostObject(value) ? reIsNative : reIsHostCtor).test(value);
     }
 
     /**
@@ -27913,7 +27897,7 @@ module.exports = function (obj) {
         value = isObject(other) ? (other + '') : other;
       }
       if (typeof value != 'string') {
-        return value === 0 ? value : +value;
+        return value === 0 ?  value : +value;
       }
       value = value.replace(reTrim, '');
       var isBinary = reIsBinary.test(value);
@@ -28589,7 +28573,7 @@ module.exports = function (obj) {
      * // => false
      */
     function has(object, path) {
-      return object != null && hasPath(object, path, baseHas);
+      return hasPath(object, path, baseHas);
     }
 
     /**
@@ -28619,7 +28603,7 @@ module.exports = function (obj) {
      * // => false
      */
     function hasIn(object, path) {
-      return object != null && hasPath(object, path, baseHasIn);
+      return hasPath(object, path, baseHasIn);
     }
 
     /**
@@ -28646,8 +28630,8 @@ module.exports = function (obj) {
 
     /**
      * This method is like `_.invert` except that the inverted object is generated
-     * from the results of running each element of `object` thru `iteratee`. The
-     * corresponding inverted value of each inverted key is an array of keys
+     * from the results of running each element of `object` through `iteratee`.
+     * The corresponding inverted value of each inverted key is an array of keys
      * responsible for generating the inverted value. The iteratee is invoked
      * with one argument: (value).
      *
@@ -28793,8 +28777,8 @@ module.exports = function (obj) {
     /**
      * The opposite of `_.mapValues`; this method creates an object with the
      * same values as `object` and keys generated by running each own enumerable
-     * string keyed property of `object` thru `iteratee`. The iteratee is invoked
-     * with three arguments: (value, key, object).
+     * string keyed property of `object` through `iteratee`. The iteratee is
+     * invoked with three arguments: (value, key, object).
      *
      * @static
      * @memberOf _
@@ -28822,8 +28806,8 @@ module.exports = function (obj) {
     }
 
     /**
-     * Creates an object with the same keys as `object` and values generated
-     * by running each own enumerable string keyed property of `object` thru
+     * Creates an object with the same keys as `object` and values generated by
+     * running each own enumerable string keyed property of `object` through
      * `iteratee`. The iteratee is invoked with three arguments:
      * (value, key, object).
      *
@@ -29112,7 +29096,7 @@ module.exports = function (obj) {
      * console.log(object.a[0].b.c);
      * // => 4
      *
-     * _.set(object, ['x', '0', 'y', 'z'], 5);
+     * _.set(object, 'x[0].y.z', 5);
      * console.log(object.x[0].y.z);
      * // => 5
      */
@@ -29205,11 +29189,11 @@ module.exports = function (obj) {
 
     /**
      * An alternative to `_.reduce`; this method transforms `object` to a new
-     * `accumulator` object which is the result of running each of its own
-     * enumerable string keyed properties thru `iteratee`, with each invocation
-     * potentially mutating the `accumulator` object. The iteratee is invoked
-     * with four arguments: (accumulator, value, key, object). Iteratee functions
-     * may exit iteration early by explicitly returning `false`.
+     * `accumulator` object which is the result of running each of its own enumerable
+     * string keyed properties through `iteratee`, with each invocation potentially
+     * mutating the `accumulator` object. The iteratee is invoked with four arguments:
+     * (accumulator, value, key, object). Iteratee functions may exit iteration
+     * early by explicitly returning `false`.
      *
      * @static
      * @memberOf _
@@ -29275,7 +29259,7 @@ module.exports = function (obj) {
      * console.log(object);
      * // => { 'a': [{ 'b': {} }] };
      *
-     * _.unset(object, ['a', '0', 'b', 'c']);
+     * _.unset(object, 'a[0].b.c');
      * // => true
      *
      * console.log(object);
@@ -29943,8 +29927,7 @@ module.exports = function (obj) {
      * @since 3.0.0
      * @category String
      * @param {string} [string=''] The string to repeat.
-     * @param {number} [n=1] The number of times to repeat the string.
-     * @param- {Object} [guard] Enables use as an iteratee for methods like `_.map`.
+     * @param {number} [n=0] The number of times to repeat the string.
      * @returns {string} Returns the repeated string.
      * @example
      *
@@ -29957,13 +29940,8 @@ module.exports = function (obj) {
      * _.repeat('abc', 0);
      * // => ''
      */
-    function repeat(string, n, guard) {
-      if ((guard ? isIterateeCall(string, n, guard) : n === undefined)) {
-        n = 1;
-      } else {
-        n = toInteger(n);
-      }
-      return baseRepeat(toString(string), n);
+    function repeat(string, n) {
+      return baseRepeat(toString(string), toInteger(n));
     }
 
     /**
@@ -31188,8 +31166,8 @@ module.exports = function (obj) {
     }
 
     /**
-     * Creates a function that invokes `iteratees` with the arguments it receives
-     * and returns their results.
+     * Creates a function that invokes `iteratees` with the arguments provided
+     * to the created function and returns their results.
      *
      * @static
      * @memberOf _
@@ -31208,7 +31186,7 @@ module.exports = function (obj) {
 
     /**
      * Creates a function that checks if **all** of the `predicates` return
-     * truthy when invoked with the arguments it receives.
+     * truthy when invoked with the arguments provided to the created function.
      *
      * @static
      * @memberOf _
@@ -31233,7 +31211,7 @@ module.exports = function (obj) {
 
     /**
      * Creates a function that checks if **any** of the `predicates` return
-     * truthy when invoked with the arguments it receives.
+     * truthy when invoked with the arguments provided to the created function.
      *
      * @static
      * @memberOf _
