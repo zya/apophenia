@@ -4,6 +4,7 @@ var teoria = require('teoria');
 var randomInt = require('random-int');
 var randomFloat = require('random-float');
 var uuid = require('node-uuid');
+var moment = require('moment');
 
 var Voice = require('./lib/voice');
 var context = require('./lib/context');
@@ -24,6 +25,7 @@ var currentPoints = [];
 var connections = [];
 var pairs = [];
 var pairsInsideSpotlight = [];
+var trash = [];
 
 // pt stuff
 var background = new pt.Color(0.4, 8.6, 15.3).setMode('rgb');
@@ -60,6 +62,15 @@ synthGain.gain.value = 0.5;
 load('./assets/ir3.mp3', function(buffer) {
   convolver.buffer = buffer;
 });
+
+setInterval(function() {
+  trash.forEach(function(voice, index) {
+    if (voice.timestamp.isBefore(moment().subtract(7, 'seconds'))) {
+      trash.splice(index, 1);
+    }
+  });
+  console.log('trash size', trash.length);
+}, 5000);
 
 function createPoints(amount) {
   var points = [];
@@ -131,6 +142,8 @@ function change(toAdd, toRemove) {
     });
 
     var indexToDelete = currentlyPlaying.indexOf(voice);
+    voice.timestamp = moment();
+    trash.push(voice);
     currentlyPlaying.splice(indexToDelete, 1);
   });
 
@@ -162,7 +175,7 @@ function playLead(point, index) {
     start: 0,
     peak: 0.02,
     attack: 0.01,
-    type: 'exponential',
+    type: 'linear',
     release: 0.4
   });
   osc.stop(startTime + 1.5);
