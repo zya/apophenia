@@ -18,7 +18,8 @@ var orange = '#FF9F1C';
 var lightBlue = '#2EC4B6';
 var red = '#E71D36';
 var darkGrey = '#353535';
-var playingCircleSize = 2.5;
+var spotLightColor = white;
+var playingCircleSize = 3.8;
 var spotLightRatio = 20;
 var numberOfRandomPoints = 90;
 var currentlyPlaying = [];
@@ -218,49 +219,66 @@ function updateConnections(points) {
   });
 }
 
+function drawPoint(point) {
+  form.fill(point.colour).stroke(false);
+  if (point.intersected && point.circle.radius < playingCircleSize) {
+    point.circle.setRadius(2.2);
+  } else if (!point.intersected && point.circle.radius < playingCircleSize) {
+    point.circle.setRadius(1.1);
+  }
+  form.circle(point.circle);
+}
+
+function randomisePoint(point) {
+  var randomX = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
+  var randomY = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
+  point.set(point.x + randomX, point.y + randomY);
+  point.circle.set(point.x, point.y);
+}
+
+function intersectSpotlightAndPoints(spotLight, points) {
+  var intersectedPoints = [];
+  points.forEach(function(point) {
+    var intersected = spotLight.intersectPoint(point);
+    if (intersected) {
+      point.intersected = true;
+      intersectedPoints.push(point);
+    } else {
+      point.intersected = false;
+    }
+  });
+  return intersectedPoints;
+}
+
 var sketch = {
   animate: function(time, fs, ctx) {
-    form.fill(white).stroke(false);
+    //draw spotlight
+    form.fill(spotLightColor).stroke(false);
     form.circle(spotLight);
 
+    //draw connections
     connections.forEach(function(connection) {
       if (_.includes(pairsInsideSpotlight, connection.id)) return;
+
       form.stroke(darkGrey);
       form.fill(false);
+
       var line = new pt.Line(connection.from).to(connection.to);
       form.line(line);
     });
 
-    var pointsInsideCircle = [];
-    points.forEach(function(point) {
-      var randomX = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
-      var randomY = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
-      point.set(point.x + randomX, point.y + randomY);
-      point.circle.set(point.x, point.y);
+    points.forEach(randomisePoint);
 
-      var intersected = spotLight.intersectPoint(point);
-      if (intersected) {
-        form.fill(point.colour).stroke(false);
-        pointsInsideCircle.push(point);
-        if (point.circle.radius < playingCircleSize) {
-          point.circle.setRadius(2.1);
-        }
-        form.circle(point.circle);
-      } else {
-        form.fill(point.colour).stroke(false);
-        if (point.circle.radius < playingCircleSize) {
-          point.circle.setRadius(1.1);
-        }
-        form.circle(point.circle);
-      }
-    });
+    var pointsInsideCircle = intersectSpotlightAndPoints(spotLight, points);
 
+    //change cursor
     if (pointsInsideCircle.length > 0) {
       space.space.style.cursor = 'pointer';
     } else {
       space.space.style.cursor = 'auto';
     }
 
+    // draw inside lines
     var temporaryPairsInsideCircle = [];
     pointsInsideCircle.forEach(function(point, index) {
       pointsInsideCircle.forEach(function(point2, index2) {
@@ -276,6 +294,9 @@ var sketch = {
     });
 
     pairsInsideSpotlight = temporaryPairsInsideCircle;
+
+    //draw points
+    points.forEach(drawPoint);
 
     if (!_.isEqual(currentPoints, pointsInsideCircle)) {
       var toRemove = _.difference(currentPoints, pointsInsideCircle);
