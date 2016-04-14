@@ -81,27 +81,36 @@ function createPoints(amount) {
     points.push(point);
   }
 
-  var bigCircle = addPoints(30, {
+  var bigCircle = addCircularPoints(30, {
     x: space.size.x / 2,
     y: space.size.y / 2
   }, space.size.x / 5);
 
-  var mediumCircle = addPoints(18, {
+  var mediumCircle = addCircularPoints(18, {
     x: space.size.x / 2,
     y: space.size.y / 2
   }, space.size.x / 8);
 
-  var smallCircle = addPoints(15, {
+  var smallCircle = addCircularPoints(15, {
     x: space.size.x / 2,
     y: space.size.y / 2
   }, space.size.x / 15);
 
-  var tinyCircle = addPoints(8, {
+  var tinyCircle = addCircularPoints(8, {
     x: space.size.x / 2,
     y: space.size.y / 2
   }, space.size.x / 24);
 
-  return points.concat(bigCircle, smallCircle, mediumCircle, tinyCircle);
+  var specialFrame = addCircularPoints(4, {
+    x: space.size.x / 2,
+    y: space.size.y / 2
+  }, space.size.x / 5);
+
+  specialFrame.forEach(function(point) {
+    point.special = true;
+  });
+
+  return points.concat(bigCircle, smallCircle, mediumCircle, tinyCircle, specialFrame);
 }
 
 function createPoint(x, y, colour) {
@@ -117,7 +126,7 @@ function createPoint(x, y, colour) {
   return point;
 }
 
-function addPoints(number, origin, r) {
+function addCircularPoints(number, origin, r) {
   var points = [];
   for (var i = 0; i < number; i++) {
     var angle = (2 / number) * Math.PI * i;
@@ -133,6 +142,15 @@ function addPoints(number, origin, r) {
 }
 
 var points = createPoints(numberOfRandomPoints);
+
+points.forEach(function(point) {
+  var isMiddleX = point.x > (space.size.x / 24) * 8 && point.x < (space.size.x / 24) * 16;
+  var isMiddleY = point.y > (space.size.y / 12) * 2 && point.y < (space.size.y / 12) * 10;
+  var random = randomFloat(0, 1);
+  if (isMiddleX && isMiddleY && random > 0.25) point.special = true;
+});
+
+var specialPoints = _.filter(points, ['special', true]);
 
 function change(toAdd, toRemove) {
   var intersected = _.intersectionBy(currentlyPlaying, toRemove, 'id');
@@ -221,6 +239,7 @@ function updateConnections(points) {
 
 function drawPoint(point) {
   form.fill(point.colour).stroke(false);
+  if (point.special) form.fill(orange).stroke(false);
   if (point.intersected && point.circle.radius < playingCircleSize) {
     point.circle.setRadius(2.2);
   } else if (!point.intersected && point.circle.radius < playingCircleSize) {
@@ -250,8 +269,17 @@ function intersectSpotlightAndPoints(spotLight, points) {
   return intersectedPoints;
 }
 
+var de = new pt.Delaunay();
+de.points = specialPoints;
+console.log(de);
 var sketch = {
   animate: function(time, fs, ctx) {
+    de.generate();
+    for (i = 0; i < de.mesh.length; i++) {
+      form.fill(false);
+      form.stroke(white);
+      form.triangle(de.mesh[i].triangle);
+    }
     //draw spotlight
     form.fill(spotLightColor).stroke(false);
     form.circle(spotLight);
