@@ -28,6 +28,10 @@ var pairs = [];
 var pairsInsideSpotlight = [];
 var trash = [];
 
+var mouseX = 0;
+var mouseY = 0;
+var easingStrength = 0.18;
+
 // pt stuff
 var background = new pt.Color(0.4, 8.6, 15.3).setMode('rgb');
 var space = new pt.CanvasSpace('canvas', background.rgb()).display('#pt', function() {}, true);
@@ -251,6 +255,9 @@ function intersectSpotlightAndPoints(spotLight, points) {
 
 var sketch = {
   animate: function(time, fs, ctx) {
+    spotLight.x += (mouseX - spotLight.x) * easingStrength;
+    spotLight.y += (mouseY - spotLight.y) * easingStrength;
+
     //draw spotlight
     form.fill(spotLightColor).stroke(false);
     form.circle(spotLight);
@@ -308,7 +315,8 @@ var sketch = {
   onMouseAction: function(type, x, y) {
     switch (type) {
       case 'move':
-        spotLight.set(x, y);
+        mouseX = x;
+        mouseY = y;
         break;
       case 'down':
         spotLight.setRadius(spotLight.radius - 2);
@@ -321,9 +329,15 @@ var sketch = {
     }
   },
   onTouchAction: function(type, x, y, evt) {
-    if (type === 'move') {
+    if (type === 'move' || type === 'down') {
       var offsetX = (window.innerWidth - evt.target.offsetWidth) / 2;
-      spotLight.set(x - offsetX, y);
+      mouseX = x - offsetX;
+      mouseY = y;
+    }
+
+    if (type === 'down') {
+      currentPoints.forEach(playLead);
+      updateConnections(currentPoints);
     }
     evt.preventDefault();
   }
