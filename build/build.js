@@ -97,7 +97,7 @@ var sketch = {
 
     if (type === 'down') {
       spotLight.setRadius(spotLight.radius - 2);
-        currentPoints.forEach(playLead);
+      currentPoints.forEach(playLead);
       connections.update(currentPoints);
     } else if (type === 'up') {
       spotLight.setRadius(spotLight.radius + 2);
