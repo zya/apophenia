@@ -18,7 +18,8 @@
   },
   "scripts": {
     "watch": "watchify index.js -o build/build.js",
-    "build": "browserify index.js -o build/build.js"
+    "build": "browserify index.js -o build/build.js",
+    "update-pages": "git checkout gh-pages && git rebase master && git push origin gh-pages && git checout master"
   },
   "author": "",
   "license": "ISC"
