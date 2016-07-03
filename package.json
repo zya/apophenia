@@ -10,6 +10,7 @@
     "ptjs": "github:williamngan/pt",
     "random-float": "^1.0.0",
     "random-int": "^1.0.0",
+    "simplex-noise": "^2.2.0",
     "teoria": "^2.2.0"
   },
   "devDependencies": {

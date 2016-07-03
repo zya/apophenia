@@ -30,7 +30,7 @@ var mouseY = 0;
 var easingStrength = 0.18;
 
 var sketch = {
-  animate: function () {
+  animate: function (time, fps, ctx) {
     //draw spotlight
     spotLight.x += (mouseX - spotLight.x) * easingStrength;
     spotLight.y += (mouseY - spotLight.y) * easingStrength;
@@ -38,7 +38,7 @@ var sketch = {
     form.circle(spotLight);
 
     //draw connections
-    connections.draw(pairsInsideSpotlight);
+    connections.draw(pairsInsideSpotlight, ctx);
 
     //randomise points movements
     points.forEach(randomisePoint);
@@ -55,7 +55,7 @@ var sketch = {
 
     //draw connections inside the spot light
     var temporaryPairsInsideCircle = [];
-    drawConnectionsInside(pointsInsideCircle, temporaryPairsInsideCircle);
+    drawConnectionsInside(pointsInsideCircle, temporaryPairsInsideCircle, ctx);
     pairsInsideSpotlight = temporaryPairsInsideCircle;
 
     //draw points
