@@ -14,10 +14,11 @@
   },
   "devDependencies": {
     "browserify": "^13.0.0",
+    "concurrently": "^2.1.0",
     "watchify": "^3.7.0"
   },
   "scripts": {
-    "watch": "watchify index.js -o build/build.js",
+    "watch": "concurrently 'watchify index.js -o build/build.js' 'live-server'",
     "build": "browserify index.js -o build/build.js",
     "update-pages": "git checkout gh-pages && git rebase master && git push origin gh-pages && git checkout master"
   },
