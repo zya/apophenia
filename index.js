@@ -6,6 +6,7 @@ var pt = require('./lib/pt');
 var colours = require('./lib/colours');
 
 var createPoints = require('./lib/createPoints');
+var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
 var drawConnectionsInside = require('./lib/drawConnectionsInside');
 var randomisePoint = require('./lib/randomisePoint');
 var intersect = require('./lib/intersectSpotlightAndPoints');
@@ -29,8 +30,9 @@ var mouseX = 0;
 var mouseY = 0;
 var easingStrength = 0.18;
 
+
 var sketch = {
-  animate: function () {
+  animate: function() {
     //draw spotlight
     spotLight.x += (mouseX - spotLight.x) * easingStrength;
     spotLight.y += (mouseY - spotLight.y) * easingStrength;
@@ -55,8 +57,9 @@ var sketch = {
 
     //draw connections inside the spot light
     var temporaryPairsInsideCircle = [];
-    drawConnectionsInside(pointsInsideCircle, temporaryPairsInsideCircle);
+    updateTemporaryPairs(pointsInsideCircle, temporaryPairsInsideCircle);
     pairsInsideSpotlight = temporaryPairsInsideCircle;
+    drawConnectionsInside(pointsInsideCircle);
 
     //draw points
     points.forEach(drawPoint);
@@ -71,23 +74,23 @@ var sketch = {
     //update the current points
     currentPoints = pointsInsideCircle;
   },
-  onMouseAction: function (type, x, y) {
+  onMouseAction: function(type, x, y) {
     switch (type) {
-    case 'move':
-      mouseX = x;
-      mouseY = y;
-      break;
-    case 'down':
-      spotLight.setRadius(spotLight.radius - 2);
-      currentPoints.forEach(playLead);
-      connections.update(currentPoints);
-      break;
-    case 'up':
-      spotLight.setRadius(spotLight.radius + 2);
-      break;
+      case 'move':
+        mouseX = x;
+        mouseY = y;
+        break;
+      case 'down':
+        spotLight.setRadius(spotLight.radius - 2);
+        currentPoints.forEach(playLead);
+        connections.update(currentPoints);
+        break;
+      case 'up':
+        spotLight.setRadius(spotLight.radius + 2);
+        break;
     }
   },
-  onTouchAction: function (type, x, y, evt) {
+  onTouchAction: function(type, x, y, evt) {
     if (type === 'move' || type === 'down') {
       var offsetX = (window.innerWidth - evt.target.offsetWidth) / 2;
       mouseX = x - offsetX;
@@ -106,12 +109,12 @@ var sketch = {
   }
 };
 
-window.addEventListener('resize', function () {
+window.addEventListener('resize', function() {
   spotLight.radius = space.size.x / spotLightRatio;
   points = createPoints(50);
 });
 
-window.addEventListener('mousemove', function (evt) {
+window.addEventListener('mousemove', function(evt) {
   if (evt.target.id !== 'pt') {}
 });
 
