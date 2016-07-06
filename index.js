@@ -13,6 +13,7 @@ var change = require('./lib/changeHandler');
 var playLead = require('./lib/playLead');
 var drawPoint = require('./lib/drawPoint');
 var connections = require('./lib/connections');
+var explosions = require('./lib/explosions');
 
 var space = pt.space;
 var form = pt.form;
@@ -31,6 +32,11 @@ var easingStrength = 0.18;
 
 var sketch = {
   animate: function() {
+    // draw explosion circles
+    explosions.draw();
+    // clean up the explosion circles
+    explosions.clean();
+
     //draw spotlight
     spotLight.x += (mouseX - spotLight.x) * easingStrength;
     spotLight.y += (mouseY - spotLight.y) * easingStrength;
@@ -82,6 +88,7 @@ var sketch = {
         spotLight.setRadius(spotLight.radius - 2);
         currentPoints.forEach(playLead);
         connections.update(currentPoints);
+        explosions.add();
         break;
       case 'up':
         spotLight.setRadius(spotLight.radius + 2);
@@ -99,6 +106,7 @@ var sketch = {
       spotLight.setRadius(spotLight.radius - 2);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
+      explosions.add();
     } else if (type === 'up') {
       spotLight.setRadius(spotLight.radius + 2);
     }
