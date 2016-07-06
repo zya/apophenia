@@ -19,7 +19,7 @@ var form = pt.form;
 var spotLight = pt.spotLight;
 var spotLightRatio = pt.spotLightRatio;
 
-var numberOfRandomPoints = 90;
+var numberOfRandomPoints = 200;
 var points = createPoints(numberOfRandomPoints);
 var currentlyPlaying = [];
 var currentPoints = [];

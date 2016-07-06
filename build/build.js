@@ -20,7 +20,7 @@ var form = pt.form;
 var spotLight = pt.spotLight;
 var spotLightRatio = pt.spotLightRatio;
 
-var numberOfRandomPoints = 90;
+var numberOfRandomPoints = 200;
 var points = createPoints(numberOfRandomPoints);
 var currentlyPlaying = [];
 var currentPoints = [];
@@ -236,14 +236,17 @@ var lib = require('./pt').lib;
 var connections = [];
 var pairs = [];
 var connectionsInside = [];
+var triangles = [];
+var trianglesInside = [];
 
 module.exports.update = function(points) {
-  updateConnections(points, pairs, connections);
+  updateConnections(points, pairs, connections, triangles);
 };
 
 module.exports.updateInsideConnections = function(points) {
   connectionsInside = [];
-  updateConnections(points, [], connectionsInside);
+  trianglesInside = [];
+  updateConnections(points, [], connectionsInside, trianglesInside);
 };
 
 module.exports.draw = function(pairsInsideSpotlight) {
@@ -263,6 +266,17 @@ module.exports.draw = function(pairsInsideSpotlight) {
 
     var line = new lib.Line(connection.from).to(connection.to);
     form.line(line);
+  });
+};
+
+module.exports.drawTriangles = function() {
+  triangles.forEach(function(triplet) {
+    var tri = new lib.Triangle(triplet[0]);
+    tri.to(triplet[1], triplet[2]);
+
+    form.stroke(false);
+    form.fill(colours.orange);
+    form.triangle(tri);
   });
 };
 
@@ -485,10 +499,10 @@ module.exports = playLead;
 'use strict';
 
 var pt = require('ptjs');
-var spotLightRatio = 20;
+var spotLightRatio = 18;
 
 var background = new pt.Color(0.4, 8.6, 15.3).setMode('rgb');
-var space = new pt.CanvasSpace('canvas', background.rgb()).display('#pt', function () {}, true);
+var space = new pt.CanvasSpace('canvas', background.rgb()).display('#pt', function() {}, true);
 space.autoResize(true);
 var form = new pt.Form(space);
 var spotLight = new pt.Circle(250, 250).setRadius(space.size.x / spotLightRatio);
@@ -548,9 +562,9 @@ function preparePointsForTriangulation(point) {
   return [point.x, point.y];
 }
 
-function isInRange(point, triangles, index) {
-  var isInXRange = point.x > triangles[index][0] - findingMargin && point.x < triangles[index][0] + findingMargin;
-  var isInYRange = point.y > triangles[index][1] - findingMargin && point.y < triangles[index][1] + findingMargin;
+function isInRange(point, temporaryTriangles, index) {
+  var isInXRange = point.x > temporaryTriangles[index][0] - findingMargin && point.x < temporaryTriangles[index][0] + findingMargin;
+  var isInYRange = point.y > temporaryTriangles[index][1] - findingMargin && point.y < temporaryTriangles[index][1] + findingMargin;
   return isInXRange && isInYRange;
 }
 
@@ -573,24 +587,26 @@ function createConnection(pairs, connections, point1, point2) {
   }
 }
 
-function updateConnections(points, pairs, connections) {
+function updateConnections(points, pairs, connections, triangles) {
   if (points.length < 2) return;
 
   points.forEach(setConnectedToTrue);
 
   var pointsForTriangulation = points.map(preparePointsForTriangulation);
   var delaunay = new Delaunay(pointsForTriangulation);
-  var triangles = delaunay.triangulate();
+  var temporaryTriangles = delaunay.triangulate();
 
-  if (triangles.length > 0) {
-    for (var i = 0; i < triangles.length; i += 3) {
-      var anchorIndex = _.findIndex(points, _.partial(isInRange, _, triangles, i));
-      var firstPointIndex = _.findIndex(points, _.partial(isInRange, _, triangles, i + 1));
-      var secondPointIndex = _.findIndex(points, _.partial(isInRange, _, triangles, i + 2));
+  if (temporaryTriangles.length > 0) {
+    for (var i = 0; i < temporaryTriangles.length; i += 3) {
+      var anchorIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i));
+      var firstPointIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i + 1));
+      var secondPointIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i + 2));
 
       var anchor = points[anchorIndex];
       var firstPoint = points[firstPointIndex];
       var secondPoint = points[secondPointIndex];
+
+      triangles.push([anchor, firstPoint, secondPoint]);
 
       createConnection(pairs, connections, anchor, firstPoint);
       createConnection(pairs, connections, anchor, secondPoint);
