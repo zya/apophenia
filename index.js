@@ -7,7 +7,6 @@ var colours = require('./lib/colours');
 
 var createPoints = require('./lib/createPoints');
 var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
-var drawConnectionsInside = require('./lib/drawConnectionsInside');
 var randomisePoint = require('./lib/randomisePoint');
 var intersect = require('./lib/intersectSpotlightAndPoints');
 var change = require('./lib/changeHandler');
@@ -29,7 +28,6 @@ var pairsInsideSpotlight = [];
 var mouseX = 0;
 var mouseY = 0;
 var easingStrength = 0.18;
-
 
 var sketch = {
   animate: function() {
@@ -59,7 +57,6 @@ var sketch = {
     var temporaryPairsInsideCircle = [];
     updateTemporaryPairs(pointsInsideCircle, temporaryPairsInsideCircle);
     pairsInsideSpotlight = temporaryPairsInsideCircle;
-    drawConnectionsInside(pointsInsideCircle);
 
     //draw points
     points.forEach(drawPoint);
@@ -69,6 +66,7 @@ var sketch = {
       var toRemove = _.difference(currentPoints, pointsInsideCircle);
       var toAdd = _.difference(pointsInsideCircle, currentPoints);
       change(toAdd, toRemove, currentlyPlaying);
+      connections.updateInsideConnections(pointsInsideCircle);
     }
 
     //update the current points
