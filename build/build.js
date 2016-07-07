@@ -207,34 +207,49 @@ module.exports = change;
 'use strict';
 
 var _ = require('lodash');
+var randomInt = require('random-int');
 
-var red = '#E71D36';
-var lightBlue = '#2EC4B6';
-var playingCircleSize = 3.8;
+var colours = require('./colours');
+
+var playingCircleSize = 4.5;
+var connectedPointSize = 2.5;
+
+var orange = colours.orange.hex();
+var red = colours.red.hex();
+var lightBlue = colours.lightBlue.hex();
 
 function changePointColour(point) {
-  if (_.isEqual(point.colour, red)) point.colour = lightBlue;
-  else point.colour = red;
+  if (_.isEqual(point.colour, orange) || _.isEqual(point.colour, red)) point.colour = lightBlue;
+  else point.colour = randomInt(0, 10) > 5 ? orange : red;
 
   point.circle.setRadius(playingCircleSize);
+  point.connected = true;
   setTimeout(function () {
-    point.circle.setRadius(1);
+    point.circle.setRadius(connectedPointSize);
   }, 200);
 }
 
 module.exports = changePointColour;
 
-},{"lodash":119}],5:[function(require,module,exports){
+},{"./colours":5,"lodash":119,"random-int":141}],5:[function(require,module,exports){
 'use strict';
+
+var pt = require('./pt');
+
+var color = pt.lib.Color;
 
 module.exports = {
   white: '#FDFFFC',
-  orange: '#FF9F1C',
-  darkGrey: '#353535',
-  darkNavyBlue: '#011627'
+  orange: new color(255, 159, 28),
+  darkGrey: new color(61, 61, 61),
+  lighterGrey: new color(180, 180, 180),
+  darkNavyBlue: new color(1, 22, 39),
+  lightBlue: new color(46, 196, 182),
+  darkerBlue: new color(48, 39, 199),
+  red: new color(231, 29, 54)
 };
 
-},{}],6:[function(require,module,exports){
+},{"./pt":16}],6:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -259,16 +274,16 @@ var sines = [];
 function updateSines() {
   var now = Date.now();
 
-  sines[0] = Math.abs(Math.sin(now * 0.005)) * 0.6;
+  sines[0] = Math.abs(Math.sin(now * 0.0005)) * 0.6;
   sines[1] = Math.abs(Math.sin(now * 0.00015));
   sines[2] = Math.abs(Math.sin(now * 0.00039));
-  sines[3] = Math.abs(Math.sin(now * 0.006)) * 0.9;
+  sines[3] = Math.abs(Math.sin(now * 0.0006)) * 0.9;
   sines[4] = Math.abs(Math.sin(now * 0.0005));
   sines[5] = Math.abs(Math.sin(now * 0.0006));
   sines[6] = Math.abs(Math.sin(now * 0.0007));
   sines[7] = Math.abs(Math.sin(now * 0.0008));
   sines[8] = Math.abs(Math.sin(now * 0.0009));
-  sines[9] = Math.abs(Math.sin(now * 0.007)) * 0.7;
+  sines[9] = Math.abs(Math.sin(now * 0.0007)) * 0.7;
 }
 
 function drawTriangle(triplet) {
@@ -280,8 +295,9 @@ function drawTriangle(triplet) {
   form.triangle(tri);
 }
 
-function drawConnection(connection, colour, opacity) {
-  form.stroke(colour, opacity);
+function drawConnection(connection, colour, opacity, width) {
+  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + opacity + ')';
+  form.stroke(c, width);
   form.fill(false);
 
   var line = new lib.Line(connection.from).to(connection.to);
@@ -308,20 +324,19 @@ module.exports.draw = function (pairsInsideSpotlight) {
   connections.forEach(function (connection, index) {
     if (_.includes(pairsInsideSpotlight, connection.id)) return;
 
-    drawConnection(connection, colours.darkGrey, 1.0);
+    drawConnection(connection, colours.darkGrey, 0.6, 1.0);
 
     if (connection.special) {
       var sin = sines[index % 10];
-      drawConnection(connection, 'blue', parseFloat(sin));
+      drawConnection(connection, colours.darkerBlue, sin, 1.0);
     }
   });
 
-  connectionsInside.forEach(function (connection, index) {
-    drawConnection(connection, colours.orange, 1.0);
+  connectionsInside.forEach(function (connection) {
+    drawConnection(connection, colours.lighterGrey, 1.0, 0.9);
 
     if (connection.special) {
-      var sin = sines[index % 10];
-      drawConnection(connection, 'blue', parseFloat(sin));
+      drawConnection(connection, colours.orange, 1.0, 1.0);
     }
   });
 };
@@ -346,7 +361,8 @@ module.exports = new window.AudioContext();
 var pt = require('./pt');
 var lib = pt.lib;
 var space = pt.space;
-var lightBlue = '#2EC4B6';
+var colours = require('./colours');
+var lightBlue = colours.lightBlue.hex();
 var randomInt = require('random-int');
 var uuid = require('node-uuid');
 
@@ -432,18 +448,23 @@ function createPoints(amount) {
 
 module.exports = createPoints;
 
-},{"./music":14,"./pt":16,"node-uuid":123,"random-int":141}],9:[function(require,module,exports){
+},{"./colours":5,"./music":14,"./pt":16,"node-uuid":123,"random-int":141}],9:[function(require,module,exports){
 'use strict';
 
 var form = require('./pt').form;
+
 var playingCircleSize = 3.8;
+var connectedPointSize = 2.2;
 
 function drawPoint(point) {
   form.fill(point.colour).stroke(false);
   if (point.intersected && point.circle.radius < playingCircleSize) {
-    point.circle.setRadius(2.2);
+    point.circle.setRadius(3.0);
   } else if (!point.intersected && point.circle.radius < playingCircleSize) {
-    point.circle.setRadius(1.1);
+    point.circle.setRadius(1.3);
+    if (point.connected) {
+      point.circle.setRadius(connectedPointSize);
+    }
   }
   form.circle(point.circle);
 }
@@ -665,12 +686,11 @@ module.exports.push = function (item) {
 
 var _ = require('lodash');
 var Delaunay = require('faster-delaunay');
+var randomInt = require('random-int');
+
+var colours = require('./colours');
 
 var findingMargin = 2;
-
-function setConnectedToTrue(point) {
-  point.connected = true;
-}
 
 function preparePointsForTriangulation(point) {
   return [point.x, point.y];
@@ -700,17 +720,21 @@ function createConnection(pairs, connections, point1, point2, specialConnections
 
     if (_.includes(specialConnections, pairNormal) || _.includes(specialConnections, pairReverse)) {
       connection.special = true;
+      if (randomInt(0, 10) > 8) {
+        connection.colour = colours.orange;
+      } else {
+        connection.colour = colours.darkerBlue;
+      }
     }
 
     pairs.push(pairNormal);
+    pairs.push(pairReverse);
     connections.push(connection);
   }
 }
 
 function updateConnections(points, pairs, connections, triangles, specialConnections) {
   if (points.length < 2) return;
-
-  points.forEach(setConnectedToTrue);
 
   var pointsForTriangulation = points.map(preparePointsForTriangulation);
   var delaunay = new Delaunay(pointsForTriangulation);
@@ -740,7 +764,7 @@ function updateConnections(points, pairs, connections, triangles, specialConnect
 
 module.exports = updateConnections;
 
-},{"faster-delaunay":106,"lodash":119}],20:[function(require,module,exports){
+},{"./colours":5,"faster-delaunay":106,"lodash":119,"random-int":141}],20:[function(require,module,exports){
 'use strict';
 
 function updateTemporaryPairs(points, temporaryPairs) {
