@@ -14,6 +14,7 @@ var playLead = require('./lib/playLead');
 var drawPoint = require('./lib/drawPoint');
 var connections = require('./lib/connections');
 var explosions = require('./lib/explosions');
+var globals = require('./lib/globals');
 
 var space = pt.space;
 var form = pt.form;
@@ -28,22 +29,28 @@ var pairsInsideSpotlight = [];
 
 var mouseX = 0;
 var mouseY = 0;
-var easingStrength = 0.18;
+var easingStrength = 0.15;
+var white = colours.white.hex();
 
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 
+
 var sketch = {
   animate: function () {
+    var now = new Date().getTime();
+    globals.setDelta(now);
+
     // draw explosion circles
     explosions.draw();
     // clean up the explosion circles
     explosions.clean();
 
     //draw spotlight
-    spotLight.x += (mouseX - spotLight.x) * easingStrength;
-    spotLight.y += (mouseY - spotLight.y) * easingStrength;
-    form.fill(colours.white, 0.1).stroke(false);
+    var delta = globals.getDelta();
+    spotLight.x += (mouseX - spotLight.x) * (easingStrength * delta);
+    spotLight.y += (mouseY - spotLight.y) * (easingStrength * delta);
+    form.fill(white, 0.1).stroke(false);
     form.circle(spotLight);
 
     //draw connections
