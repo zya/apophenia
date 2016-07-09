@@ -1,0 +1,11 @@
+{
+  "spotLightSizeRatio": 20,
+  "easingStrength": 0.15,
+  "numberOfRandomPoints": 150,
+  "sizeChangeOnClick": 2,
+  "connectionsOpacity": 0.6,
+  "connectionsWidth": 0.9,
+  "explosionStartOpacity": 0.4,
+  "explosionRateOpacity": 0.006,
+  "explosionRate": 14
+}

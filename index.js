@@ -15,26 +15,26 @@ var drawPoint = require('./lib/drawPoint');
 var connections = require('./lib/connections');
 var explosions = require('./lib/explosions');
 var globals = require('./lib/globals');
+var config = require('./config');
 
 var space = pt.space;
 var form = pt.form;
 var spotLight = pt.spotLight;
-var spotLightRatio = pt.spotLightRatio;
+var spotLightRatio = config.spotLightSizeRatio;
 
-var numberOfRandomPoints = 130;
-var points = createPoints(numberOfRandomPoints);
+var points = createPoints(config.numberOfRandomPoints);
 var currentlyPlaying = [];
 var currentPoints = [];
 var pairsInsideSpotlight = [];
 
 var mouseX = 0;
 var mouseY = 0;
-var easingStrength = 0.15;
+var easingStrength = config.easingStrength;
+var sizeChangeOnClick = config.sizeChangeOnClick;
 var white = colours.white.hex();
 
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
-
 
 var sketch = {
   animate: function () {
@@ -95,13 +95,13 @@ var sketch = {
       mouseY = y;
       break;
     case 'down':
-      spotLight.setRadius(spotLight.radius - 2);
+      spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
       explosions.add();
       break;
     case 'up':
-      spotLight.setRadius(spotLight.radius + 2);
+      spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
       break;
     }
   },
@@ -113,12 +113,12 @@ var sketch = {
     }
 
     if (type === 'down') {
-      spotLight.setRadius(spotLight.radius - 2);
+      spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
       explosions.add();
     } else if (type === 'up') {
-      spotLight.setRadius(spotLight.radius + 2);
+      spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
     }
 
     evt.preventDefault();
@@ -127,7 +127,7 @@ var sketch = {
 
 window.addEventListener('resize', function () {
   spotLight.radius = space.size.x / spotLightRatio;
-  points = createPoints(50);
+  points = createPoints(config.numberOfRandomPoints);
 });
 
 window.addEventListener('mousemove', function (evt) {
