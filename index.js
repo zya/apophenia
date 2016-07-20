@@ -13,7 +13,7 @@ var change = require('./lib/changeHandler');
 var playLead = require('./lib/playLead');
 var drawPoint = require('./lib/drawPoint');
 var connections = require('./lib/connections');
-var explosions = require('./lib/explosions');
+var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
 
@@ -41,12 +41,12 @@ var sketch = {
     var now = new Date().getTime();
     globals.setDelta(now);
 
-    // draw explosion circles
-    explosions.draw();
-    // clean up the explosion circles
-    explosions.clean();
+    // draw ripple circles
+    ripples.draw();
+    // clean up the ripple circles
+    ripples.clean();
     // detect collissions
-    explosions.detectCollisions(points);
+    ripples.detectCollisions(points);
 
     //draw spotlight
     var delta = globals.getDelta();
@@ -100,7 +100,7 @@ var sketch = {
       spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
-      explosions.add();
+      ripples.add();
       break;
     case 'up':
       spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
@@ -118,7 +118,7 @@ var sketch = {
       spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
-      explosions.add();
+      ripples.add();
     } else if (type === 'up') {
       spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
     }

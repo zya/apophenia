@@ -5,7 +5,7 @@
   "sizeChangeOnClick": 2,
   "connectionsOpacity": 0.6,
   "connectionsWidth": 0.9,
-  "explosionStartOpacity": 0.40,
-  "explosionRateOpacity": 0.003,
-  "explosionRate": 9
+  "rippleStartOpacity": 0.40,
+  "rippleRateOpacity": 0.003,
+  "rippleRate": 9
 }

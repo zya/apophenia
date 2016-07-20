@@ -6,9 +6,9 @@ module.exports={
   "sizeChangeOnClick": 2,
   "connectionsOpacity": 0.6,
   "connectionsWidth": 0.9,
-  "explosionStartOpacity": 0.40,
-  "explosionRateOpacity": 0.003,
-  "explosionRate": 9
+  "rippleStartOpacity": 0.40,
+  "rippleRateOpacity": 0.003,
+  "rippleRate": 9
 }
 
 },{}],2:[function(require,module,exports){
@@ -27,7 +27,7 @@ var change = require('./lib/changeHandler');
 var playLead = require('./lib/playLead');
 var drawPoint = require('./lib/drawPoint');
 var connections = require('./lib/connections');
-var explosions = require('./lib/explosions');
+var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
 
@@ -55,12 +55,12 @@ var sketch = {
     var now = new Date().getTime();
     globals.setDelta(now);
 
-    // draw explosion circles
-    explosions.draw();
-    // clean up the explosion circles
-    explosions.clean();
+    // draw ripple circles
+    ripples.draw();
+    // clean up the ripple circles
+    ripples.clean();
     // detect collissions
-    explosions.detectCollisions(points);
+    ripples.detectCollisions(points);
 
     //draw spotlight
     var delta = globals.getDelta();
@@ -114,7 +114,7 @@ var sketch = {
       spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
-      explosions.add();
+      ripples.add();
       break;
     case 'up':
       spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
@@ -132,7 +132,7 @@ var sketch = {
       spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
-      explosions.add();
+      ripples.add();
     } else if (type === 'up') {
       spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
     }
@@ -155,7 +155,7 @@ space.bindMouse();
 space.bindTouch();
 space.play();
 
-},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/explosions":12,"./lib/globals":13,"./lib/intersectSpotlightAndPoints":14,"./lib/playLead":17,"./lib/pt":18,"./lib/randomisePoint":19,"./lib/updateTemporaryPairs":22,"lodash":121}],3:[function(require,module,exports){
+},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":12,"./lib/intersectSpotlightAndPoints":13,"./lib/playLead":16,"./lib/pt":17,"./lib/randomisePoint":18,"./lib/ripples":19,"./lib/updateTemporaryPairs":22,"lodash":121}],3:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -187,7 +187,7 @@ load('./assets/ir3.mp3', function (buffer) {
 module.exports.synthDestination = synthGain;
 module.exports.leadDestination = leadGain;
 
-},{"./context":8,"./load":15}],4:[function(require,module,exports){
+},{"./context":8,"./load":14}],4:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -371,7 +371,7 @@ module.exports.drawSpecialShape = function () {
   specialConnections.forEach(_.partial(drawConnection, _, 'red', 0.3));
 };
 
-},{"../config":1,"./colours":6,"./pt":18,"./updateConnections":21,"lodash":121}],8:[function(require,module,exports){
+},{"../config":1,"./colours":6,"./pt":17,"./updateConnections":21,"lodash":121}],8:[function(require,module,exports){
 'use strict';
 
 window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
@@ -471,7 +471,7 @@ function createPoints(amount) {
 
 module.exports = createPoints;
 
-},{"./colours":6,"./music":16,"./pt":18,"node-uuid":125,"random-int":143}],10:[function(require,module,exports){
+},{"./colours":6,"./music":15,"./pt":17,"node-uuid":125,"random-int":143}],10:[function(require,module,exports){
 'use strict';
 
 var form = require('./pt').form;
@@ -504,7 +504,7 @@ function drawPoint(point) {
 
 module.exports = drawPoint;
 
-},{"./globals":13,"./pt":18}],11:[function(require,module,exports){
+},{"./globals":12,"./pt":17}],11:[function(require,module,exports){
 'use strict';
 
 module.exports = function (audioParam, now, opts) {
@@ -537,92 +537,6 @@ module.exports = function (audioParam, now, opts) {
 },{}],12:[function(require,module,exports){
 'use strict';
 
-var _ = require('lodash');
-var randomF = require('random-float');
-var pt = require('./pt');
-var colours = require('./colours');
-var globals = require('./globals');
-var config = require('../config');
-var spotLight = pt.spotLight;
-var form = pt.form;
-var space = pt.space;
-
-var circles = [];
-var white = colours.white;
-var collisions = [];
-
-function addExplosionCircle() {
-  var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
-  circle.opacity = config.explosionStartOpacity;
-  circle.previousIntersected = [];
-  circle.timestamp = Date.now();
-  circles.push(circle);
-}
-
-function drawExplosion(circle) {
-  var delta = globals.getDelta();
-
-  circle.opacity -= config.explosionRateOpacity * delta;
-  if (circle.opacity < 0 || circle.opacity > 1 || circle.opacity < 0.01) {
-    circle.opacity = 0.01;
-  }
-
-  circle.radius += (config.explosionRate * (circle.opacity * 2.0)) * delta;
-
-  form.fill(false);
-  var c = 'rgba(' + white.x + ',' + white.y + ',' + white.z + ',' + circle.opacity.toFixed(2) + ')';
-  form.stroke(c);
-  form.circle(circle);
-}
-
-module.exports.add = addExplosionCircle;
-
-module.exports.draw = function () {
-  circles.forEach(drawExplosion);
-  collisions.forEach(function (collision) {
-    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(2, (collision.circle.opacity * 35))));
-    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(2, (collision.circle.opacity * 35))));
-  });
-
-  //clean up collisions
-  collisions = _.filter(collisions, function (collision) {
-    return collision.timestamp > Date.now() - 200;
-  });
-
-  //clean up circles
-  circles = _.filter(circles, function (circle) {
-    return circle.timestamp > Date.now() - 3000;
-  });
-};
-
-module.exports.detectCollisions = function (points) {
-  circles.forEach(function (circle) {
-    points.forEach(function (point) {
-      var dx = circle.x - point.circle.x;
-      var dy = circle.y - point.circle.y;
-      var distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < circle.radius + point.circle.radius && distance > (circle.radius - 10) + point.circle.radius) {
-        collisions.push({
-          circle: circle,
-          point: point,
-          dx: (dx / space.size.x) * -1,
-          dy: (dy / space.size.y) * -1,
-          timestamp: Date.now()
-        });
-      }
-    });
-  });
-};
-
-module.exports.clean = function () {
-  circles = _.reject(circles, function (circle) {
-    return circle.radius > 1400;
-  });
-};
-
-},{"../config":1,"./colours":6,"./globals":13,"./pt":18,"lodash":121,"random-float":142}],13:[function(require,module,exports){
-'use strict';
-
 var timeAtPreviousFrame;
 var delta = 1;
 
@@ -636,7 +550,7 @@ module.exports.getDelta = function () {
   return delta;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 function intersectSpotlightAndPoints(spotLight, points) {
@@ -655,7 +569,7 @@ function intersectSpotlightAndPoints(spotLight, points) {
 
 module.exports = intersectSpotlightAndPoints;
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -671,7 +585,7 @@ module.exports = function (path, success, failure) {
   request.send();
 };
 
-},{"./context":8}],16:[function(require,module,exports){
+},{"./context":8}],15:[function(require,module,exports){
 'use strict';
 
 var teoria = require('teoria');
@@ -682,7 +596,7 @@ var notes = scale.notes();
 
 module.exports.notes = notes;
 
-},{"teoria":168}],17:[function(require,module,exports){
+},{"teoria":168}],16:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
@@ -724,7 +638,7 @@ function playLead(point, index) {
 
 module.exports = playLead;
 
-},{"./audio":3,"./changePointColour":5,"./context":8,"./envelope":11,"random-float":142}],18:[function(require,module,exports){
+},{"./audio":3,"./changePointColour":5,"./context":8,"./envelope":11,"random-float":142}],17:[function(require,module,exports){
 'use strict';
 
 var pt = require('ptjs');
@@ -744,7 +658,7 @@ module.exports.spotLight = spotLight;
 module.exports.spotLightRatio = spotLightRatio;
 module.exports.lib = pt;
 
-},{"../config":1,"./colours":6,"ptjs":135}],19:[function(require,module,exports){
+},{"../config":1,"./colours":6,"ptjs":135}],18:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
@@ -758,7 +672,93 @@ function randomisePoint(point) {
 
 module.exports = randomisePoint;
 
-},{"random-float":142}],20:[function(require,module,exports){
+},{"random-float":142}],19:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var randomF = require('random-float');
+var pt = require('./pt');
+var colours = require('./colours');
+var globals = require('./globals');
+var config = require('../config');
+var spotLight = pt.spotLight;
+var form = pt.form;
+var space = pt.space;
+
+var circles = [];
+var white = colours.white;
+var collisions = [];
+
+function addrippleCircle() {
+  var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
+  circle.opacity = config.rippleStartOpacity;
+  circle.previousIntersected = [];
+  circle.timestamp = Date.now();
+  circles.push(circle);
+}
+
+function drawripple(circle) {
+  var delta = globals.getDelta();
+
+  circle.opacity -= config.rippleRateOpacity * delta;
+  if (circle.opacity < 0 || circle.opacity > 1 || circle.opacity < 0.01) {
+    circle.opacity = 0.01;
+  }
+
+  circle.radius += (config.rippleRate * (circle.opacity * 2.0)) * delta;
+
+  form.fill(false);
+  var c = 'rgba(' + white.x + ',' + white.y + ',' + white.z + ',' + circle.opacity.toFixed(2) + ')';
+  form.stroke(c);
+  form.circle(circle);
+}
+
+module.exports.add = addrippleCircle;
+
+module.exports.draw = function () {
+  circles.forEach(drawripple);
+  collisions.forEach(function (collision) {
+    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(2, (collision.circle.opacity * 35))));
+    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(2, (collision.circle.opacity * 35))));
+  });
+
+  //clean up collisions
+  collisions = _.filter(collisions, function (collision) {
+    return collision.timestamp > Date.now() - 200;
+  });
+
+  //clean up circles
+  circles = _.filter(circles, function (circle) {
+    return circle.timestamp > Date.now() - 3000;
+  });
+};
+
+module.exports.detectCollisions = function (points) {
+  circles.forEach(function (circle) {
+    points.forEach(function (point) {
+      var dx = circle.x - point.circle.x;
+      var dy = circle.y - point.circle.y;
+      var distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < circle.radius + point.circle.radius && distance > (circle.radius - 10) + point.circle.radius) {
+        collisions.push({
+          circle: circle,
+          point: point,
+          dx: (dx / space.size.x) * -1,
+          dy: (dy / space.size.y) * -1,
+          timestamp: Date.now()
+        });
+      }
+    });
+  });
+};
+
+module.exports.clean = function () {
+  circles = _.reject(circles, function (circle) {
+    return circle.radius > 1400;
+  });
+};
+
+},{"../config":1,"./colours":6,"./globals":12,"./pt":17,"lodash":121,"random-float":142}],20:[function(require,module,exports){
 'use strict';
 
 var trash = [];
