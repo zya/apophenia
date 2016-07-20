@@ -6,9 +6,9 @@ module.exports={
   "sizeChangeOnClick": 2,
   "connectionsOpacity": 0.6,
   "connectionsWidth": 0.9,
-  "explosionStartOpacity": 0.4,
-  "explosionRateOpacity": 0.006,
-  "explosionRate": 14
+  "explosionStartOpacity": 0.40,
+  "explosionRateOpacity": 0.003,
+  "explosionRate": 9
 }
 
 },{}],2:[function(require,module,exports){
@@ -59,6 +59,8 @@ var sketch = {
     explosions.draw();
     // clean up the explosion circles
     explosions.clean();
+    // detect collissions
+    explosions.detectCollisions(points);
 
     //draw spotlight
     var delta = globals.getDelta();
@@ -398,6 +400,7 @@ function createPoint(x, y) {
   point.colour = lightBlue;
   point.circle = new lib.Circle(250, 250).setRadius(1.1);
   point.connected = false;
+  point.originalPosition = new lib.Vector(x, y);
   return point;
 }
 
@@ -472,11 +475,14 @@ module.exports = createPoints;
 'use strict';
 
 var form = require('./pt').form;
+var globals = require('./globals');
 
 var playingCircleSize = 3.8;
 var connectedPointSize = 2.2;
 
 function drawPoint(point) {
+  var delta = globals.getDelta();
+
   form.fill(point.colour).stroke(false);
   if (point.intersected && point.circle.radius < playingCircleSize) {
     point.circle.setRadius(3.0);
@@ -486,12 +492,19 @@ function drawPoint(point) {
       point.circle.setRadius(connectedPointSize);
     }
   }
+
+  var targetX = (point.originalPosition.x - point.x) * (0.05 * delta);
+  var targetY = (point.originalPosition.y - point.y) * (0.05 * delta);
+
+  point.x += targetX;
+  point.y += targetY;
+
   form.circle(point.circle);
 }
 
 module.exports = drawPoint;
 
-},{"./pt":18}],11:[function(require,module,exports){
+},{"./globals":13,"./pt":18}],11:[function(require,module,exports){
 'use strict';
 
 module.exports = function (audioParam, now, opts) {
@@ -525,20 +538,24 @@ module.exports = function (audioParam, now, opts) {
 'use strict';
 
 var _ = require('lodash');
+var randomF = require('random-float');
 var pt = require('./pt');
 var colours = require('./colours');
 var globals = require('./globals');
 var config = require('../config');
 var spotLight = pt.spotLight;
 var form = pt.form;
+var space = pt.space;
 
 var circles = [];
 var white = colours.white;
+var collisions = [];
 
 function addExplosionCircle() {
   var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
   circle.opacity = config.explosionStartOpacity;
   circle.previousIntersected = [];
+  circle.timestamp = Date.now();
   circles.push(circle);
 }
 
@@ -550,7 +567,7 @@ function drawExplosion(circle) {
     circle.opacity = 0.01;
   }
 
-  circle.radius += config.explosionRate * delta;
+  circle.radius += (config.explosionRate * (circle.opacity * 2.0)) * delta;
 
   form.fill(false);
   var c = 'rgba(' + white.x + ',' + white.y + ',' + white.z + ',' + circle.opacity.toFixed(2) + ')';
@@ -562,15 +579,48 @@ module.exports.add = addExplosionCircle;
 
 module.exports.draw = function () {
   circles.forEach(drawExplosion);
+  collisions.forEach(function (collision) {
+    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(2, (collision.circle.opacity * 35))));
+    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(2, (collision.circle.opacity * 35))));
+  });
+
+  //clean up collisions
+  collisions = _.filter(collisions, function (collision) {
+    return collision.timestamp > Date.now() - 200;
+  });
+
+  //clean up circles
+  circles = _.filter(circles, function (circle) {
+    return circle.timestamp > Date.now() - 3000;
+  });
+};
+
+module.exports.detectCollisions = function (points) {
+  circles.forEach(function (circle) {
+    points.forEach(function (point) {
+      var dx = circle.x - point.circle.x;
+      var dy = circle.y - point.circle.y;
+      var distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < circle.radius + point.circle.radius && distance > (circle.radius - 10) + point.circle.radius) {
+        collisions.push({
+          circle: circle,
+          point: point,
+          dx: (dx / space.size.x) * -1,
+          dy: (dy / space.size.y) * -1,
+          timestamp: Date.now()
+        });
+      }
+    });
+  });
 };
 
 module.exports.clean = function () {
   circles = _.reject(circles, function (circle) {
     return circle.radius > 1400;
   });
-};;
+};
 
-},{"../config":1,"./colours":6,"./globals":13,"./pt":18,"lodash":121}],13:[function(require,module,exports){
+},{"../config":1,"./colours":6,"./globals":13,"./pt":18,"lodash":121,"random-float":142}],13:[function(require,module,exports){
 'use strict';
 
 var timeAtPreviousFrame;

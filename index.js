@@ -45,6 +45,8 @@ var sketch = {
     explosions.draw();
     // clean up the explosion circles
     explosions.clean();
+    // detect collissions
+    explosions.detectCollisions(points);
 
     //draw spotlight
     var delta = globals.getDelta();
