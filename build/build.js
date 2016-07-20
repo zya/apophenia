@@ -718,8 +718,8 @@ module.exports.add = addrippleCircle;
 module.exports.draw = function () {
   circles.forEach(drawripple);
   collisions.forEach(function (collision) {
-    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(2, (collision.circle.opacity * 35))));
-    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(2, (collision.circle.opacity * 35))));
+    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(5, (collision.circle.opacity * 35))));
+    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(5, (collision.circle.opacity * 35))));
   });
 
   //clean up collisions
