@@ -295,6 +295,7 @@ var specialConnections = [];
 var specialPairs = [];
 
 var sines = [];
+var discoveryPercentage = 0.0;
 
 function updateSines() {
   var now = Date.now();
@@ -328,6 +329,10 @@ function drawConnection(connection, colour, opacity, width) {
 
 module.exports.update = function (points) {
   updateConnections(points, pairs, connections, triangles, specialPairs);
+
+  var connectionsLength = _.filter(connections, 'special').length;
+  var allSpecialConnectionsLength = specialConnections.length;
+  discoveryPercentage = connectionsLength / allSpecialConnectionsLength;
 };
 
 module.exports.updateInsideConnections = function (points) {
@@ -369,6 +374,10 @@ module.exports.drawTriangles = function () {
 
 module.exports.drawSpecialShape = function () {
   specialConnections.forEach(_.partial(drawConnection, _, 'red', 0.3));
+};
+
+module.exports.getDiscoveryPercentage = function () {
+  return discoveryPercentage;
 };
 
 },{"../config":1,"./colours":6,"./pt":17,"./updateConnections":21,"lodash":121}],8:[function(require,module,exports){
@@ -718,8 +727,8 @@ module.exports.add = addrippleCircle;
 module.exports.draw = function () {
   circles.forEach(drawripple);
   collisions.forEach(function (collision) {
-    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(5, (collision.circle.opacity * 35))));
-    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(5, (collision.circle.opacity * 35))));
+    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(2, (collision.circle.opacity * 35))));
+    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(2, (collision.circle.opacity * 35))));
   });
 
   //clean up collisions
