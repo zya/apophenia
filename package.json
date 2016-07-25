@@ -11,7 +11,9 @@
     "ptjs": "github:williamngan/pt",
     "random-float": "^1.0.0",
     "random-int": "^1.0.0",
-    "teoria": "^2.2.0"
+    "stats.js": "^0.16.0",
+    "teoria": "^2.2.0",
+    "three": "^0.79.0"
   },
   "devDependencies": {
     "browserify": "^13.0.0",

@@ -1,12 +1,16 @@
 'use strict';
 
 var _ = require('lodash');
+var Stats = require('stats.js');
+
+var stats = new Stats();
 
 var pt = require('./lib/pt');
 var colours = require('./lib/colours');
 
 var createPoints = require('./lib/createPoints');
 var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
+var scene3d = require('./lib/scene3D');
 var randomisePoint = require('./lib/randomisePoint');
 var intersect = require('./lib/intersectSpotlightAndPoints');
 var change = require('./lib/changeHandler');
@@ -33,11 +37,18 @@ var easingStrength = config.easingStrength;
 var sizeChangeOnClick = config.sizeChangeOnClick;
 var white = colours.white.hex();
 
+stats.showPanel(0);
+document.body.appendChild(stats.dom);
+
+// initialise stuff
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
+scene3d.init(connections.getSpecialTriangles());
+// scene3d.displayCanvas(); //commented out for now 
 
 var sketch = {
   animate: function () {
+    stats.begin();
     var now = new Date().getTime();
     globals.setDelta(now);
 
@@ -89,6 +100,12 @@ var sketch = {
 
     //update the current points
     currentPoints = pointsInsideCircle;
+
+    // 3d stuff - commente out for now
+    // scene3d.updateMorph(Math.sin(Date.now() * 0.0005) * 0.04);
+    // scene3d.render();
+
+    stats.end();
   },
   onMouseAction: function (type, x, y) {
     switch (type) {
