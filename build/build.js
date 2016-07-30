@@ -34,8 +34,8 @@ var connections = require('./lib/connections');
 var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
-// var sine = require('./lib/sine');
-// var map = require('./lib/map');
+var sine = require('./lib/sine');
+var map = require('./lib/map');
 
 var space = pt.space;
 var form = pt.form;
@@ -60,7 +60,7 @@ document.body.appendChild(stats.dom);
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 scene3d.init(connections.getSpecialTriangles());
-// scene3d.displayCanvas(); //commented out for now
+scene3d.displayCanvas(); //commented out for now
 
 var sketch = {
   animate: function () {
@@ -119,10 +119,10 @@ var sketch = {
 
     // 3d stuff - commente out for now
 
-    // var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
-    // scene3d.updateMorph(m);
-    // scene3d.updateMorph(-0.01);
-    // scene3d.render();
+    var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
+    scene3d.updateMorph(m);
+    scene3d.updateMorph(-0.01);
+    scene3d.render();
 
     stats.end();
   },
@@ -178,7 +178,7 @@ space.bindMouse();
 space.bindTouch();
 space.play();
 
-},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":13,"./lib/intersectSpotlightAndPoints":14,"./lib/playLead":18,"./lib/pt":19,"./lib/randomisePoint":20,"./lib/ripples":21,"./lib/scene3D":22,"./lib/updateTemporaryPairs":26,"lodash":125,"stats.js":170}],3:[function(require,module,exports){
+},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":13,"./lib/intersectSpotlightAndPoints":14,"./lib/map":16,"./lib/playLead":18,"./lib/pt":19,"./lib/randomisePoint":20,"./lib/ripples":21,"./lib/scene3D":22,"./lib/sine":23,"./lib/updateTemporaryPairs":26,"lodash":125,"stats.js":170}],3:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');

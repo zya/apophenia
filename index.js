@@ -20,8 +20,8 @@ var connections = require('./lib/connections');
 var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
-// var sine = require('./lib/sine');
-// var map = require('./lib/map');
+var sine = require('./lib/sine');
+var map = require('./lib/map');
 
 var space = pt.space;
 var form = pt.form;
@@ -46,7 +46,7 @@ document.body.appendChild(stats.dom);
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 scene3d.init(connections.getSpecialTriangles());
-// scene3d.displayCanvas(); //commented out for now
+scene3d.displayCanvas(); //commented out for now
 
 var sketch = {
   animate: function () {
@@ -105,10 +105,10 @@ var sketch = {
 
     // 3d stuff - commente out for now
 
-    // var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
-    // scene3d.updateMorph(m);
-    // scene3d.updateMorph(-0.01);
-    // scene3d.render();
+    var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
+    scene3d.updateMorph(m);
+    scene3d.updateMorph(-0.01);
+    scene3d.render();
 
     stats.end();
   },
