@@ -107,26 +107,26 @@ var sketch = {
 
     var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
     scene3d.updateMorph(m);
-    scene3d.updateMorph(-0.01);
+    // scene3d.updateMorph(-0.01);
     scene3d.render();
 
     stats.end();
   },
   onMouseAction: function (type, x, y) {
     switch (type) {
-    case 'move':
-      mouseX = x;
-      mouseY = y;
-      break;
-    case 'down':
-      spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
-      currentPoints.forEach(playLead);
-      connections.update(currentPoints);
-      ripples.add();
-      break;
-    case 'up':
-      spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
-      break;
+      case 'move':
+        mouseX = x;
+        mouseY = y;
+        break;
+      case 'down':
+        spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
+        currentPoints.forEach(playLead);
+        connections.update(currentPoints);
+        ripples.add();
+        break;
+      case 'up':
+        spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
+        break;
     }
   },
   onTouchAction: function (type, x, y, evt) {
