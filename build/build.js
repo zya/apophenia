@@ -8,7 +8,9 @@ module.exports={
   "connectionsWidth": 0.9,
   "rippleStartOpacity": 0.40,
   "rippleRateOpacity": 0.003,
-  "rippleRate": 9
+  "rippleRate": 9,
+  "smallRippleRate": 1.4,
+  "smallRippleRateOpacity": 0.005
 }
 
 },{}],2:[function(require,module,exports){
@@ -70,8 +72,6 @@ var sketch = {
 
     // draw ripple circles
     ripples.draw();
-    // clean up the ripple circles
-    ripples.clean();
     // detect collissions
     ripples.detectCollisions(points);
 
@@ -749,6 +749,7 @@ var audio = require('./audio');
 var context = require('./context');
 var envelope = require('./envelope');
 var changePointColour = require('./changePointColour');
+var ripples = require('./ripples');
 
 function playLead(point, index) {
   var osc = context.createOscillator();
@@ -777,12 +778,13 @@ function playLead(point, index) {
 
   setTimeout(function () {
     changePointColour(point);
+    ripples.addSmallRipple(point);
   }, (startTime - context.currentTime) * 1000);
 }
 
 module.exports = playLead;
 
-},{"./audio":3,"./changePointColour":5,"./context":8,"./envelope":11,"random-float":146}],19:[function(require,module,exports){
+},{"./audio":3,"./changePointColour":5,"./context":8,"./envelope":11,"./ripples":21,"random-float":146}],19:[function(require,module,exports){
 'use strict';
 
 var pt = require('ptjs');
@@ -829,7 +831,8 @@ var spotLight = pt.spotLight;
 var form = pt.form;
 var space = pt.space;
 
-var circles = [];
+var ripples = [];
+var smallRipples = [];
 var white = colours.white;
 var collisions = [];
 
@@ -838,29 +841,39 @@ function addrippleCircle() {
   circle.opacity = config.rippleStartOpacity;
   circle.previousIntersected = [];
   circle.timestamp = Date.now();
-  circles.push(circle);
+  ripples.push(circle);
 }
 
-function drawripple(circle) {
+function addSmallRipple(point) {
+  var ripple = new pt.lib.Circle(point).setRadius(point.originalRadius);
+  ripple.opacity = config.rippleStartOpacity;
+  ripple.timestamp = Date.now();
+  smallRipples.push(ripple);
+}
+
+function drawRipple(ripple, sizeRate, opacityRate) {
   var delta = globals.getDelta();
 
-  circle.opacity -= config.rippleRateOpacity * delta;
-  if (circle.opacity < 0 || circle.opacity > 1 || circle.opacity < 0.01) {
-    circle.opacity = 0.01;
+  ripple.opacity -= opacityRate * delta;
+  if (ripple.opacity < 0 || ripple.opacity > 1 || ripple.opacity < 0.01) {
+    ripple.opacity = 0.01;
   }
 
-  circle.radius += (config.rippleRate * (circle.opacity * 2.0)) * delta;
+  ripple.radius += (sizeRate * (ripple.opacity * 2.0)) * delta;
 
   form.fill(false);
-  var c = 'rgba(' + white.x + ',' + white.y + ',' + white.z + ',' + circle.opacity.toFixed(2) + ')';
+  var c = 'rgba(' + white.x + ',' + white.y + ',' + white.z + ',' + ripple.opacity.toFixed(2) + ')';
   form.stroke(c);
-  form.circle(circle);
+  form.circle(ripple);
 }
 
 module.exports.add = addrippleCircle;
+module.exports.addSmallRipple = addSmallRipple;
 
 module.exports.draw = function () {
-  circles.forEach(drawripple);
+  _.forEach(ripples, _.partial(drawRipple, _, config.rippleRate, config.rippleRateOpacity));
+  _.forEach(smallRipples, _.partial(drawRipple, _, config.smallRippleRate, config.smallRippleRateOpacity));
+
   collisions.forEach(function (collision) {
     collision.point.x += (collision.circle.opacity * (collision.dx * randomF(5, (collision.circle.opacity * 35))));
     collision.point.y += (collision.circle.opacity * (collision.dy * randomF(5, (collision.circle.opacity * 35))));
@@ -871,14 +884,19 @@ module.exports.draw = function () {
     return collision.timestamp > Date.now() - 200;
   });
 
-  //clean up circles
-  circles = _.filter(circles, function (circle) {
+  //clean up ripples
+  ripples = _.filter(ripples, function (circle) {
     return circle.timestamp > Date.now() - 3000;
+  });
+
+  //clean up small ripples
+  smallRipples = _.filter(smallRipples, function (ripple) {
+    return ripple.timestamp > Date.now() - 3000;
   });
 };
 
 module.exports.detectCollisions = function (points) {
-  circles.forEach(function (circle) {
+  ripples.forEach(function (circle) {
     points.forEach(function (point) {
       var dx = circle.x - point.circle.x;
       var dy = circle.y - point.circle.y;
@@ -897,8 +915,12 @@ module.exports.detectCollisions = function (points) {
 };
 
 module.exports.clean = function () {
-  circles = _.reject(circles, function (circle) {
-    return circle.radius > 1400;
+  ripples = _.reject(ripples, function (ripple) {
+    return ripple.radius > 1400;
+  });
+
+  smallRipples = _.filter(smallRipples, function (ripple) {
+    return ripple.timestamp > Date.now() - 3000;
   });
 };
 

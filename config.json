@@ -7,5 +7,7 @@
   "connectionsWidth": 0.9,
   "rippleStartOpacity": 0.40,
   "rippleRateOpacity": 0.003,
-  "rippleRate": 9
+  "rippleRate": 9,
+  "smallRippleRate": 1.4,
+  "smallRippleRateOpacity": 0.005
 }

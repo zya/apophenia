@@ -56,8 +56,6 @@ var sketch = {
 
     // draw ripple circles
     ripples.draw();
-    // clean up the ripple circles
-    ripples.clean();
     // detect collissions
     ripples.detectCollisions(points);
 
