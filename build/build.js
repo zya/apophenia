@@ -200,8 +200,8 @@ convolver.connect(limiter);
 synthGain.connect(convolver);
 leadGain.connect(convolver);
 
-synthGain.gain.value = 0.0;
-leadGain.gain.value = 0.0;
+synthGain.gain.value = 0.1;
+leadGain.gain.value = 0.1;
 
 load('./assets/ir3.mp3', function (buffer) {
   convolver.buffer = buffer;
@@ -747,7 +747,6 @@ var randomFloat = require('random-float');
 
 var audio = require('./audio');
 var context = require('./context');
-var envelope = require('./envelope');
 var changePointColour = require('./changePointColour');
 var ripples = require('./ripples');
 
@@ -760,18 +759,20 @@ function playLead(point, index) {
   if (index > 0) {
     startTime += randomFloat(-0.2, 0.2);
   }
+
   osc.start(startTime);
   osc.frequency.value = point.fq * 4;
   osc.connect(gain);
+  gain.gain.value = 0;
   gain.connect(audio.leadDestination);
-  envelope(gain.gain, startTime, {
-    start: 0,
-    peak: 0.02,
-    attack: 0.01,
-    type: 'linear',
-    release: 0.4
-  });
+
+  gain.gain.cancelScheduledValues(startTime);
+  gain.gain.setTargetAtTime(0, startTime, 0.5);
+  gain.gain.linearRampToValueAtTime(0.2, startTime + 0.01);
+  gain.gain.linearRampToValueAtTime(0, startTime + 0.2);
+
   osc.stop(startTime + 1.5);
+
   setTimeout(function () {
     gain.disconnect();
   }, 4000);
@@ -784,7 +785,7 @@ function playLead(point, index) {
 
 module.exports = playLead;
 
-},{"./audio":3,"./changePointColour":5,"./context":8,"./envelope":11,"./ripples":21,"random-float":146}],19:[function(require,module,exports){
+},{"./audio":3,"./changePointColour":5,"./context":8,"./ripples":21,"random-float":146}],19:[function(require,module,exports){
 'use strict';
 
 var pt = require('ptjs');
@@ -1246,27 +1247,39 @@ function Voice(id, frequency, destination) {
   gain.gain.value = 0;
   this.osc = osc;
   this.gain = gain;
+  this.startTime = 0;
+  this.timeDelta = 0;
 }
 
 Voice.prototype.start = function (opts) {
   var that = this;
   this.osc.start(0);
-
-  envelope(that.gain.gain, opts.now, {
-    start: 0,
-    peak: opts.peak,
-    attack: opts.attack,
-    type: 'exponential'
-  });
+  this.peak = opts.peak;
+  this.attack = opts.attack;
+  this.unit = this.peak / this.attack;
+  that.startTime = Date.now();
+  that.gain.gain.setValueAtTime(0, opts.now, 0.5);
+  that.gain.gain.linearRampToValueAtTime(opts.peak, opts.now + opts.attack);
 };
 
 Voice.prototype.stop = function (opts) {
   var that = this;
+
+  // time elapesed since start of the note in seconds
+  this.timeDelta = (Date.now() - this.startTime) / 1000;
+
+  var currentValue = this.unit * this.timeDelta;
+
+  if (currentValue >= this.peak) {
+    currentValue = this.peak;
+  }
+
   this.gain.gain.cancelScheduledValues(opts.now);
-  this.gain.gain.setTargetAtTime(that.gain.gain.value, opts.now, 0.5);
+  this.gain.gain.setValueAtTime(currentValue, opts.now, 0.5);
   this.gain.gain.linearRampToValueAtTime(0, opts.now + opts.release);
-  this.gain.gain.setTargetAtTime(0.0, opts.now + opts.release + 0.1, 0.5);
+  this.gain.gain.setValueAtTime(0.0, opts.now + opts.release + 0.1, 0.5);
   this.osc.stop(opts.now + opts.release + 2);
+
   setTimeout(function () {
     that.gain.disconnect();
   }, (opts.release + 3) * 1000);
