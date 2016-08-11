@@ -54,10 +54,7 @@ var sketch = {
     var now = new Date().getTime();
     globals.setDelta(now);
 
-    // draw ripple circles
-    ripples.draw();
-    // detect collissions
-    ripples.detectCollisions(points);
+
 
     //draw spotlight
     var delta = globals.getDelta();
@@ -65,6 +62,11 @@ var sketch = {
     spotLight.y += (mouseY - spotLight.y) * (easingStrength * delta);
     form.fill(white, 0.1).stroke(false);
     form.circle(spotLight);
+
+    // draw ripple circles
+    ripples.draw();
+    // detect collissions
+    ripples.detectCollisions(points);
 
     //draw connections
     connections.draw(pairsInsideSpotlight);
@@ -112,19 +114,19 @@ var sketch = {
   },
   onMouseAction: function (type, x, y) {
     switch (type) {
-    case 'move':
-      mouseX = x;
-      mouseY = y;
-      break;
-    case 'down':
-      spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
-      currentPoints.forEach(playLead);
-      connections.update(currentPoints);
-      ripples.add();
-      break;
-    case 'up':
-      spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
-      break;
+      case 'move':
+        mouseX = x;
+        mouseY = y;
+        break;
+      case 'down':
+        spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
+        currentPoints.forEach(playLead);
+        connections.update(currentPoints);
+        ripples.add();
+        break;
+      case 'up':
+        spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
+        break;
     }
   },
   onTouchAction: function (type, x, y, evt) {
