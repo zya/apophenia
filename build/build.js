@@ -526,7 +526,7 @@ function drawPoint(point) {
   var delta = globals.getDelta();
 
   form.fill(point.colour).stroke(false);
-  var newSize = point.originalRadius + 1;
+  var newSize = point.originalRadius + 1.7;
   newSize = newSize < 2.2 ? newSize = 2.2 : newSize;
 
   if (point.intersected) {
