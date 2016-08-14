@@ -63,15 +63,13 @@ document.body.appendChild(stats.dom);
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 scene3d.init(connections.getSpecialTriangles());
-// scene3d.displayCanvas(); //commented out for now
+scene3d.displayCanvas(); //commented out for now
 
 var sketch = {
   animate: function () {
     stats.begin();
     var now = new Date().getTime();
     globals.setDelta(now);
-
-
 
     //draw spotlight
     var delta = globals.getDelta();
@@ -125,7 +123,7 @@ var sketch = {
     var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
     scene3d.updateMorph(m);
     // scene3d.updateMorph(-0.01);
-    // scene3d.render();
+    scene3d.render();
 
     stats.end();
   },
@@ -456,8 +454,8 @@ function addCircularPoints(number, origin, r) {
     var y = origin.y + r * Math.cos(angle);
     var x = origin.x + r * Math.sin(angle);
 
-    var randomX = randomInt(-10, 10);
-    var randomY = randomInt(-10, 10);
+    var randomX = randomInt(-12, 12);
+    var randomY = randomInt(-12, 12);
     var point = createPoint(x + randomX, y + randomY, lightBlue);
 
     point.special = true;
@@ -494,12 +492,12 @@ function createPoints(amount) {
   var bigCircle = addCircularPoints(50, {
     x: space.size.x / 2,
     y: space.size.y / 2
-  }, space.size.x / 5);
+  }, space.size.x / 6);
 
   var mediumCircle = addCircularPoints(18, {
     x: space.size.x / 2,
     y: space.size.y / 2
-  }, space.size.x / 8);
+  }, space.size.x / 7.5);
 
   var smallCircle = addCircularPoints(15, {
     x: space.size.x / 2,
@@ -637,6 +635,15 @@ module.exports = function (triangles) {
     var colour = new THREE.Color('white');
     face.color = colour;
     geometry.faces.push(face);
+
+    var faceuv = [
+      new THREE.Vector2(0, 1),
+      new THREE.Vector2(1, 1),
+      new THREE.Vector2(1, 0),
+      new THREE.Vector2(0, 0)
+    ];
+
+    geometry.faceVertexUvs[0].push(faceuv);
   });
 
   var targets = [];
@@ -655,6 +662,7 @@ module.exports = function (triangles) {
   geometry.computeFaceNormals();
   geometry.computeVertexNormals();
   geometry.computeMorphNormals();
+  // geometry.computeTangents();
 
   return geometry;
 };
@@ -936,6 +944,7 @@ module.exports.clean = function () {
 
 var THREE = require('three');
 var OrbitControls = require('three-orbit-controls')(THREE);
+var textureLoader = new THREE.TextureLoader();
 
 var generateGeometry = require('./generate3DGeometry');
 var globals = require('./globals');
@@ -964,15 +973,19 @@ renderer.domElement.className = 'test';
 renderer.domElement.style.visibility = 'hidden';
 renderer.setSize(window.innerWidth, window.innerHeight);
 
+var normalMap = textureLoader.load('../assets/images/normal-map.jpg');
+var textureMap = textureLoader.load('../assets/images/normal-map.jpg');
+var displacementMap = textureLoader.load('../assets/images/displacement.jpg');
+
 // main material
 var material = new THREE.MeshPhongMaterial({
   morphTargets: true,
   morphNormals: true,
   shading: THREE.FlatShading,
-  vertexColors: THREE.FaceColors,
   side: THREE.FrontSide,
-  metalness: 0.5,
-  roughness: 0.2
+  vertexColors: THREE.FaceColors,
+  normalMap: normalMap,
+  normalScale: new THREE.Vector2(0, 0)
 });
 
 // wire frame material
@@ -1049,7 +1062,7 @@ module.exports.init = function (triangles) {
   // scene.add(h);
   scene.add(wireframe);
   scene.add(mesh);
-  controls.update();
+  // controls.update();
 };
 
 
@@ -1064,12 +1077,15 @@ module.exports.render = function () {
   pointLight.position.y = mouseVertex.y;
 
   // spotLight.lookAt(mesh.position);
-  mesh.rotation.y += mouseVertex.x * 0.003;
-  mesh.rotation.x -= mouseVertex.y * 0.003;
+  mesh.rotation.y += mouseVertex.x * 0.001;
+  mesh.rotation.x -= mouseVertex.y * 0.001;
   wireframe.rotation.copy(mesh.rotation);
   // mesh.rotation.y  mouseVertex.y * 0.2;
 
-  wireframeMaterial.opacity = map(sine(2, 1, Date.now() * 0.001, 0), -1, 1, -0.4, 0.1);
+  var op = map(sine(2, 1, Date.now() * 0.001, 0), -1, 1, -0.4, 0.1);
+  wireframeMaterial.opacity = op;
+  material.normalScale.x = op;
+  material.normalScale.y = op;
 
   raycaster.setFromCamera(new THREE.Vector2(mouseVertex.x, mouseVertex.y), camera);
   var intersects = raycaster.intersectObject(mesh);
@@ -1095,6 +1111,7 @@ module.exports.render = function () {
 module.exports.updateMorph = function (value) {
   mesh.morphTargetInfluences[0] = value;
   wireframe.morphTargetInfluences[0] = value;
+  // material.bumpScale = value * 10;
 };
 
 module.exports.displayCanvas = function () {

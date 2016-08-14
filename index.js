@@ -46,15 +46,13 @@ document.body.appendChild(stats.dom);
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 scene3d.init(connections.getSpecialTriangles());
-// scene3d.displayCanvas(); //commented out for now
+scene3d.displayCanvas(); //commented out for now
 
 var sketch = {
   animate: function () {
     stats.begin();
     var now = new Date().getTime();
     globals.setDelta(now);
-
-
 
     //draw spotlight
     var delta = globals.getDelta();
@@ -108,7 +106,7 @@ var sketch = {
     var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
     scene3d.updateMorph(m);
     // scene3d.updateMorph(-0.01);
-    // scene3d.render();
+    scene3d.render();
 
     stats.end();
   },
