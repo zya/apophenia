@@ -119,10 +119,8 @@ var sketch = {
     currentPoints = pointsInsideCircle;
 
     // 3d stuff - commente out for now
-
     var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
     scene3d.updateMorph(m);
-    // scene3d.updateMorph(-0.01);
     scene3d.render();
 
     stats.end();
@@ -179,7 +177,7 @@ space.bindMouse();
 space.bindTouch();
 space.play();
 
-},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":13,"./lib/intersectSpotlightAndPoints":14,"./lib/map":16,"./lib/playLead":18,"./lib/pt":19,"./lib/randomisePoint":20,"./lib/ripples":21,"./lib/scene3D":22,"./lib/sine":23,"./lib/updateTemporaryPairs":26,"lodash":125,"stats.js":170}],3:[function(require,module,exports){
+},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":12,"./lib/intersectSpotlightAndPoints":13,"./lib/map":15,"./lib/playLead":17,"./lib/pt":18,"./lib/randomisePoint":19,"./lib/ripples":20,"./lib/scene3D":21,"./lib/sine":22,"./lib/updateTemporaryPairs":25,"lodash":124,"stats.js":169}],3:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -211,7 +209,7 @@ load('./assets/ir3.mp3', function (buffer) {
 module.exports.synthDestination = synthGain;
 module.exports.leadDestination = leadGain;
 
-},{"./context":8,"./load":15}],4:[function(require,module,exports){
+},{"./context":8,"./load":14}],4:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -250,7 +248,7 @@ function change(toAdd, toRemove, currentlyPlaying) {
 
 module.exports = change;
 
-},{"./audio":3,"./context":8,"./trash":24,"./voice":27,"lodash":125,"moment":128}],5:[function(require,module,exports){
+},{"./audio":3,"./context":8,"./trash":23,"./voice":26,"lodash":124,"moment":127}],5:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -278,7 +276,7 @@ function changePointColour(point) {
 
 module.exports = changePointColour;
 
-},{"./colours":6,"lodash":125,"random-int":147}],6:[function(require,module,exports){
+},{"./colours":6,"lodash":124,"random-int":146}],6:[function(require,module,exports){
 'use strict';
 
 var pt = require('ptjs');
@@ -297,7 +295,7 @@ module.exports = {
   background: new color(0.4, 8.6, 15.3)
 };
 
-},{"ptjs":139}],7:[function(require,module,exports){
+},{"ptjs":138}],7:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -411,7 +409,7 @@ module.exports.getSpecialTriangles = function () {
   return specialTriangles;
 };
 
-},{"../config":1,"./colours":6,"./pt":19,"./updateConnections":25,"lodash":125}],8:[function(require,module,exports){
+},{"../config":1,"./colours":6,"./pt":18,"./updateConnections":24,"lodash":124}],8:[function(require,module,exports){
 'use strict';
 
 window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
@@ -514,7 +512,7 @@ function createPoints(amount) {
 
 module.exports = createPoints;
 
-},{"./colours":6,"./music":17,"./pt":19,"node-uuid":129,"random-float":146,"random-int":147}],10:[function(require,module,exports){
+},{"./colours":6,"./music":16,"./pt":18,"node-uuid":128,"random-float":145,"random-int":146}],10:[function(require,module,exports){
 'use strict';
 
 var form = require('./pt').form;
@@ -547,37 +545,7 @@ function drawPoint(point) {
 
 module.exports = drawPoint;
 
-},{"./globals":13,"./pt":19}],11:[function(require,module,exports){
-'use strict';
-
-module.exports = function (audioParam, now, opts) {
-  if (!opts) opts = {};
-  var peak = opts.peak || audioParam.defaultValue;
-  if (opts.start === 0) opts.start = 0.000001;
-  var start = opts.start || audioParam.value;
-  var attack = opts.attack || 0.1;
-  var decay = opts.decay || 0.0;
-  var sustain = opts.sustain || peak;
-  var release = opts.release || 0.5;
-  var type = opts.ramp || 'linear';
-
-  if (type === 'linear') {
-    audioParam.cancelScheduledValues(now);
-    audioParam.setTargetAtTime(start, now, 0.5);
-    audioParam.linearRampToValueAtTime(peak, now + attack);
-    audioParam.linearRampToValueAtTime(sustain, now + attack + decay);
-    if (opts.release) audioParam.linearRampToValueAtTime(0, now + attack + decay + release);
-  } else if (type === 'exponential') {
-    audioParam.cancelScheduledValues(now);
-    audioParam.setTargetAtTime(start, now, 0.5);
-    audioParam.exponentialRampToValueAtTime(peak, now + attack);
-    audioParam.exponentialRampToValueAtTime(sustain, now + attack + decay);
-    audioParam.setValueAtTime(sustain, now + attack + decay + 0.1);
-    if (opts.release) audioParam.linearRampToValueAtTime(0, now + attack + decay + release);
-  }
-};
-
-},{}],12:[function(require,module,exports){
+},{"./globals":12,"./pt":18}],11:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -667,7 +635,7 @@ module.exports = function (triangles) {
   return geometry;
 };
 
-},{"./map":16,"./pt":19,"lodash":125,"random-float":146,"three":182}],13:[function(require,module,exports){
+},{"./map":15,"./pt":18,"lodash":124,"random-float":145,"three":180}],12:[function(require,module,exports){
 'use strict';
 
 var timeAtPreviousFrame;
@@ -696,7 +664,7 @@ module.exports.getMousePosition = function () {
   return mouse;
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 function intersectSpotlightAndPoints(spotLight, points) {
@@ -715,7 +683,7 @@ function intersectSpotlightAndPoints(spotLight, points) {
 
 module.exports = intersectSpotlightAndPoints;
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -731,7 +699,7 @@ module.exports = function (path, success, failure) {
   request.send();
 };
 
-},{"./context":8}],16:[function(require,module,exports){
+},{"./context":8}],15:[function(require,module,exports){
 'use strict';
 
 var map = function (value, istart, istop, ostart, ostop) {
@@ -740,7 +708,7 @@ var map = function (value, istart, istop, ostart, ostop) {
 
 module.exports = map;
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 var teoria = require('teoria');
@@ -751,7 +719,7 @@ var notes = scale.notes();
 
 module.exports.notes = notes;
 
-},{"teoria":173}],18:[function(require,module,exports){
+},{"teoria":172}],17:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
@@ -796,7 +764,7 @@ function playLead(point, index) {
 
 module.exports = playLead;
 
-},{"./audio":3,"./changePointColour":5,"./context":8,"./ripples":21,"random-float":146}],19:[function(require,module,exports){
+},{"./audio":3,"./changePointColour":5,"./context":8,"./ripples":20,"random-float":145}],18:[function(require,module,exports){
 'use strict';
 
 var pt = require('ptjs');
@@ -816,7 +784,7 @@ module.exports.spotLight = spotLight;
 module.exports.spotLightRatio = spotLightRatio;
 module.exports.lib = pt;
 
-},{"../config":1,"./colours":6,"ptjs":139}],20:[function(require,module,exports){
+},{"../config":1,"./colours":6,"ptjs":138}],19:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
@@ -830,7 +798,7 @@ function randomisePoint(point) {
 
 module.exports = randomisePoint;
 
-},{"random-float":146}],21:[function(require,module,exports){
+},{"random-float":145}],20:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -847,7 +815,6 @@ var ripples = [];
 var smallRipples = [];
 var white = colours.white;
 var lighterGrey = colours.lighterGrey;
-var red = colours.red;
 var collisions = [];
 
 function addrippleCircle() {
@@ -939,11 +906,11 @@ module.exports.clean = function () {
   });
 };
 
-},{"../config":1,"./colours":6,"./globals":13,"./pt":19,"lodash":125,"random-float":146}],22:[function(require,module,exports){
+},{"../config":1,"./colours":6,"./globals":12,"./pt":18,"lodash":124,"random-float":145}],21:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
-var OrbitControls = require('three-orbit-controls')(THREE);
+// var OrbitControls = require('three-orbit-controls')(THREE);
 var textureLoader = new THREE.TextureLoader();
 
 var generateGeometry = require('./generate3DGeometry');
@@ -951,7 +918,7 @@ var globals = require('./globals');
 var sine = require('./sine');
 var map = require('./map');
 var space = require('./pt').space;
-var ratio = space.size.x / space.size.y;
+// var ratio = space.size.x / space.size.y;
 
 var geometry, mesh, wireframe;
 
@@ -960,7 +927,7 @@ var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 300);
 camera.position.z = 0.75;
 
-var controls = new OrbitControls(camera);
+// var controls = new OrbitControls(camera);
 var raycaster = new THREE.Raycaster();
 
 // renderer
@@ -974,8 +941,8 @@ renderer.domElement.style.visibility = 'hidden';
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 var normalMap = textureLoader.load('../assets/images/normal-map.jpg');
-var textureMap = textureLoader.load('../assets/images/normal-map.jpg');
-var displacementMap = textureLoader.load('../assets/images/displacement.jpg');
+// var textureMap = textureLoader.load('../assets/images/normal-map.jpg');
+// var displacementMap = textureLoader.load('../assets/images/displacement.jpg');
 
 // main material
 var material = new THREE.MeshPhongMaterial({
@@ -1013,7 +980,7 @@ spotLight.shadow.mapSize.width = 512;
 spotLight.shadow.mapSize.height = 512;
 scene.add(spotLight);
 
-var lightHelper = new THREE.SpotLightHelper(spotLight);
+// var lightHelper = new THREE.SpotLightHelper(spotLight);
 // scene.add(lightHelper);
 
 // point light
@@ -1029,10 +996,10 @@ var directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
 directionalLight.position.set(1.5, 1, 2);
 // scene.add(directionalLight);
 
-var pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
+// var pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
 // scene.add(pointLightHelper);
 
-var directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10);
+// var directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10);
 // scene.add(directionalLightHelper);
 
 // initialise
@@ -1124,7 +1091,7 @@ module.exports.hideCanvas = function () {
 
 module.exports.display = document.getElementById('pt').appendChild(renderer.domElement);
 
-},{"./generate3DGeometry":12,"./globals":13,"./map":16,"./pt":19,"./sine":23,"three":182,"three-orbit-controls":181}],23:[function(require,module,exports){
+},{"./generate3DGeometry":11,"./globals":12,"./map":15,"./pt":18,"./sine":22,"three":180}],22:[function(require,module,exports){
 'use strict';
 // f(x) = A sin(wt + p)
 
@@ -1134,7 +1101,7 @@ function sine(freq, amp, time, phase) {
 
 module.exports = sine;
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var trash = [];
@@ -1153,7 +1120,7 @@ module.exports.push = function (item) {
   trash.push(item);
 };
 
-},{"moment":128}],25:[function(require,module,exports){
+},{"moment":127}],24:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1236,7 +1203,7 @@ function updateConnections(points, pairs, connections, triangles, specialConnect
 
 module.exports = updateConnections;
 
-},{"./colours":6,"faster-delaunay":112,"lodash":125,"random-int":147}],26:[function(require,module,exports){
+},{"./colours":6,"faster-delaunay":111,"lodash":124,"random-int":146}],25:[function(require,module,exports){
 'use strict';
 
 function updateTemporaryPairs(points, temporaryPairs) {
@@ -1253,11 +1220,10 @@ function updateTemporaryPairs(points, temporaryPairs) {
 
 module.exports = updateTemporaryPairs;
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
-var envelope = require('./envelope');
 
 function Voice(id, frequency, destination) {
   this.id = id;
@@ -1310,7 +1276,7 @@ Voice.prototype.stop = function (opts) {
 
 module.exports = Voice;
 
-},{"./context":8,"./envelope":11}],28:[function(require,module,exports){
+},{"./context":8}],27:[function(require,module,exports){
 var accidentalValues = {
   'bb': -2,
   'b': -1,
@@ -1328,7 +1294,7 @@ module.exports.interval = function accidentalInterval(acc) {
   return [-4 * val, 7 * val];
 }
 
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var asn1 = exports;
 
 asn1.bignum = require('bn.js');
@@ -1339,7 +1305,7 @@ asn1.constants = require('./asn1/constants');
 asn1.decoders = require('./asn1/decoders');
 asn1.encoders = require('./asn1/encoders');
 
-},{"./asn1/api":30,"./asn1/base":32,"./asn1/constants":36,"./asn1/decoders":38,"./asn1/encoders":41,"bn.js":44}],30:[function(require,module,exports){
+},{"./asn1/api":29,"./asn1/base":31,"./asn1/constants":35,"./asn1/decoders":37,"./asn1/encoders":40,"bn.js":43}],29:[function(require,module,exports){
 var asn1 = require('../asn1');
 var inherits = require('inherits');
 
@@ -1400,7 +1366,7 @@ Entity.prototype.encode = function encode(data, enc, /* internal */ reporter) {
   return this._getEncoder(enc).encode(data, reporter);
 };
 
-},{"../asn1":29,"inherits":122,"vm":184}],31:[function(require,module,exports){
+},{"../asn1":28,"inherits":121,"vm":182}],30:[function(require,module,exports){
 var inherits = require('inherits');
 var Reporter = require('../base').Reporter;
 var Buffer = require('buffer').Buffer;
@@ -1518,7 +1484,7 @@ EncoderBuffer.prototype.join = function join(out, offset) {
   return out;
 };
 
-},{"../base":32,"buffer":72,"inherits":122}],32:[function(require,module,exports){
+},{"../base":31,"buffer":71,"inherits":121}],31:[function(require,module,exports){
 var base = exports;
 
 base.Reporter = require('./reporter').Reporter;
@@ -1526,7 +1492,7 @@ base.DecoderBuffer = require('./buffer').DecoderBuffer;
 base.EncoderBuffer = require('./buffer').EncoderBuffer;
 base.Node = require('./node');
 
-},{"./buffer":31,"./node":33,"./reporter":34}],33:[function(require,module,exports){
+},{"./buffer":30,"./node":32,"./reporter":33}],32:[function(require,module,exports){
 var Reporter = require('../base').Reporter;
 var EncoderBuffer = require('../base').EncoderBuffer;
 var DecoderBuffer = require('../base').DecoderBuffer;
@@ -2149,7 +2115,7 @@ Node.prototype._isPrintstr = function isPrintstr(str) {
   return /^[A-Za-z0-9 '\(\)\+,\-\.\/:=\?]*$/.test(str);
 };
 
-},{"../base":32,"minimalistic-assert":127}],34:[function(require,module,exports){
+},{"../base":31,"minimalistic-assert":126}],33:[function(require,module,exports){
 var inherits = require('inherits');
 
 function Reporter(options) {
@@ -2253,7 +2219,7 @@ ReporterError.prototype.rethrow = function rethrow(msg) {
   return this;
 };
 
-},{"inherits":122}],35:[function(require,module,exports){
+},{"inherits":121}],34:[function(require,module,exports){
 var constants = require('../constants');
 
 exports.tagClass = {
@@ -2297,7 +2263,7 @@ exports.tag = {
 };
 exports.tagByName = constants._reverse(exports.tag);
 
-},{"../constants":36}],36:[function(require,module,exports){
+},{"../constants":35}],35:[function(require,module,exports){
 var constants = exports;
 
 // Helper
@@ -2318,7 +2284,7 @@ constants._reverse = function reverse(map) {
 
 constants.der = require('./der');
 
-},{"./der":35}],37:[function(require,module,exports){
+},{"./der":34}],36:[function(require,module,exports){
 var inherits = require('inherits');
 
 var asn1 = require('../../asn1');
@@ -2641,13 +2607,13 @@ function derDecodeLen(buf, primitive, fail) {
   return len;
 }
 
-},{"../../asn1":29,"inherits":122}],38:[function(require,module,exports){
+},{"../../asn1":28,"inherits":121}],37:[function(require,module,exports){
 var decoders = exports;
 
 decoders.der = require('./der');
 decoders.pem = require('./pem');
 
-},{"./der":37,"./pem":39}],39:[function(require,module,exports){
+},{"./der":36,"./pem":38}],38:[function(require,module,exports){
 var inherits = require('inherits');
 var Buffer = require('buffer').Buffer;
 
@@ -2699,7 +2665,7 @@ PEMDecoder.prototype.decode = function decode(data, options) {
   return DERDecoder.prototype.decode.call(this, input, options);
 };
 
-},{"../../asn1":29,"./der":37,"buffer":72,"inherits":122}],40:[function(require,module,exports){
+},{"../../asn1":28,"./der":36,"buffer":71,"inherits":121}],39:[function(require,module,exports){
 var inherits = require('inherits');
 var Buffer = require('buffer').Buffer;
 
@@ -2995,13 +2961,13 @@ function encodeTag(tag, primitive, cls, reporter) {
   return res;
 }
 
-},{"../../asn1":29,"buffer":72,"inherits":122}],41:[function(require,module,exports){
+},{"../../asn1":28,"buffer":71,"inherits":121}],40:[function(require,module,exports){
 var encoders = exports;
 
 encoders.der = require('./der');
 encoders.pem = require('./pem');
 
-},{"./der":40,"./pem":42}],42:[function(require,module,exports){
+},{"./der":39,"./pem":41}],41:[function(require,module,exports){
 var inherits = require('inherits');
 var Buffer = require('buffer').Buffer;
 
@@ -3026,7 +2992,7 @@ PEMEncoder.prototype.encode = function encode(data, options) {
   return out.join('\n');
 };
 
-},{"../../asn1":29,"./der":40,"buffer":72,"inherits":122}],43:[function(require,module,exports){
+},{"../../asn1":28,"./der":39,"buffer":71,"inherits":121}],42:[function(require,module,exports){
 'use strict'
 
 exports.toByteArray = toByteArray
@@ -3137,7 +3103,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function (module, exports) {
   'use strict';
 
@@ -6559,7 +6525,7 @@ function fromByteArray (uint8) {
   };
 })(typeof module === 'undefined' || module, this);
 
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 var r;
 
 module.exports = function rand(len) {
@@ -6618,9 +6584,9 @@ if (typeof window === 'object') {
   }
 }
 
-},{}],46:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 
-},{}],47:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function (Buffer){
 // based on the aes implimentation in triple sec
 // https://github.com/keybase/triplesec
@@ -6801,7 +6767,7 @@ AES.prototype._doCryptBlock = function (M, keySchedule, SUB_MIX, SBOX) {
 exports.AES = AES
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],48:[function(require,module,exports){
+},{"buffer":71}],47:[function(require,module,exports){
 (function (Buffer){
 var aes = require('./aes')
 var Transform = require('cipher-base')
@@ -6902,7 +6868,7 @@ function xorTest (a, b) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./aes":47,"./ghash":52,"buffer":72,"buffer-xor":71,"cipher-base":74,"inherits":122}],49:[function(require,module,exports){
+},{"./aes":46,"./ghash":51,"buffer":71,"buffer-xor":70,"cipher-base":73,"inherits":121}],48:[function(require,module,exports){
 var ciphers = require('./encrypter')
 exports.createCipher = exports.Cipher = ciphers.createCipher
 exports.createCipheriv = exports.Cipheriv = ciphers.createCipheriv
@@ -6915,7 +6881,7 @@ function getCiphers () {
 }
 exports.listCiphers = exports.getCiphers = getCiphers
 
-},{"./decrypter":50,"./encrypter":51,"./modes":53}],50:[function(require,module,exports){
+},{"./decrypter":49,"./encrypter":50,"./modes":52}],49:[function(require,module,exports){
 (function (Buffer){
 var aes = require('./aes')
 var Transform = require('cipher-base')
@@ -7056,7 +7022,7 @@ exports.createDecipher = createDecipher
 exports.createDecipheriv = createDecipheriv
 
 }).call(this,require("buffer").Buffer)
-},{"./aes":47,"./authCipher":48,"./modes":53,"./modes/cbc":54,"./modes/cfb":55,"./modes/cfb1":56,"./modes/cfb8":57,"./modes/ctr":58,"./modes/ecb":59,"./modes/ofb":60,"./streamCipher":61,"buffer":72,"cipher-base":74,"evp_bytestokey":111,"inherits":122}],51:[function(require,module,exports){
+},{"./aes":46,"./authCipher":47,"./modes":52,"./modes/cbc":53,"./modes/cfb":54,"./modes/cfb1":55,"./modes/cfb8":56,"./modes/ctr":57,"./modes/ecb":58,"./modes/ofb":59,"./streamCipher":60,"buffer":71,"cipher-base":73,"evp_bytestokey":110,"inherits":121}],50:[function(require,module,exports){
 (function (Buffer){
 var aes = require('./aes')
 var Transform = require('cipher-base')
@@ -7182,7 +7148,7 @@ exports.createCipheriv = createCipheriv
 exports.createCipher = createCipher
 
 }).call(this,require("buffer").Buffer)
-},{"./aes":47,"./authCipher":48,"./modes":53,"./modes/cbc":54,"./modes/cfb":55,"./modes/cfb1":56,"./modes/cfb8":57,"./modes/ctr":58,"./modes/ecb":59,"./modes/ofb":60,"./streamCipher":61,"buffer":72,"cipher-base":74,"evp_bytestokey":111,"inherits":122}],52:[function(require,module,exports){
+},{"./aes":46,"./authCipher":47,"./modes":52,"./modes/cbc":53,"./modes/cfb":54,"./modes/cfb1":55,"./modes/cfb8":56,"./modes/ctr":57,"./modes/ecb":58,"./modes/ofb":59,"./streamCipher":60,"buffer":71,"cipher-base":73,"evp_bytestokey":110,"inherits":121}],51:[function(require,module,exports){
 (function (Buffer){
 var zeros = new Buffer(16)
 zeros.fill(0)
@@ -7284,7 +7250,7 @@ function xor (a, b) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],53:[function(require,module,exports){
+},{"buffer":71}],52:[function(require,module,exports){
 exports['aes-128-ecb'] = {
   cipher: 'AES',
   key: 128,
@@ -7457,7 +7423,7 @@ exports['aes-256-gcm'] = {
   type: 'auth'
 }
 
-},{}],54:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 var xor = require('buffer-xor')
 
 exports.encrypt = function (self, block) {
@@ -7476,7 +7442,7 @@ exports.decrypt = function (self, block) {
   return xor(out, pad)
 }
 
-},{"buffer-xor":71}],55:[function(require,module,exports){
+},{"buffer-xor":70}],54:[function(require,module,exports){
 (function (Buffer){
 var xor = require('buffer-xor')
 
@@ -7511,7 +7477,7 @@ function encryptStart (self, data, decrypt) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"buffer-xor":71}],56:[function(require,module,exports){
+},{"buffer":71,"buffer-xor":70}],55:[function(require,module,exports){
 (function (Buffer){
 function encryptByte (self, byteParam, decrypt) {
   var pad
@@ -7549,7 +7515,7 @@ function shiftIn (buffer, value) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],57:[function(require,module,exports){
+},{"buffer":71}],56:[function(require,module,exports){
 (function (Buffer){
 function encryptByte (self, byteParam, decrypt) {
   var pad = self._cipher.encryptBlock(self._prev)
@@ -7568,7 +7534,7 @@ exports.encrypt = function (self, chunk, decrypt) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],58:[function(require,module,exports){
+},{"buffer":71}],57:[function(require,module,exports){
 (function (Buffer){
 var xor = require('buffer-xor')
 
@@ -7603,7 +7569,7 @@ exports.encrypt = function (self, chunk) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"buffer-xor":71}],59:[function(require,module,exports){
+},{"buffer":71,"buffer-xor":70}],58:[function(require,module,exports){
 exports.encrypt = function (self, block) {
   return self._cipher.encryptBlock(block)
 }
@@ -7611,7 +7577,7 @@ exports.decrypt = function (self, block) {
   return self._cipher.decryptBlock(block)
 }
 
-},{}],60:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 (function (Buffer){
 var xor = require('buffer-xor')
 
@@ -7631,7 +7597,7 @@ exports.encrypt = function (self, chunk) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"buffer-xor":71}],61:[function(require,module,exports){
+},{"buffer":71,"buffer-xor":70}],60:[function(require,module,exports){
 (function (Buffer){
 var aes = require('./aes')
 var Transform = require('cipher-base')
@@ -7660,7 +7626,7 @@ StreamCipher.prototype._final = function () {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./aes":47,"buffer":72,"cipher-base":74,"inherits":122}],62:[function(require,module,exports){
+},{"./aes":46,"buffer":71,"cipher-base":73,"inherits":121}],61:[function(require,module,exports){
 var ebtk = require('evp_bytestokey')
 var aes = require('browserify-aes/browser')
 var DES = require('browserify-des')
@@ -7735,7 +7701,7 @@ function getCiphers () {
 }
 exports.listCiphers = exports.getCiphers = getCiphers
 
-},{"browserify-aes/browser":49,"browserify-aes/modes":53,"browserify-des":63,"browserify-des/modes":64,"evp_bytestokey":111}],63:[function(require,module,exports){
+},{"browserify-aes/browser":48,"browserify-aes/modes":52,"browserify-des":62,"browserify-des/modes":63,"evp_bytestokey":110}],62:[function(require,module,exports){
 (function (Buffer){
 var CipherBase = require('cipher-base')
 var des = require('des.js')
@@ -7782,7 +7748,7 @@ DES.prototype._final = function () {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"cipher-base":74,"des.js":83,"inherits":122}],64:[function(require,module,exports){
+},{"buffer":71,"cipher-base":73,"des.js":82,"inherits":121}],63:[function(require,module,exports){
 exports['des-ecb'] = {
   key: 8,
   iv: 0
@@ -7808,7 +7774,7 @@ exports['des-ede'] = {
   iv: 0
 }
 
-},{}],65:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 (function (Buffer){
 var bn = require('bn.js');
 var randomBytes = require('randombytes');
@@ -7852,7 +7818,7 @@ function getr(priv) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"bn.js":44,"buffer":72,"randombytes":148}],66:[function(require,module,exports){
+},{"bn.js":43,"buffer":71,"randombytes":147}],65:[function(require,module,exports){
 (function (Buffer){
 'use strict'
 exports['RSA-SHA224'] = exports.sha224WithRSAEncryption = {
@@ -7928,7 +7894,7 @@ exports['RSA-MD5'] = exports.md5WithRSAEncryption = {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],67:[function(require,module,exports){
+},{"buffer":71}],66:[function(require,module,exports){
 (function (Buffer){
 var _algos = require('./algos')
 var createHash = require('create-hash')
@@ -8035,7 +8001,7 @@ module.exports = {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./algos":66,"./sign":69,"./verify":70,"buffer":72,"create-hash":77,"inherits":122,"stream":171}],68:[function(require,module,exports){
+},{"./algos":65,"./sign":68,"./verify":69,"buffer":71,"create-hash":76,"inherits":121,"stream":170}],67:[function(require,module,exports){
 'use strict'
 exports['1.3.132.0.10'] = 'secp256k1'
 
@@ -8049,7 +8015,7 @@ exports['1.3.132.0.34'] = 'p384'
 
 exports['1.3.132.0.35'] = 'p521'
 
-},{}],69:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 (function (Buffer){
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
 var createHmac = require('create-hmac')
@@ -8238,7 +8204,7 @@ module.exports.getKey = getKey
 module.exports.makeKey = makeKey
 
 }).call(this,require("buffer").Buffer)
-},{"./curves":68,"bn.js":44,"browserify-rsa":65,"buffer":72,"create-hmac":80,"elliptic":93,"parse-asn1":134}],70:[function(require,module,exports){
+},{"./curves":67,"bn.js":43,"browserify-rsa":64,"buffer":71,"create-hmac":79,"elliptic":92,"parse-asn1":133}],69:[function(require,module,exports){
 (function (Buffer){
 // much of this based on https://github.com/indutny/self-signed/blob/gh-pages/lib/rsa.js
 var curves = require('./curves')
@@ -8345,7 +8311,7 @@ function checkValue (b, q) {
 module.exports = verify
 
 }).call(this,require("buffer").Buffer)
-},{"./curves":68,"bn.js":44,"buffer":72,"elliptic":93,"parse-asn1":134}],71:[function(require,module,exports){
+},{"./curves":67,"bn.js":43,"buffer":71,"elliptic":92,"parse-asn1":133}],70:[function(require,module,exports){
 (function (Buffer){
 module.exports = function xor (a, b) {
   var length = Math.min(a.length, b.length)
@@ -8359,7 +8325,7 @@ module.exports = function xor (a, b) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],72:[function(require,module,exports){
+},{"buffer":71}],71:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -9819,14 +9785,14 @@ function blitBuffer (src, dst, offset, length) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":43,"ieee754":120,"isarray":73}],73:[function(require,module,exports){
+},{"base64-js":42,"ieee754":119,"isarray":72}],72:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],74:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 (function (Buffer){
 var Transform = require('stream').Transform
 var inherits = require('inherits')
@@ -9920,7 +9886,7 @@ CipherBase.prototype._toString = function (value, enc, final) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"inherits":122,"stream":171,"string_decoder":172}],75:[function(require,module,exports){
+},{"buffer":71,"inherits":121,"stream":170,"string_decoder":171}],74:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -10031,7 +9997,7 @@ function objectToString(o) {
 }
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")})
-},{"../../is-buffer/index.js":124}],76:[function(require,module,exports){
+},{"../../is-buffer/index.js":123}],75:[function(require,module,exports){
 (function (Buffer){
 var elliptic = require('elliptic');
 var BN = require('bn.js');
@@ -10157,7 +10123,7 @@ function formatReturnValue(bn, enc, len) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"bn.js":44,"buffer":72,"elliptic":93}],77:[function(require,module,exports){
+},{"bn.js":43,"buffer":71,"elliptic":92}],76:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var inherits = require('inherits')
@@ -10213,7 +10179,7 @@ module.exports = function createHash (alg) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./md5":79,"buffer":72,"cipher-base":74,"inherits":122,"ripemd160":160,"sha.js":163}],78:[function(require,module,exports){
+},{"./md5":78,"buffer":71,"cipher-base":73,"inherits":121,"ripemd160":159,"sha.js":162}],77:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var intSize = 4;
@@ -10250,7 +10216,7 @@ function hash(buf, fn, hashSize, bigEndian) {
 }
 exports.hash = hash;
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],79:[function(require,module,exports){
+},{"buffer":71}],78:[function(require,module,exports){
 'use strict';
 /*
  * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
@@ -10407,7 +10373,7 @@ function bit_rol(num, cnt)
 module.exports = function md5(buf) {
   return helpers.hash(buf, core_md5, 16);
 };
-},{"./helpers":78}],80:[function(require,module,exports){
+},{"./helpers":77}],79:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var createHash = require('create-hash/browser');
@@ -10479,7 +10445,7 @@ module.exports = function createHmac(alg, key) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"create-hash/browser":77,"inherits":122,"stream":171}],81:[function(require,module,exports){
+},{"buffer":71,"create-hash/browser":76,"inherits":121,"stream":170}],80:[function(require,module,exports){
 'use strict'
 
 exports.randomBytes = exports.rng = exports.pseudoRandomBytes = exports.prng = require('randombytes')
@@ -10558,7 +10524,7 @@ var publicEncrypt = require('public-encrypt')
   }
 })
 
-},{"browserify-cipher":62,"browserify-sign":67,"browserify-sign/algos":66,"create-ecdh":76,"create-hash":77,"create-hmac":80,"diffie-hellman":89,"pbkdf2":135,"public-encrypt":140,"randombytes":148}],82:[function(require,module,exports){
+},{"browserify-cipher":61,"browserify-sign":66,"browserify-sign/algos":65,"create-ecdh":75,"create-hash":76,"create-hmac":79,"diffie-hellman":88,"pbkdf2":134,"public-encrypt":139,"randombytes":147}],81:[function(require,module,exports){
 var SYMBOLS = {
   'm': ['m3', 'P5'],
   'mi': ['m3', 'P5'],
@@ -10748,7 +10714,7 @@ module.exports = function(symbol) {
   return notes.slice(0, chordLength + 1).concat(additionals);
 }
 
-},{}],83:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 'use strict';
 
 exports.utils = require('./des/utils');
@@ -10757,7 +10723,7 @@ exports.DES = require('./des/des');
 exports.CBC = require('./des/cbc');
 exports.EDE = require('./des/ede');
 
-},{"./des/cbc":84,"./des/cipher":85,"./des/des":86,"./des/ede":87,"./des/utils":88}],84:[function(require,module,exports){
+},{"./des/cbc":83,"./des/cipher":84,"./des/des":85,"./des/ede":86,"./des/utils":87}],83:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -10824,7 +10790,7 @@ proto._update = function _update(inp, inOff, out, outOff) {
   }
 };
 
-},{"inherits":122,"minimalistic-assert":127}],85:[function(require,module,exports){
+},{"inherits":121,"minimalistic-assert":126}],84:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -10967,7 +10933,7 @@ Cipher.prototype._finalDecrypt = function _finalDecrypt() {
   return this._unpad(out);
 };
 
-},{"minimalistic-assert":127}],86:[function(require,module,exports){
+},{"minimalistic-assert":126}],85:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -11112,7 +11078,7 @@ DES.prototype._decrypt = function _decrypt(state, lStart, rStart, out, off) {
   utils.rip(l, r, out, off);
 };
 
-},{"../des":83,"inherits":122,"minimalistic-assert":127}],87:[function(require,module,exports){
+},{"../des":82,"inherits":121,"minimalistic-assert":126}],86:[function(require,module,exports){
 'use strict';
 
 var assert = require('minimalistic-assert');
@@ -11169,7 +11135,7 @@ EDE.prototype._update = function _update(inp, inOff, out, outOff) {
 EDE.prototype._pad = DES.prototype._pad;
 EDE.prototype._unpad = DES.prototype._unpad;
 
-},{"../des":83,"inherits":122,"minimalistic-assert":127}],88:[function(require,module,exports){
+},{"../des":82,"inherits":121,"minimalistic-assert":126}],87:[function(require,module,exports){
 'use strict';
 
 exports.readUInt32BE = function readUInt32BE(bytes, off) {
@@ -11427,7 +11393,7 @@ exports.padSplit = function padSplit(num, size, group) {
   return out.join(' ');
 };
 
-},{}],89:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 (function (Buffer){
 var generatePrime = require('./lib/generatePrime')
 var primes = require('./lib/primes.json')
@@ -11473,7 +11439,7 @@ exports.DiffieHellmanGroup = exports.createDiffieHellmanGroup = exports.getDiffi
 exports.createDiffieHellman = exports.DiffieHellman = createDiffieHellman
 
 }).call(this,require("buffer").Buffer)
-},{"./lib/dh":90,"./lib/generatePrime":91,"./lib/primes.json":92,"buffer":72}],90:[function(require,module,exports){
+},{"./lib/dh":89,"./lib/generatePrime":90,"./lib/primes.json":91,"buffer":71}],89:[function(require,module,exports){
 (function (Buffer){
 var BN = require('bn.js');
 var MillerRabin = require('miller-rabin');
@@ -11641,7 +11607,7 @@ function formatReturnValue(bn, enc) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./generatePrime":91,"bn.js":44,"buffer":72,"miller-rabin":126,"randombytes":148}],91:[function(require,module,exports){
+},{"./generatePrime":90,"bn.js":43,"buffer":71,"miller-rabin":125,"randombytes":147}],90:[function(require,module,exports){
 var randomBytes = require('randombytes');
 module.exports = findPrime;
 findPrime.simpleSieve = simpleSieve;
@@ -11748,7 +11714,7 @@ function findPrime(bits, gen) {
 
 }
 
-},{"bn.js":44,"miller-rabin":126,"randombytes":148}],92:[function(require,module,exports){
+},{"bn.js":43,"miller-rabin":125,"randombytes":147}],91:[function(require,module,exports){
 module.exports={
     "modp1": {
         "gen": "02",
@@ -11783,7 +11749,7 @@ module.exports={
         "prime": "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca18217c32905e462e36ce3be39e772c180e86039b2783a2ec07a28fb5c55df06f4c52c9de2bcbf6955817183995497cea956ae515d2261898fa051015728e5a8aaac42dad33170d04507a33a85521abdf1cba64ecfb850458dbef0a8aea71575d060c7db3970f85a6e1e4c7abf5ae8cdb0933d71e8c94e04a25619dcee3d2261ad2ee6bf12ffa06d98a0864d87602733ec86a64521f2b18177b200cbbe117577a615d6c770988c0bad946e208e24fa074e5ab3143db5bfce0fd108e4b82d120a92108011a723c12a787e6d788719a10bdba5b2699c327186af4e23c1a946834b6150bda2583e9ca2ad44ce8dbbbc2db04de8ef92e8efc141fbecaa6287c59474e6bc05d99b2964fa090c3a2233ba186515be7ed1f612970cee2d7afb81bdd762170481cd0069127d5b05aa993b4ea988d8fddc186ffb7dc90a6c08f4df435c93402849236c3fab4d27c7026c1d4dcb2602646dec9751e763dba37bdf8ff9406ad9e530ee5db382f413001aeb06a53ed9027d831179727b0865a8918da3edbebcf9b14ed44ce6cbaced4bb1bdb7f1447e6cc254b332051512bd7af426fb8f401378cd2bf5983ca01c64b92ecf032ea15d1721d03f482d7ce6e74fef6d55e702f46980c82b5a84031900b1c9e59e7c97fbec7e8f323a97a7e36cc88be0f1d45b7ff585ac54bd407b22b4154aacc8f6d7ebf48e1d814cc5ed20f8037e0a79715eef29be32806a1d58bb7c5da76f550aa3d8a1fbff0eb19ccb1a313d55cda56c9ec2ef29632387fe8d76e3c0468043e8f663f4860ee12bf2d5b0b7474d6e694f91e6dbe115974a3926f12fee5e438777cb6a932df8cd8bec4d073b931ba3bc832b68d9dd300741fa7bf8afc47ed2576f6936ba424663aab639c5ae4f5683423b4742bf1c978238f16cbe39d652de3fdb8befc848ad922222e04a4037c0713eb57a81a23f0c73473fc646cea306b4bcbc8862f8385ddfa9d4b7fa2c087e879683303ed5bdd3a062b3cf5b3a278a66d2a13f83f44f82ddf310ee074ab6a364597e899a0255dc164f31cc50846851df9ab48195ded7ea1b1d510bd7ee74d73faf36bc31ecfa268359046f4eb879f924009438b481c6cd7889a002ed5ee382bc9190da6fc026e479558e4475677e9aa9e3050e2765694dfc81f56e880b96e7160c980dd98edd3dfffffffffffffffff"
     }
 }
-},{}],93:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 'use strict';
 
 var elliptic = exports;
@@ -11799,7 +11765,7 @@ elliptic.curves = require('./elliptic/curves');
 elliptic.ec = require('./elliptic/ec');
 elliptic.eddsa = require('./elliptic/eddsa');
 
-},{"../package.json":109,"./elliptic/curve":96,"./elliptic/curves":99,"./elliptic/ec":100,"./elliptic/eddsa":103,"./elliptic/hmac-drbg":106,"./elliptic/utils":108,"brorand":45}],94:[function(require,module,exports){
+},{"../package.json":108,"./elliptic/curve":95,"./elliptic/curves":98,"./elliptic/ec":99,"./elliptic/eddsa":102,"./elliptic/hmac-drbg":105,"./elliptic/utils":107,"brorand":44}],93:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -12152,7 +12118,7 @@ BasePoint.prototype.dblp = function dblp(k) {
   return r;
 };
 
-},{"../../elliptic":93,"bn.js":44}],95:[function(require,module,exports){
+},{"../../elliptic":92,"bn.js":43}],94:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -12564,7 +12530,7 @@ Point.prototype.eq = function eq(other) {
 Point.prototype.toP = Point.prototype.normalize;
 Point.prototype.mixedAdd = Point.prototype.add;
 
-},{"../../elliptic":93,"../curve":96,"bn.js":44,"inherits":122}],96:[function(require,module,exports){
+},{"../../elliptic":92,"../curve":95,"bn.js":43,"inherits":121}],95:[function(require,module,exports){
 'use strict';
 
 var curve = exports;
@@ -12574,7 +12540,7 @@ curve.short = require('./short');
 curve.mont = require('./mont');
 curve.edwards = require('./edwards');
 
-},{"./base":94,"./edwards":95,"./mont":97,"./short":98}],97:[function(require,module,exports){
+},{"./base":93,"./edwards":94,"./mont":96,"./short":97}],96:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -12752,7 +12718,7 @@ Point.prototype.getX = function getX() {
   return this.x.fromRed();
 };
 
-},{"../../elliptic":93,"../curve":96,"bn.js":44,"inherits":122}],98:[function(require,module,exports){
+},{"../../elliptic":92,"../curve":95,"bn.js":43,"inherits":121}],97:[function(require,module,exports){
 'use strict';
 
 var curve = require('../curve');
@@ -13663,7 +13629,7 @@ JPoint.prototype.isInfinity = function isInfinity() {
   return this.z.cmpn(0) === 0;
 };
 
-},{"../../elliptic":93,"../curve":96,"bn.js":44,"inherits":122}],99:[function(require,module,exports){
+},{"../../elliptic":92,"../curve":95,"bn.js":43,"inherits":121}],98:[function(require,module,exports){
 'use strict';
 
 var curves = exports;
@@ -13870,7 +13836,7 @@ defineCurve('secp256k1', {
   ]
 });
 
-},{"../elliptic":93,"./precomputed/secp256k1":107,"hash.js":113}],100:[function(require,module,exports){
+},{"../elliptic":92,"./precomputed/secp256k1":106,"hash.js":112}],99:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -14094,7 +14060,7 @@ EC.prototype.getKeyRecoveryParam = function(e, signature, Q, enc) {
   throw new Error('Unable to find valid recovery factor');
 };
 
-},{"../../elliptic":93,"./key":101,"./signature":102,"bn.js":44}],101:[function(require,module,exports){
+},{"../../elliptic":92,"./key":100,"./signature":101,"bn.js":43}],100:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -14203,7 +14169,7 @@ KeyPair.prototype.inspect = function inspect() {
          ' pub: ' + (this.pub && this.pub.inspect()) + ' >';
 };
 
-},{"bn.js":44}],102:[function(require,module,exports){
+},{"bn.js":43}],101:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -14340,7 +14306,7 @@ Signature.prototype.toDER = function toDER(enc) {
   return utils.encode(res, enc);
 };
 
-},{"../../elliptic":93,"bn.js":44}],103:[function(require,module,exports){
+},{"../../elliptic":92,"bn.js":43}],102:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -14460,7 +14426,7 @@ EDDSA.prototype.isPoint = function isPoint(val) {
   return val instanceof this.pointClass;
 };
 
-},{"../../elliptic":93,"./key":104,"./signature":105,"hash.js":113}],104:[function(require,module,exports){
+},{"../../elliptic":92,"./key":103,"./signature":104,"hash.js":112}],103:[function(require,module,exports){
 'use strict';
 
 var elliptic = require('../../elliptic');
@@ -14558,7 +14524,7 @@ KeyPair.prototype.getPublic = function getPublic(enc) {
 
 module.exports = KeyPair;
 
-},{"../../elliptic":93}],105:[function(require,module,exports){
+},{"../../elliptic":92}],104:[function(require,module,exports){
 'use strict';
 
 var BN = require('bn.js');
@@ -14626,7 +14592,7 @@ Signature.prototype.toHex = function toHex() {
 
 module.exports = Signature;
 
-},{"../../elliptic":93,"bn.js":44}],106:[function(require,module,exports){
+},{"../../elliptic":92,"bn.js":43}],105:[function(require,module,exports){
 'use strict';
 
 var hash = require('hash.js');
@@ -14742,7 +14708,7 @@ HmacDRBG.prototype.generate = function generate(len, enc, add, addEnc) {
   return utils.encode(res, enc);
 };
 
-},{"../elliptic":93,"hash.js":113}],107:[function(require,module,exports){
+},{"../elliptic":92,"hash.js":112}],106:[function(require,module,exports){
 module.exports = {
   doubles: {
     step: 4,
@@ -15524,7 +15490,7 @@ module.exports = {
   }
 };
 
-},{}],108:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 'use strict';
 
 var utils = exports;
@@ -15699,7 +15665,7 @@ function intFromLE(bytes) {
 utils.intFromLE = intFromLE;
 
 
-},{"bn.js":44}],109:[function(require,module,exports){
+},{"bn.js":43}],108:[function(require,module,exports){
 module.exports={
   "_args": [
     [
@@ -15800,7 +15766,7 @@ module.exports={
   "version": "6.2.3"
 }
 
-},{}],110:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -16100,7 +16066,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],111:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 (function (Buffer){
 var md5 = require('create-hash/md5')
 module.exports = EVP_BytesToKey
@@ -16172,7 +16138,7 @@ function EVP_BytesToKey (password, salt, keyLen, ivLen) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"create-hash/md5":79}],112:[function(require,module,exports){
+},{"buffer":71,"create-hash/md5":78}],111:[function(require,module,exports){
 /*
  (c) 2016, Philippe Legault
 An implementation of Guibas & Stolfi's O(nlogn) Delaunay triangulation algorithm
@@ -16493,7 +16459,7 @@ An implementation of Guibas & Stolfi's O(nlogn) Delaunay triangulation algorithm
     else window.Delaunay = Delaunay;
 
 })();
-},{}],113:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 var hash = exports;
 
 hash.utils = require('./hash/utils');
@@ -16510,7 +16476,7 @@ hash.sha384 = hash.sha.sha384;
 hash.sha512 = hash.sha.sha512;
 hash.ripemd160 = hash.ripemd.ripemd160;
 
-},{"./hash/common":114,"./hash/hmac":115,"./hash/ripemd":116,"./hash/sha":117,"./hash/utils":118}],114:[function(require,module,exports){
+},{"./hash/common":113,"./hash/hmac":114,"./hash/ripemd":115,"./hash/sha":116,"./hash/utils":117}],113:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -16603,7 +16569,7 @@ BlockHash.prototype._pad = function pad() {
   return res;
 };
 
-},{"../hash":113}],115:[function(require,module,exports){
+},{"../hash":112}],114:[function(require,module,exports){
 var hmac = exports;
 
 var hash = require('../hash');
@@ -16653,7 +16619,7 @@ Hmac.prototype.digest = function digest(enc) {
   return this.outer.digest(enc);
 };
 
-},{"../hash":113}],116:[function(require,module,exports){
+},{"../hash":112}],115:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 
@@ -16799,7 +16765,7 @@ var sh = [
   8, 5, 12, 9, 12, 5, 14, 6, 8, 13, 6, 5, 15, 13, 11, 11
 ];
 
-},{"../hash":113}],117:[function(require,module,exports){
+},{"../hash":112}],116:[function(require,module,exports){
 var hash = require('../hash');
 var utils = hash.utils;
 var assert = utils.assert;
@@ -17365,7 +17331,7 @@ function g1_512_lo(xh, xl) {
   return r;
 }
 
-},{"../hash":113}],118:[function(require,module,exports){
+},{"../hash":112}],117:[function(require,module,exports){
 var utils = exports;
 var inherits = require('inherits');
 
@@ -17624,7 +17590,7 @@ function shr64_lo(ah, al, num) {
 };
 exports.shr64_lo = shr64_lo;
 
-},{"inherits":122}],119:[function(require,module,exports){
+},{"inherits":121}],118:[function(require,module,exports){
 var coords = require('notecoord');
 var accval = require('accidental-value');
 
@@ -17667,7 +17633,7 @@ module.exports = function helmholtz(name) {
   return coord;
 };
 
-},{"accidental-value":28,"notecoord":130}],120:[function(require,module,exports){
+},{"accidental-value":27,"notecoord":129}],119:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -17753,7 +17719,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],121:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -17764,7 +17730,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],122:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -17789,7 +17755,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],123:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 var pattern = /^(AA|A|P|M|m|d|dd)(-?\d+)$/;
 
 // The interval it takes to raise a note a semitone
@@ -17839,7 +17805,7 @@ module.exports = function(simple) {
 // Copy to avoid overwriting internal base intervals
 module.exports.coords = baseIntervals.slice(0);
 
-},{}],124:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -17858,7 +17824,7 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],125:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -33775,7 +33741,7 @@ module.exports = function (obj) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],126:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
 var bn = require('bn.js');
 var brorand = require('brorand');
 
@@ -33890,7 +33856,7 @@ MillerRabin.prototype.getDivisor = function getDivisor(n, k) {
   return false;
 };
 
-},{"bn.js":44,"brorand":45}],127:[function(require,module,exports){
+},{"bn.js":43,"brorand":44}],126:[function(require,module,exports){
 module.exports = assert;
 
 function assert(val, msg) {
@@ -33903,7 +33869,7 @@ assert.equal = function assertEqual(l, r, msg) {
     throw new Error(msg || ('Assertion failed: ' + l + ' != ' + r));
 };
 
-},{}],128:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 //! moment.js
 //! version : 2.14.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -38099,7 +38065,7 @@ assert.equal = function assertEqual(l, r, msg) {
     return _moment;
 
 }));
-},{}],129:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 (function (Buffer){
 //     uuid.js
 //
@@ -38375,7 +38341,7 @@ assert.equal = function assertEqual(l, r, msg) {
 })('undefined' !== typeof window ? window : null);
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"crypto":81}],130:[function(require,module,exports){
+},{"buffer":71,"crypto":80}],129:[function(require,module,exports){
 // First coord is octaves, second is fifths. Distances are relative to c
 var notes = {
   c: [0, 0],
@@ -38396,7 +38362,7 @@ module.exports.notes = notes;
 module.exports.A4 = [3, 3]; // Relative to C0 (scientic notation, ~16.35Hz)
 module.exports.sharp = [-4, 7];
 
-},{}],131:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 module.exports={"2.16.840.1.101.3.4.1.1": "aes-128-ecb",
 "2.16.840.1.101.3.4.1.2": "aes-128-cbc",
 "2.16.840.1.101.3.4.1.3": "aes-128-ofb",
@@ -38410,7 +38376,7 @@ module.exports={"2.16.840.1.101.3.4.1.1": "aes-128-ecb",
 "2.16.840.1.101.3.4.1.43": "aes-256-ofb",
 "2.16.840.1.101.3.4.1.44": "aes-256-cfb"
 }
-},{}],132:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 // from https://github.com/indutny/self-signed/blob/gh-pages/lib/asn1.js
 // Fedor, you are amazing.
 
@@ -38529,7 +38495,7 @@ exports.signature = asn1.define('signature', function () {
   )
 })
 
-},{"asn1.js":29}],133:[function(require,module,exports){
+},{"asn1.js":28}],132:[function(require,module,exports){
 (function (Buffer){
 // adapted from https://github.com/apatil/pemstrip
 var findProc = /Proc-Type: 4,ENCRYPTED\r?\nDEK-Info: AES-((?:128)|(?:192)|(?:256))-CBC,([0-9A-H]+)\r?\n\r?\n([0-9A-z\n\r\+\/\=]+)\r?\n/m
@@ -38563,7 +38529,7 @@ module.exports = function (okey, password) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"browserify-aes":49,"buffer":72,"evp_bytestokey":111}],134:[function(require,module,exports){
+},{"browserify-aes":48,"buffer":71,"evp_bytestokey":110}],133:[function(require,module,exports){
 (function (Buffer){
 var asn1 = require('./asn1')
 var aesid = require('./aesid.json')
@@ -38668,7 +38634,7 @@ function decrypt (data, password) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"./aesid.json":131,"./asn1":132,"./fixProc":133,"browserify-aes":49,"buffer":72,"pbkdf2":135}],135:[function(require,module,exports){
+},{"./aesid.json":130,"./asn1":131,"./fixProc":132,"browserify-aes":48,"buffer":71,"pbkdf2":134}],134:[function(require,module,exports){
 (function (Buffer){
 var createHmac = require('create-hmac')
 var MAX_ALLOC = Math.pow(2, 30) - 1 // default in iojs
@@ -38752,7 +38718,7 @@ function pbkdf2Sync (password, salt, iterations, keylen, digest) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"create-hmac":80}],136:[function(require,module,exports){
+},{"buffer":71,"create-hmac":79}],135:[function(require,module,exports){
 module.exports = function(coord, stdPitch) {
   if (typeof coord === 'number') {
     stdPitch = coord;
@@ -38765,7 +38731,7 @@ module.exports = function(coord, stdPitch) {
   return stdPitch * Math.pow(2, (coord[0] * 12 + coord[1] * 7) / 12);
 }
 
-},{}],137:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -38789,7 +38755,7 @@ function nextTick(fn) {
 }
 
 }).call(this,require('_process'))
-},{"_process":138}],138:[function(require,module,exports){
+},{"_process":137}],137:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -38882,7 +38848,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],139:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 var Pt = {}; (function() {var CanvasSpace, Circle, Color, Const, Curve, DOMSpace, Delaunay, Easing, Form, Grid, GridCascade, Line, Matrix, Noise, Pair, Particle, ParticleEmitter, ParticleField, ParticleSystem, Point, PointSet, QuadTree, Rectangle, SVGForm, SVGSpace, SamplePoints, Space, StripeBound, Timer, Triangle, UI, Util, Vector,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -45020,7 +44986,7 @@ this.Delaunay = Delaunay;
 
 
 }).call(Pt); module.exports = Pt;
-},{}],140:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 exports.publicEncrypt = require('./publicEncrypt');
 exports.privateDecrypt = require('./privateDecrypt');
 
@@ -45031,7 +44997,7 @@ exports.privateEncrypt = function privateEncrypt(key, buf) {
 exports.publicDecrypt = function publicDecrypt(key, buf) {
   return exports.privateDecrypt(key, buf, true);
 };
-},{"./privateDecrypt":142,"./publicEncrypt":143}],141:[function(require,module,exports){
+},{"./privateDecrypt":141,"./publicEncrypt":142}],140:[function(require,module,exports){
 (function (Buffer){
 var createHash = require('create-hash');
 module.exports = function (seed, len) {
@@ -45050,7 +45016,7 @@ function i2ops(c) {
   return out;
 }
 }).call(this,require("buffer").Buffer)
-},{"buffer":72,"create-hash":77}],142:[function(require,module,exports){
+},{"buffer":71,"create-hash":76}],141:[function(require,module,exports){
 (function (Buffer){
 var parseKeys = require('parse-asn1');
 var mgf = require('./mgf');
@@ -45161,7 +45127,7 @@ function compare(a, b){
   return dif;
 }
 }).call(this,require("buffer").Buffer)
-},{"./mgf":141,"./withPublic":144,"./xor":145,"bn.js":44,"browserify-rsa":65,"buffer":72,"create-hash":77,"parse-asn1":134}],143:[function(require,module,exports){
+},{"./mgf":140,"./withPublic":143,"./xor":144,"bn.js":43,"browserify-rsa":64,"buffer":71,"create-hash":76,"parse-asn1":133}],142:[function(require,module,exports){
 (function (Buffer){
 var parseKeys = require('parse-asn1');
 var randomBytes = require('randombytes');
@@ -45259,7 +45225,7 @@ function nonZero(len, crypto) {
   return out;
 }
 }).call(this,require("buffer").Buffer)
-},{"./mgf":141,"./withPublic":144,"./xor":145,"bn.js":44,"browserify-rsa":65,"buffer":72,"create-hash":77,"parse-asn1":134,"randombytes":148}],144:[function(require,module,exports){
+},{"./mgf":140,"./withPublic":143,"./xor":144,"bn.js":43,"browserify-rsa":64,"buffer":71,"create-hash":76,"parse-asn1":133,"randombytes":147}],143:[function(require,module,exports){
 (function (Buffer){
 var bn = require('bn.js');
 function withPublic(paddedMsg, key) {
@@ -45272,7 +45238,7 @@ function withPublic(paddedMsg, key) {
 
 module.exports = withPublic;
 }).call(this,require("buffer").Buffer)
-},{"bn.js":44,"buffer":72}],145:[function(require,module,exports){
+},{"bn.js":43,"buffer":71}],144:[function(require,module,exports){
 module.exports = function xor(a, b) {
   var len = a.length;
   var i = -1;
@@ -45281,7 +45247,7 @@ module.exports = function xor(a, b) {
   }
   return a
 };
-},{}],146:[function(require,module,exports){
+},{}],145:[function(require,module,exports){
 'use strict';
 module.exports = function (min, max) {
 	if (max === undefined) {
@@ -45296,7 +45262,7 @@ module.exports = function (min, max) {
 	return Math.random() * (max - min) + min;
 };
 
-},{}],147:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 'use strict';
 module.exports = function (min, max) {
 	if (max === undefined) {
@@ -45311,7 +45277,7 @@ module.exports = function (min, max) {
 	return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
-},{}],148:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 (function (process,global,Buffer){
 'use strict'
 
@@ -45351,10 +45317,10 @@ function randomBytes (size, cb) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"_process":138,"buffer":72}],149:[function(require,module,exports){
+},{"_process":137,"buffer":71}],148:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":150}],150:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":149}],149:[function(require,module,exports){
 // a duplex stream is just a stream that is both readable and writable.
 // Since JS doesn't have multiple prototypal inheritance, this class
 // prototypally inherits from Readable, and then parasitically from
@@ -45430,7 +45396,7 @@ function forEach(xs, f) {
     f(xs[i], i);
   }
 }
-},{"./_stream_readable":152,"./_stream_writable":154,"core-util-is":75,"inherits":122,"process-nextick-args":137}],151:[function(require,module,exports){
+},{"./_stream_readable":151,"./_stream_writable":153,"core-util-is":74,"inherits":121,"process-nextick-args":136}],150:[function(require,module,exports){
 // a passthrough stream.
 // basically just the most minimal sort of Transform stream.
 // Every written chunk gets output as-is.
@@ -45457,7 +45423,7 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
-},{"./_stream_transform":153,"core-util-is":75,"inherits":122}],152:[function(require,module,exports){
+},{"./_stream_transform":152,"core-util-is":74,"inherits":121}],151:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -46340,7 +46306,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this,require('_process'))
-},{"./_stream_duplex":150,"_process":138,"buffer":72,"core-util-is":75,"events":110,"inherits":122,"isarray":155,"process-nextick-args":137,"string_decoder/":172,"util":46}],153:[function(require,module,exports){
+},{"./_stream_duplex":149,"_process":137,"buffer":71,"core-util-is":74,"events":109,"inherits":121,"isarray":154,"process-nextick-args":136,"string_decoder/":171,"util":45}],152:[function(require,module,exports){
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -46521,7 +46487,7 @@ function done(stream, er) {
 
   return stream.push(null);
 }
-},{"./_stream_duplex":150,"core-util-is":75,"inherits":122}],154:[function(require,module,exports){
+},{"./_stream_duplex":149,"core-util-is":74,"inherits":121}],153:[function(require,module,exports){
 (function (process){
 // A bit simpler than readable streams.
 // Implement an async ._write(chunk, encoding, cb), and it'll handle all
@@ -47040,12 +47006,12 @@ function CorkedRequest(state) {
   };
 }
 }).call(this,require('_process'))
-},{"./_stream_duplex":150,"_process":138,"buffer":72,"core-util-is":75,"events":110,"inherits":122,"process-nextick-args":137,"util-deprecate":183}],155:[function(require,module,exports){
-arguments[4][73][0].apply(exports,arguments)
-},{"dup":73}],156:[function(require,module,exports){
+},{"./_stream_duplex":149,"_process":137,"buffer":71,"core-util-is":74,"events":109,"inherits":121,"process-nextick-args":136,"util-deprecate":181}],154:[function(require,module,exports){
+arguments[4][72][0].apply(exports,arguments)
+},{"dup":72}],155:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":151}],157:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":150}],156:[function(require,module,exports){
 var Stream = (function (){
   try {
     return require('st' + 'ream'); // hack to fix a circular dependency issue when used with browserify
@@ -47059,13 +47025,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":150,"./lib/_stream_passthrough.js":151,"./lib/_stream_readable.js":152,"./lib/_stream_transform.js":153,"./lib/_stream_writable.js":154}],158:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":149,"./lib/_stream_passthrough.js":150,"./lib/_stream_readable.js":151,"./lib/_stream_transform.js":152,"./lib/_stream_writable.js":153}],157:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":153}],159:[function(require,module,exports){
+},{"./lib/_stream_transform.js":152}],158:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":154}],160:[function(require,module,exports){
+},{"./lib/_stream_writable.js":153}],159:[function(require,module,exports){
 (function (Buffer){
 /*
 CryptoJS v3.1.2
@@ -47279,7 +47245,7 @@ function ripemd160 (message) {
 module.exports = ripemd160
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],161:[function(require,module,exports){
+},{"buffer":71}],160:[function(require,module,exports){
 var coords = require('notecoord');
 var accval = require('accidental-value');
 
@@ -47303,7 +47269,7 @@ module.exports = function scientific(name) {
   return coord;
 };
 
-},{"accidental-value":28,"notecoord":130}],162:[function(require,module,exports){
+},{"accidental-value":27,"notecoord":129}],161:[function(require,module,exports){
 (function (Buffer){
 // prototype class for hash functions
 function Hash (blockSize, finalSize) {
@@ -47376,7 +47342,7 @@ Hash.prototype._update = function () {
 module.exports = Hash
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":72}],163:[function(require,module,exports){
+},{"buffer":71}],162:[function(require,module,exports){
 var exports = module.exports = function SHA (algorithm) {
   algorithm = algorithm.toLowerCase()
 
@@ -47393,7 +47359,7 @@ exports.sha256 = require('./sha256')
 exports.sha384 = require('./sha384')
 exports.sha512 = require('./sha512')
 
-},{"./sha":164,"./sha1":165,"./sha224":166,"./sha256":167,"./sha384":168,"./sha512":169}],164:[function(require,module,exports){
+},{"./sha":163,"./sha1":164,"./sha224":165,"./sha256":166,"./sha384":167,"./sha512":168}],163:[function(require,module,exports){
 (function (Buffer){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-0, as defined
@@ -47490,7 +47456,7 @@ Sha.prototype._hash = function () {
 module.exports = Sha
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":162,"buffer":72,"inherits":122}],165:[function(require,module,exports){
+},{"./hash":161,"buffer":71,"inherits":121}],164:[function(require,module,exports){
 (function (Buffer){
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
@@ -47592,7 +47558,7 @@ Sha1.prototype._hash = function () {
 module.exports = Sha1
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":162,"buffer":72,"inherits":122}],166:[function(require,module,exports){
+},{"./hash":161,"buffer":71,"inherits":121}],165:[function(require,module,exports){
 (function (Buffer){
 /**
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
@@ -47648,7 +47614,7 @@ Sha224.prototype._hash = function () {
 module.exports = Sha224
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":162,"./sha256":167,"buffer":72,"inherits":122}],167:[function(require,module,exports){
+},{"./hash":161,"./sha256":166,"buffer":71,"inherits":121}],166:[function(require,module,exports){
 (function (Buffer){
 /**
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-256, as defined
@@ -47786,7 +47752,7 @@ Sha256.prototype._hash = function () {
 module.exports = Sha256
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":162,"buffer":72,"inherits":122}],168:[function(require,module,exports){
+},{"./hash":161,"buffer":71,"inherits":121}],167:[function(require,module,exports){
 (function (Buffer){
 var inherits = require('inherits')
 var SHA512 = require('./sha512')
@@ -47846,7 +47812,7 @@ Sha384.prototype._hash = function () {
 module.exports = Sha384
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":162,"./sha512":169,"buffer":72,"inherits":122}],169:[function(require,module,exports){
+},{"./hash":161,"./sha512":168,"buffer":71,"inherits":121}],168:[function(require,module,exports){
 (function (Buffer){
 var inherits = require('inherits')
 var Hash = require('./hash')
@@ -48109,14 +48075,14 @@ Sha512.prototype._hash = function () {
 module.exports = Sha512
 
 }).call(this,require("buffer").Buffer)
-},{"./hash":162,"buffer":72,"inherits":122}],170:[function(require,module,exports){
+},{"./hash":161,"buffer":71,"inherits":121}],169:[function(require,module,exports){
 // stats.js - http://github.com/mrdoob/stats.js
 var Stats=function(){function h(a){c.appendChild(a.dom);return a}function k(a){for(var d=0;d<c.children.length;d++)c.children[d].style.display=d===a?"block":"none";l=a}var l=0,c=document.createElement("div");c.style.cssText="position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000";c.addEventListener("click",function(a){a.preventDefault();k(++l%c.children.length)},!1);var g=(performance||Date).now(),e=g,a=0,r=h(new Stats.Panel("FPS","#0ff","#002")),f=h(new Stats.Panel("MS","#0f0","#020"));
 if(self.performance&&self.performance.memory)var t=h(new Stats.Panel("MB","#f08","#201"));k(0);return{REVISION:16,dom:c,addPanel:h,showPanel:k,begin:function(){g=(performance||Date).now()},end:function(){a++;var c=(performance||Date).now();f.update(c-g,200);if(c>e+1E3&&(r.update(1E3*a/(c-e),100),e=c,a=0,t)){var d=performance.memory;t.update(d.usedJSHeapSize/1048576,d.jsHeapSizeLimit/1048576)}return c},update:function(){g=this.end()},domElement:c,setMode:k}};
 Stats.Panel=function(h,k,l){var c=Infinity,g=0,e=Math.round,a=e(window.devicePixelRatio||1),r=80*a,f=48*a,t=3*a,u=2*a,d=3*a,m=15*a,n=74*a,p=30*a,q=document.createElement("canvas");q.width=r;q.height=f;q.style.cssText="width:80px;height:48px";var b=q.getContext("2d");b.font="bold "+9*a+"px Helvetica,Arial,sans-serif";b.textBaseline="top";b.fillStyle=l;b.fillRect(0,0,r,f);b.fillStyle=k;b.fillText(h,t,u);b.fillRect(d,m,n,p);b.fillStyle=l;b.globalAlpha=.9;b.fillRect(d,m,n,p);return{dom:q,update:function(f,
 v){c=Math.min(c,f);g=Math.max(g,f);b.fillStyle=l;b.globalAlpha=1;b.fillRect(0,0,r,m);b.fillStyle=k;b.fillText(e(f)+" "+h+" ("+e(c)+"-"+e(g)+")",t,u);b.drawImage(q,d+a,m,n-a,p,d,m,n-a,p);b.fillRect(d+n-a,m,a,p);b.fillStyle=l;b.globalAlpha=.9;b.fillRect(d+n-a,m,a,e((1-f/v)*p))}}};"object"===typeof module&&(module.exports=Stats);
 
-},{}],171:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -48245,7 +48211,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":110,"inherits":122,"readable-stream/duplex.js":149,"readable-stream/passthrough.js":156,"readable-stream/readable.js":157,"readable-stream/transform.js":158,"readable-stream/writable.js":159}],172:[function(require,module,exports){
+},{"events":109,"inherits":121,"readable-stream/duplex.js":148,"readable-stream/passthrough.js":155,"readable-stream/readable.js":156,"readable-stream/transform.js":157,"readable-stream/writable.js":158}],171:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -48468,7 +48434,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":72}],173:[function(require,module,exports){
+},{"buffer":71}],172:[function(require,module,exports){
 var Note = require('./lib/note');
 var Interval = require('./lib/interval');
 var Chord = require('./lib/chord');
@@ -48547,7 +48513,7 @@ var teoria = {
 require('./lib/sugar')(teoria);
 exports = module.exports = teoria;
 
-},{"./lib/chord":174,"./lib/interval":175,"./lib/note":177,"./lib/scale":178,"./lib/sugar":179}],174:[function(require,module,exports){
+},{"./lib/chord":173,"./lib/interval":174,"./lib/note":176,"./lib/scale":177,"./lib/sugar":178}],173:[function(require,module,exports){
 var daccord = require('daccord');
 var knowledge = require('./knowledge');
 var Note = require('./note');
@@ -48774,7 +48740,7 @@ Chord.prototype = {
 
 module.exports = Chord;
 
-},{"./interval":175,"./knowledge":176,"./note":177,"daccord":82}],175:[function(require,module,exports){
+},{"./interval":174,"./knowledge":175,"./note":176,"daccord":81}],174:[function(require,module,exports){
 var knowledge = require('./knowledge');
 var vector = require('./vector');
 var toCoord = require('interval-coords');
@@ -48942,7 +48908,7 @@ Interval.invert = function(sInterval) {
 
 module.exports = Interval;
 
-},{"./knowledge":176,"./vector":180,"interval-coords":123}],176:[function(require,module,exports){
+},{"./knowledge":175,"./vector":179,"interval-coords":122}],175:[function(require,module,exports){
 // Note coordinates [octave, fifth] relative to C
 module.exports = {
   notes: {
@@ -49106,7 +49072,7 @@ module.exports = {
   }
 }
 
-},{}],177:[function(require,module,exports){
+},{}],176:[function(require,module,exports){
 var scientific = require('scientific-notation');
 var helmholtz = require('helmholtz');
 var pitchFq = require('pitch-fq');
@@ -49329,7 +49295,7 @@ Note.fromMIDI = function(note) {
 
 module.exports = Note;
 
-},{"./interval":175,"./knowledge":176,"./vector":180,"helmholtz":119,"pitch-fq":136,"scientific-notation":161}],178:[function(require,module,exports){
+},{"./interval":174,"./knowledge":175,"./vector":179,"helmholtz":118,"pitch-fq":135,"scientific-notation":160}],177:[function(require,module,exports){
 var knowledge = require('./knowledge');
 var Interval = require('./interval');
 
@@ -49441,7 +49407,7 @@ Scale.KNOWN_SCALES = Object.keys(scales);
 
 module.exports = Scale;
 
-},{"./interval":175,"./knowledge":176}],179:[function(require,module,exports){
+},{"./interval":174,"./knowledge":175}],178:[function(require,module,exports){
 var knowledge = require('./knowledge');
 
 module.exports = function(teoria) {
@@ -49460,7 +49426,7 @@ module.exports = function(teoria) {
   }
 }
 
-},{"./knowledge":176}],180:[function(require,module,exports){
+},{"./knowledge":175}],179:[function(require,module,exports){
 module.exports = {
   add: function(note, interval) {
     return [note[0] + interval[0], note[1] + interval[1]];
@@ -49482,1128 +49448,7 @@ module.exports = {
   }
 }
 
-},{}],181:[function(require,module,exports){
-module.exports = function(THREE) {
-	var MOUSE = THREE.MOUSE
-	if (!MOUSE)
-		MOUSE = { LEFT: 0, MIDDLE: 1, RIGHT: 2 };
-
-	/**
-	 * @author qiao / https://github.com/qiao
-	 * @author mrdoob / http://mrdoob.com
-	 * @author alteredq / http://alteredqualia.com/
-	 * @author WestLangley / http://github.com/WestLangley
-	 * @author erich666 / http://erichaines.com
-	 */
-	/*global THREE, console */
-
-	function OrbitConstraint ( object ) {
-
-		this.object = object;
-
-		// "target" sets the location of focus, where the object orbits around
-		// and where it pans with respect to.
-		this.target = new THREE.Vector3();
-
-		// Limits to how far you can dolly in and out ( PerspectiveCamera only )
-		this.minDistance = 0;
-		this.maxDistance = Infinity;
-
-		// Limits to how far you can zoom in and out ( OrthographicCamera only )
-		this.minZoom = 0;
-		this.maxZoom = Infinity;
-
-		// How far you can orbit vertically, upper and lower limits.
-		// Range is 0 to Math.PI radians.
-		this.minPolarAngle = 0; // radians
-		this.maxPolarAngle = Math.PI; // radians
-
-		// How far you can orbit horizontally, upper and lower limits.
-		// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
-		this.minAzimuthAngle = - Infinity; // radians
-		this.maxAzimuthAngle = Infinity; // radians
-
-		// Set to true to enable damping (inertia)
-		// If damping is enabled, you must call controls.update() in your animation loop
-		this.enableDamping = false;
-		this.dampingFactor = 0.25;
-
-		////////////
-		// internals
-
-		var scope = this;
-
-		var EPS = 0.000001;
-
-		// Current position in spherical coordinate system.
-		var theta;
-		var phi;
-
-		// Pending changes
-		var phiDelta = 0;
-		var thetaDelta = 0;
-		var scale = 1;
-		var panOffset = new THREE.Vector3();
-		var zoomChanged = false;
-
-		// API
-
-		this.getPolarAngle = function () {
-
-			return phi;
-
-		};
-
-		this.getAzimuthalAngle = function () {
-
-			return theta;
-
-		};
-
-		this.rotateLeft = function ( angle ) {
-
-			thetaDelta -= angle;
-
-		};
-
-		this.rotateUp = function ( angle ) {
-
-			phiDelta -= angle;
-
-		};
-
-		// pass in distance in world space to move left
-		this.panLeft = function() {
-
-			var v = new THREE.Vector3();
-
-			return function panLeft ( distance ) {
-
-				var te = this.object.matrix.elements;
-
-				// get X column of matrix
-				v.set( te[ 0 ], te[ 1 ], te[ 2 ] );
-				v.multiplyScalar( - distance );
-
-				panOffset.add( v );
-
-			};
-
-		}();
-
-		// pass in distance in world space to move up
-		this.panUp = function() {
-
-			var v = new THREE.Vector3();
-
-			return function panUp ( distance ) {
-
-				var te = this.object.matrix.elements;
-
-				// get Y column of matrix
-				v.set( te[ 4 ], te[ 5 ], te[ 6 ] );
-				v.multiplyScalar( distance );
-
-				panOffset.add( v );
-
-			};
-
-		}();
-
-		// pass in x,y of change desired in pixel space,
-		// right and down are positive
-		this.pan = function ( deltaX, deltaY, screenWidth, screenHeight ) {
-
-			if ( scope.object instanceof THREE.PerspectiveCamera ) {
-
-				// perspective
-				var position = scope.object.position;
-				var offset = position.clone().sub( scope.target );
-				var targetDistance = offset.length();
-
-				// half of the fov is center to top of screen
-				targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
-
-				// we actually don't use screenWidth, since perspective camera is fixed to screen height
-				scope.panLeft( 2 * deltaX * targetDistance / screenHeight );
-				scope.panUp( 2 * deltaY * targetDistance / screenHeight );
-
-			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
-
-				// orthographic
-				scope.panLeft( deltaX * ( scope.object.right - scope.object.left ) / screenWidth );
-				scope.panUp( deltaY * ( scope.object.top - scope.object.bottom ) / screenHeight );
-
-			} else {
-
-				// camera neither orthographic or perspective
-				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
-
-			}
-
-		};
-
-		this.dollyIn = function ( dollyScale ) {
-
-			if ( scope.object instanceof THREE.PerspectiveCamera ) {
-
-				scale /= dollyScale;
-
-			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
-
-				scope.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom * dollyScale ) );
-				scope.object.updateProjectionMatrix();
-				zoomChanged = true;
-
-			} else {
-
-				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
-
-			}
-
-		};
-
-		this.dollyOut = function ( dollyScale ) {
-
-			if ( scope.object instanceof THREE.PerspectiveCamera ) {
-
-				scale *= dollyScale;
-
-			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
-
-				scope.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom / dollyScale ) );
-				scope.object.updateProjectionMatrix();
-				zoomChanged = true;
-
-			} else {
-
-				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
-
-			}
-
-		};
-
-		this.update = function() {
-
-			var offset = new THREE.Vector3();
-
-			// so camera.up is the orbit axis
-			var quat = new THREE.Quaternion().setFromUnitVectors( object.up, new THREE.Vector3( 0, 1, 0 ) );
-			var quatInverse = quat.clone().inverse();
-
-			var lastPosition = new THREE.Vector3();
-			var lastQuaternion = new THREE.Quaternion();
-
-			return function () {
-
-				var position = this.object.position;
-
-				offset.copy( position ).sub( this.target );
-
-				// rotate offset to "y-axis-is-up" space
-				offset.applyQuaternion( quat );
-
-				// angle from z-axis around y-axis
-
-				theta = Math.atan2( offset.x, offset.z );
-
-				// angle from y-axis
-
-				phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
-
-				theta += thetaDelta;
-				phi += phiDelta;
-
-				// restrict theta to be between desired limits
-				theta = Math.max( this.minAzimuthAngle, Math.min( this.maxAzimuthAngle, theta ) );
-
-				// restrict phi to be between desired limits
-				phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
-
-				// restrict phi to be betwee EPS and PI-EPS
-				phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
-
-				var radius = offset.length() * scale;
-
-				// restrict radius to be between desired limits
-				radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
-
-				// move target to panned location
-				this.target.add( panOffset );
-
-				offset.x = radius * Math.sin( phi ) * Math.sin( theta );
-				offset.y = radius * Math.cos( phi );
-				offset.z = radius * Math.sin( phi ) * Math.cos( theta );
-
-				// rotate offset back to "camera-up-vector-is-up" space
-				offset.applyQuaternion( quatInverse );
-
-				position.copy( this.target ).add( offset );
-
-				this.object.lookAt( this.target );
-
-				if ( this.enableDamping === true ) {
-
-					thetaDelta *= ( 1 - this.dampingFactor );
-					phiDelta *= ( 1 - this.dampingFactor );
-
-				} else {
-
-					thetaDelta = 0;
-					phiDelta = 0;
-
-				}
-
-				scale = 1;
-				panOffset.set( 0, 0, 0 );
-
-				// update condition is:
-				// min(camera displacement, camera rotation in radians)^2 > EPS
-				// using small-angle approximation cos(x/2) = 1 - x^2 / 8
-
-				if ( zoomChanged ||
-					 lastPosition.distanceToSquared( this.object.position ) > EPS ||
-					8 * ( 1 - lastQuaternion.dot( this.object.quaternion ) ) > EPS ) {
-
-					lastPosition.copy( this.object.position );
-					lastQuaternion.copy( this.object.quaternion );
-					zoomChanged = false;
-
-					return true;
-
-				}
-
-				return false;
-
-			};
-
-		}();
-
-	};
-
-
-	// This set of controls performs orbiting, dollying (zooming), and panning. It maintains
-	// the "up" direction as +Y, unlike the TrackballControls. Touch on tablet and phones is
-	// supported.
-	//
-	//    Orbit - left mouse / touch: one finger move
-	//    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
-	//    Pan - right mouse, or arrow keys / touch: three finter swipe
-
-	function OrbitControls ( object, domElement ) {
-
-		var constraint = new OrbitConstraint( object );
-
-		this.domElement = ( domElement !== undefined ) ? domElement : document;
-
-		// API
-
-		Object.defineProperty( this, 'constraint', {
-
-			get: function() {
-
-				return constraint;
-
-			}
-
-		} );
-
-		this.getPolarAngle = function () {
-
-			return constraint.getPolarAngle();
-
-		};
-
-		this.getAzimuthalAngle = function () {
-
-			return constraint.getAzimuthalAngle();
-
-		};
-
-		// Set to false to disable this control
-		this.enabled = true;
-
-		// center is old, deprecated; use "target" instead
-		this.center = this.target;
-
-		// This option actually enables dollying in and out; left as "zoom" for
-		// backwards compatibility.
-		// Set to false to disable zooming
-		this.enableZoom = true;
-		this.zoomSpeed = 1.0;
-
-		// Set to false to disable rotating
-		this.enableRotate = true;
-		this.rotateSpeed = 1.0;
-
-		// Set to false to disable panning
-		this.enablePan = true;
-		this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
-
-		// Set to true to automatically rotate around the target
-		// If auto-rotate is enabled, you must call controls.update() in your animation loop
-		this.autoRotate = false;
-		this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
-
-		// Set to false to disable use of the keys
-		this.enableKeys = true;
-
-		// The four arrow keys
-		this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
-
-		// Mouse buttons
-		this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
-
-		////////////
-		// internals
-
-		var scope = this;
-
-		var rotateStart = new THREE.Vector2();
-		var rotateEnd = new THREE.Vector2();
-		var rotateDelta = new THREE.Vector2();
-
-		var panStart = new THREE.Vector2();
-		var panEnd = new THREE.Vector2();
-		var panDelta = new THREE.Vector2();
-
-		var dollyStart = new THREE.Vector2();
-		var dollyEnd = new THREE.Vector2();
-		var dollyDelta = new THREE.Vector2();
-
-		var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
-
-		var state = STATE.NONE;
-
-		// for reset
-
-		this.target0 = this.target.clone();
-		this.position0 = this.object.position.clone();
-		this.zoom0 = this.object.zoom;
-
-		// events
-
-		var changeEvent = { type: 'change' };
-		var startEvent = { type: 'start' };
-		var endEvent = { type: 'end' };
-
-		// pass in x,y of change desired in pixel space,
-		// right and down are positive
-		function pan( deltaX, deltaY ) {
-
-			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
-
-			constraint.pan( deltaX, deltaY, element.clientWidth, element.clientHeight );
-
-		}
-
-		this.update = function () {
-
-			if ( this.autoRotate && state === STATE.NONE ) {
-
-				constraint.rotateLeft( getAutoRotationAngle() );
-
-			}
-
-			if ( constraint.update() === true ) {
-
-				this.dispatchEvent( changeEvent );
-
-			}
-
-		};
-
-		this.reset = function () {
-
-			state = STATE.NONE;
-
-			this.target.copy( this.target0 );
-			this.object.position.copy( this.position0 );
-			this.object.zoom = this.zoom0;
-
-			this.object.updateProjectionMatrix();
-			this.dispatchEvent( changeEvent );
-
-			this.update();
-
-		};
-
-		function getAutoRotationAngle() {
-
-			return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
-
-		}
-
-		function getZoomScale() {
-
-			return Math.pow( 0.95, scope.zoomSpeed );
-
-		}
-
-		function onMouseDown( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			event.preventDefault();
-
-			if ( event.button === scope.mouseButtons.ORBIT ) {
-
-				if ( scope.enableRotate === false ) return;
-
-				state = STATE.ROTATE;
-
-				rotateStart.set( event.clientX, event.clientY );
-
-			} else if ( event.button === scope.mouseButtons.ZOOM ) {
-
-				if ( scope.enableZoom === false ) return;
-
-				state = STATE.DOLLY;
-
-				dollyStart.set( event.clientX, event.clientY );
-
-			} else if ( event.button === scope.mouseButtons.PAN ) {
-
-				if ( scope.enablePan === false ) return;
-
-				state = STATE.PAN;
-
-				panStart.set( event.clientX, event.clientY );
-
-			}
-
-			if ( state !== STATE.NONE ) {
-
-				document.addEventListener( 'mousemove', onMouseMove, false );
-				document.addEventListener( 'mouseup', onMouseUp, false );
-				scope.dispatchEvent( startEvent );
-
-			}
-
-		}
-
-		function onMouseMove( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			event.preventDefault();
-
-			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
-
-			if ( state === STATE.ROTATE ) {
-
-				if ( scope.enableRotate === false ) return;
-
-				rotateEnd.set( event.clientX, event.clientY );
-				rotateDelta.subVectors( rotateEnd, rotateStart );
-
-				// rotating across whole screen goes 360 degrees around
-				constraint.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
-
-				// rotating up and down along whole screen attempts to go 360, but limited to 180
-				constraint.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
-
-				rotateStart.copy( rotateEnd );
-
-			} else if ( state === STATE.DOLLY ) {
-
-				if ( scope.enableZoom === false ) return;
-
-				dollyEnd.set( event.clientX, event.clientY );
-				dollyDelta.subVectors( dollyEnd, dollyStart );
-
-				if ( dollyDelta.y > 0 ) {
-
-					constraint.dollyIn( getZoomScale() );
-
-				} else if ( dollyDelta.y < 0 ) {
-
-					constraint.dollyOut( getZoomScale() );
-
-				}
-
-				dollyStart.copy( dollyEnd );
-
-			} else if ( state === STATE.PAN ) {
-
-				if ( scope.enablePan === false ) return;
-
-				panEnd.set( event.clientX, event.clientY );
-				panDelta.subVectors( panEnd, panStart );
-
-				pan( panDelta.x, panDelta.y );
-
-				panStart.copy( panEnd );
-
-			}
-
-			if ( state !== STATE.NONE ) scope.update();
-
-		}
-
-		function onMouseUp( /* event */ ) {
-
-			if ( scope.enabled === false ) return;
-
-			document.removeEventListener( 'mousemove', onMouseMove, false );
-			document.removeEventListener( 'mouseup', onMouseUp, false );
-			scope.dispatchEvent( endEvent );
-			state = STATE.NONE;
-
-		}
-
-		function onMouseWheel( event ) {
-
-			if ( scope.enabled === false || scope.enableZoom === false || state !== STATE.NONE ) return;
-
-			event.preventDefault();
-			event.stopPropagation();
-
-			var delta = 0;
-
-			if ( event.wheelDelta !== undefined ) {
-
-				// WebKit / Opera / Explorer 9
-
-				delta = event.wheelDelta;
-
-			} else if ( event.detail !== undefined ) {
-
-				// Firefox
-
-				delta = - event.detail;
-
-			}
-
-			if ( delta > 0 ) {
-
-				constraint.dollyOut( getZoomScale() );
-
-			} else if ( delta < 0 ) {
-
-				constraint.dollyIn( getZoomScale() );
-
-			}
-
-			scope.update();
-			scope.dispatchEvent( startEvent );
-			scope.dispatchEvent( endEvent );
-
-		}
-
-		function onKeyDown( event ) {
-
-			if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
-
-			switch ( event.keyCode ) {
-
-				case scope.keys.UP:
-					pan( 0, scope.keyPanSpeed );
-					scope.update();
-					break;
-
-				case scope.keys.BOTTOM:
-					pan( 0, - scope.keyPanSpeed );
-					scope.update();
-					break;
-
-				case scope.keys.LEFT:
-					pan( scope.keyPanSpeed, 0 );
-					scope.update();
-					break;
-
-				case scope.keys.RIGHT:
-					pan( - scope.keyPanSpeed, 0 );
-					scope.update();
-					break;
-
-			}
-
-		}
-
-		function touchstart( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			switch ( event.touches.length ) {
-
-				case 1:	// one-fingered touch: rotate
-
-					if ( scope.enableRotate === false ) return;
-
-					state = STATE.TOUCH_ROTATE;
-
-					rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-					break;
-
-				case 2:	// two-fingered touch: dolly
-
-					if ( scope.enableZoom === false ) return;
-
-					state = STATE.TOUCH_DOLLY;
-
-					var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-					var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-					var distance = Math.sqrt( dx * dx + dy * dy );
-					dollyStart.set( 0, distance );
-					break;
-
-				case 3: // three-fingered touch: pan
-
-					if ( scope.enablePan === false ) return;
-
-					state = STATE.TOUCH_PAN;
-
-					panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-					break;
-
-				default:
-
-					state = STATE.NONE;
-
-			}
-
-			if ( state !== STATE.NONE ) scope.dispatchEvent( startEvent );
-
-		}
-
-		function touchmove( event ) {
-
-			if ( scope.enabled === false ) return;
-
-			event.preventDefault();
-			event.stopPropagation();
-
-			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
-
-			switch ( event.touches.length ) {
-
-				case 1: // one-fingered touch: rotate
-
-					if ( scope.enableRotate === false ) return;
-					if ( state !== STATE.TOUCH_ROTATE ) return;
-
-					rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-					rotateDelta.subVectors( rotateEnd, rotateStart );
-
-					// rotating across whole screen goes 360 degrees around
-					constraint.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
-					// rotating up and down along whole screen attempts to go 360, but limited to 180
-					constraint.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
-
-					rotateStart.copy( rotateEnd );
-
-					scope.update();
-					break;
-
-				case 2: // two-fingered touch: dolly
-
-					if ( scope.enableZoom === false ) return;
-					if ( state !== STATE.TOUCH_DOLLY ) return;
-
-					var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-					var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-					var distance = Math.sqrt( dx * dx + dy * dy );
-
-					dollyEnd.set( 0, distance );
-					dollyDelta.subVectors( dollyEnd, dollyStart );
-
-					if ( dollyDelta.y > 0 ) {
-
-						constraint.dollyOut( getZoomScale() );
-
-					} else if ( dollyDelta.y < 0 ) {
-
-						constraint.dollyIn( getZoomScale() );
-
-					}
-
-					dollyStart.copy( dollyEnd );
-
-					scope.update();
-					break;
-
-				case 3: // three-fingered touch: pan
-
-					if ( scope.enablePan === false ) return;
-					if ( state !== STATE.TOUCH_PAN ) return;
-
-					panEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-					panDelta.subVectors( panEnd, panStart );
-
-					pan( panDelta.x, panDelta.y );
-
-					panStart.copy( panEnd );
-
-					scope.update();
-					break;
-
-				default:
-
-					state = STATE.NONE;
-
-			}
-
-		}
-
-		function touchend( /* event */ ) {
-
-			if ( scope.enabled === false ) return;
-
-			scope.dispatchEvent( endEvent );
-			state = STATE.NONE;
-
-		}
-
-		function contextmenu( event ) {
-
-			event.preventDefault();
-
-		}
-
-		this.dispose = function() {
-
-			this.domElement.removeEventListener( 'contextmenu', contextmenu, false );
-			this.domElement.removeEventListener( 'mousedown', onMouseDown, false );
-			this.domElement.removeEventListener( 'mousewheel', onMouseWheel, false );
-			this.domElement.removeEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
-
-			this.domElement.removeEventListener( 'touchstart', touchstart, false );
-			this.domElement.removeEventListener( 'touchend', touchend, false );
-			this.domElement.removeEventListener( 'touchmove', touchmove, false );
-
-			document.removeEventListener( 'mousemove', onMouseMove, false );
-			document.removeEventListener( 'mouseup', onMouseUp, false );
-
-			window.removeEventListener( 'keydown', onKeyDown, false );
-
-		}
-
-		this.domElement.addEventListener( 'contextmenu', contextmenu, false );
-
-		this.domElement.addEventListener( 'mousedown', onMouseDown, false );
-		this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
-		this.domElement.addEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
-
-		this.domElement.addEventListener( 'touchstart', touchstart, false );
-		this.domElement.addEventListener( 'touchend', touchend, false );
-		this.domElement.addEventListener( 'touchmove', touchmove, false );
-
-		window.addEventListener( 'keydown', onKeyDown, false );
-
-		// force an update at start
-		this.update();
-
-	};
-
-	OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
-	OrbitControls.prototype.constructor = OrbitControls;
-
-	Object.defineProperties( OrbitControls.prototype, {
-
-		object: {
-
-			get: function () {
-
-				return this.constraint.object;
-
-			}
-
-		},
-
-		target: {
-
-			get: function () {
-
-				return this.constraint.target;
-
-			},
-
-			set: function ( value ) {
-
-				console.warn( 'THREE.OrbitControls: target is now immutable. Use target.set() instead.' );
-				this.constraint.target.copy( value );
-
-			}
-
-		},
-
-		minDistance : {
-
-			get: function () {
-
-				return this.constraint.minDistance;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.minDistance = value;
-
-			}
-
-		},
-
-		maxDistance : {
-
-			get: function () {
-
-				return this.constraint.maxDistance;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.maxDistance = value;
-
-			}
-
-		},
-
-		minZoom : {
-
-			get: function () {
-
-				return this.constraint.minZoom;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.minZoom = value;
-
-			}
-
-		},
-
-		maxZoom : {
-
-			get: function () {
-
-				return this.constraint.maxZoom;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.maxZoom = value;
-
-			}
-
-		},
-
-		minPolarAngle : {
-
-			get: function () {
-
-				return this.constraint.minPolarAngle;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.minPolarAngle = value;
-
-			}
-
-		},
-
-		maxPolarAngle : {
-
-			get: function () {
-
-				return this.constraint.maxPolarAngle;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.maxPolarAngle = value;
-
-			}
-
-		},
-
-		minAzimuthAngle : {
-
-			get: function () {
-
-				return this.constraint.minAzimuthAngle;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.minAzimuthAngle = value;
-
-			}
-
-		},
-
-		maxAzimuthAngle : {
-
-			get: function () {
-
-				return this.constraint.maxAzimuthAngle;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.maxAzimuthAngle = value;
-
-			}
-
-		},
-
-		enableDamping : {
-
-			get: function () {
-
-				return this.constraint.enableDamping;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.enableDamping = value;
-
-			}
-
-		},
-
-		dampingFactor : {
-
-			get: function () {
-
-				return this.constraint.dampingFactor;
-
-			},
-
-			set: function ( value ) {
-
-				this.constraint.dampingFactor = value;
-
-			}
-
-		},
-
-		// backward compatibility
-
-		noZoom: {
-
-			get: function () {
-
-				console.warn( 'THREE.OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
-				return ! this.enableZoom;
-
-			},
-
-			set: function ( value ) {
-
-				console.warn( 'THREE.OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
-				this.enableZoom = ! value;
-
-			}
-
-		},
-
-		noRotate: {
-
-			get: function () {
-
-				console.warn( 'THREE.OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
-				return ! this.enableRotate;
-
-			},
-
-			set: function ( value ) {
-
-				console.warn( 'THREE.OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
-				this.enableRotate = ! value;
-
-			}
-
-		},
-
-		noPan: {
-
-			get: function () {
-
-				console.warn( 'THREE.OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
-				return ! this.enablePan;
-
-			},
-
-			set: function ( value ) {
-
-				console.warn( 'THREE.OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
-				this.enablePan = ! value;
-
-			}
-
-		},
-
-		noKeys: {
-
-			get: function () {
-
-				console.warn( 'THREE.OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
-				return ! this.enableKeys;
-
-			},
-
-			set: function ( value ) {
-
-				console.warn( 'THREE.OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
-				this.enableKeys = ! value;
-
-			}
-
-		},
-
-		staticMoving : {
-
-			get: function () {
-
-				console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
-				return ! this.constraint.enableDamping;
-
-			},
-
-			set: function ( value ) {
-
-				console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
-				this.constraint.enableDamping = ! value;
-
-			}
-
-		},
-
-		dynamicDampingFactor : {
-
-			get: function () {
-
-				console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
-				return this.constraint.dampingFactor;
-
-			},
-
-			set: function ( value ) {
-
-				console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
-				this.constraint.dampingFactor = value;
-
-			}
-
-		}
-
-	} );
-
-	return OrbitControls;
-}
-
-},{}],182:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 // File:src/Three.js
 
 /**
@@ -92366,7 +91211,7 @@ THREE.MorphBlendMesh.prototype.update = function ( delta ) {
 };
 
 
-},{}],183:[function(require,module,exports){
+},{}],181:[function(require,module,exports){
 (function (global){
 
 /**
@@ -92437,7 +91282,7 @@ function config (name) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],184:[function(require,module,exports){
+},{}],182:[function(require,module,exports){
 var indexOf = require('indexof');
 
 var Object_keys = function (obj) {
@@ -92577,4 +91422,4 @@ exports.createContext = Script.createContext = function (context) {
     return copy;
 };
 
-},{"indexof":121}]},{},[2]);
+},{"indexof":120}]},{},[2]);

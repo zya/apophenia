@@ -102,10 +102,8 @@ var sketch = {
     currentPoints = pointsInsideCircle;
 
     // 3d stuff - commente out for now
-
     var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
     scene3d.updateMorph(m);
-    // scene3d.updateMorph(-0.01);
     scene3d.render();
 
     stats.end();

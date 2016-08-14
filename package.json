@@ -19,6 +19,7 @@
   "devDependencies": {
     "browserify": "^13.0.0",
     "concurrently": "^2.1.0",
+    "jshint": "^2.9.2",
     "watchify": "^3.7.0"
   },
   "scripts": {
