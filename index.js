@@ -2,6 +2,7 @@
 
 var _ = require('lodash');
 var Stats = require('stats.js');
+var randomF = require('random-float');
 
 var stats = new Stats();
 
@@ -38,6 +39,12 @@ var mouseY = 0;
 var easingStrength = config.easingStrength;
 var sizeChangeOnClick = config.sizeChangeOnClick;
 var white = colours.white.hex();
+
+function fadeAllPointsOut(points) {
+  points.forEach(function (point) {
+    point.fadeOutSpeed = randomF(0.003, 0.01);
+  });
+}
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
