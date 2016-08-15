@@ -940,7 +940,7 @@ renderer.domElement.className = 'test';
 renderer.domElement.style.visibility = 'hidden';
 renderer.setSize(window.innerWidth, window.innerHeight);
 
-var normalMap = textureLoader.load('../assets/images/normal-map.jpg');
+var normalMap = textureLoader.load('/assets/images/normal-map.jpg');
 // var textureMap = textureLoader.load('../assets/images/normal-map.jpg');
 // var displacementMap = textureLoader.load('../assets/images/displacement.jpg');
 
