@@ -2,7 +2,7 @@
 
 var _ = require('lodash');
 var Stats = require('stats.js');
-var randomF = require('random-float');
+// var randomF = require('random-float');
 
 var stats = new Stats();
 
@@ -21,8 +21,8 @@ var connections = require('./lib/connections');
 var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
-var sine = require('./lib/sine');
-var map = require('./lib/map');
+// var sine = require('./lib/sine');
+// var map = require('./lib/map');
 
 var space = pt.space;
 var form = pt.form;
@@ -40,11 +40,11 @@ var easingStrength = config.easingStrength;
 var sizeChangeOnClick = config.sizeChangeOnClick;
 var white = colours.white.hex();
 
-function fadeAllPointsOut(points) {
-  points.forEach(function (point) {
-    point.fadeOutSpeed = randomF(0.003, 0.01);
-  });
-}
+// function fadeAllPointsOut(points) {
+//   points.forEach(function (point) {
+//     point.fadeOutSpeed = randomF(0.003, 0.01);
+//   });
+// }
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
@@ -53,7 +53,7 @@ document.body.appendChild(stats.dom);
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 scene3d.init(connections.getSpecialTriangles());
-scene3d.displayCanvas(); //commented out for now
+// scene3d.displayCanvas(); //commented out for now
 
 var sketch = {
   animate: function () {
@@ -109,27 +109,27 @@ var sketch = {
     currentPoints = pointsInsideCircle;
 
     // 3d stuff - commente out for now
-    var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
-    scene3d.updateMorph(m);
-    scene3d.render();
+    // var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
+    // scene3d.updateMorph(m);
+    // scene3d.render();
 
     stats.end();
   },
   onMouseAction: function (type, x, y) {
     switch (type) {
-      case 'move':
-        mouseX = x;
-        mouseY = y;
-        break;
-      case 'down':
-        spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
-        currentPoints.forEach(playLead);
-        connections.update(currentPoints);
-        ripples.add();
-        break;
-      case 'up':
-        spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
-        break;
+    case 'move':
+      mouseX = x;
+      mouseY = y;
+      break;
+    case 'down':
+      spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
+      currentPoints.forEach(playLead);
+      connections.update(currentPoints);
+      ripples.add();
+      break;
+    case 'up':
+      spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
+      break;
     }
   },
   onTouchAction: function (type, x, y, evt) {
