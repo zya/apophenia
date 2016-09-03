@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "dynamics.js": "^1.1.5",
     "faster-delaunay": "^1.0.0",
     "lodash": "^4.7.0",
     "moment": "^2.12.0",

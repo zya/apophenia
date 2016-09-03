@@ -1,8 +1,9 @@
 'use strict';
 
 var _ = require('lodash');
+var dynamics = require('dynamics.js');
 var Stats = require('stats.js');
-// var randomF = require('random-float');
+var randomF = require('random-float');
 
 var stats = new Stats();
 
@@ -21,8 +22,8 @@ var connections = require('./lib/connections');
 var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
-// var sine = require('./lib/sine');
-// var map = require('./lib/map');
+var sine = require('./lib/sine');
+var map = require('./lib/map');
 
 var space = pt.space;
 var form = pt.form;
@@ -40,11 +41,41 @@ var easingStrength = config.easingStrength;
 var sizeChangeOnClick = config.sizeChangeOnClick;
 var white = colours.white.hex();
 
-// function fadeAllPointsOut(points) {
-//   points.forEach(function (point) {
-//     point.fadeOutSpeed = randomF(0.003, 0.01);
-//   });
-// }
+var hasTransitioned = false;
+var shouldDrawPoints = true;
+var shouldIntersect = true;
+var shouldMorph = false;
+var threeD = false;
+
+var transitionParams = {
+  randomMovementRate: 1,
+  insideConnectionsOpacity: 1,
+  spotLightSize: 0,
+  outSideConnectionOpacityRate: 1
+};
+
+function fadeAllPointsOut() {
+  points.forEach(function (point) {
+    point.fadeOutSpeed = randomF(0.003, 0.01);
+  });
+
+  setTimeout(function () {
+    shouldDrawPoints = false;
+  }, 3000);
+}
+
+
+function transitionTo3D() {
+  scene3d.init(connections.getSpecialTriangles());
+  threeD = true;
+  setTimeout(function () {
+    scene3d.displayCanvas(); //commented out for now
+  }, 300);
+
+  setTimeout(function () {
+    shouldMorph = true;
+  }, 5000);
+}
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
@@ -52,8 +83,45 @@ document.body.appendChild(stats.dom);
 // initialise stuff
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
-scene3d.init(connections.getSpecialTriangles());
-// scene3d.displayCanvas(); //commented out for now
+
+function slowDownPointMovement() {
+  var duration = 3000;
+
+  setTimeout(function () {
+    dynamics.animate(transitionParams, {
+      randomMovementRate: 0
+    }, {
+      duration: duration
+    });
+  }, 500);
+
+  return duration;
+}
+
+function slowDownInsideConnectionsOpacity() {
+  var duration = 3000;
+
+  setTimeout(function () {
+    dynamics.animate(transitionParams, {
+      insideConnectionsOpacity: 0,
+      outSideConnectionOpacityRate: 0
+    }, {
+      duration: duration
+    });
+  }, 500);
+}
+
+function explodeSpotlight() {
+  var duration = 12000;
+  setTimeout(function () {
+    shouldIntersect = false;
+    dynamics.animate(transitionParams, {
+      spotLightSize: 3000
+    }, {
+      duration: duration
+    });
+  }, 500);
+}
 
 var sketch = {
   animate: function () {
@@ -67,6 +135,7 @@ var sketch = {
     spotLight.y += (mouseY - spotLight.y) * (easingStrength * delta);
     form.fill(white, 0.1).stroke(false);
     form.circle(spotLight);
+    spotLight.setRadius(spotLight.radius + transitionParams.spotLightSize);
 
     // draw ripple circles
     ripples.draw();
@@ -74,13 +143,19 @@ var sketch = {
     ripples.detectCollisions(points);
 
     //draw connections
-    connections.draw(pairsInsideSpotlight);
+    connections.draw(pairsInsideSpotlight, transitionParams.insideConnectionsOpacity, transitionParams.outSideConnectionOpacityRate);
 
     //randomise points movements
-    points.forEach(randomisePoint);
+    if (shouldDrawPoints) {
+      points.forEach(_.partial(randomisePoint, _, transitionParams.randomMovementRate));
+    }
 
     //calculate intersection of spot lights and points
-    var pointsInsideCircle = intersect(spotLight, points);
+    var pointsInsideCircle = [];
+
+    if (shouldIntersect) {
+      pointsInsideCircle = intersect(spotLight, points);
+    }
 
     //change cursor
     if (pointsInsideCircle.length > 0) {
@@ -109,8 +184,13 @@ var sketch = {
     currentPoints = pointsInsideCircle;
 
     // 3d stuff - commente out for now
-    // var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
-    // scene3d.updateMorph(m);
+    if (threeD) {
+      scene3d.render();
+      if (shouldMorph) {
+        var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
+        scene3d.updateMorph(m);
+      }
+    }
     // scene3d.render();
 
     stats.end();
@@ -122,15 +202,32 @@ var sketch = {
       mouseY = y;
       break;
     case 'down':
+      if (hasTransitioned) return;
       spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
       currentPoints.forEach(playLead);
       connections.update(currentPoints);
       ripples.add();
+
+      var discoveryPercentage = connections.getDiscoveryPercentage();
+      if (discoveryPercentage > 0.70 && !hasTransitioned) {
+        hasTransitioned = true;
+        var duration = slowDownPointMovement();
+        setTimeout(function () {
+          slowDownInsideConnectionsOpacity();
+          fadeAllPointsOut();
+        }, duration + 2000);
+        setTimeout(explodeSpotlight, duration + 4000);
+        setTimeout(transitionTo3D, duration + 5000);
+        return;
+      }
       break;
     case 'up':
+      if (hasTransitioned) return;
       spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
       break;
     }
+
+
   },
   onTouchAction: function (type, x, y, evt) {
     if (type === 'move' || type === 'down') {
