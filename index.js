@@ -123,6 +123,8 @@ function explodeSpotlight() {
   }, 500);
 }
 
+transitionTo3D();
+
 var sketch = {
   animate: function () {
     stats.begin();
@@ -188,7 +190,7 @@ var sketch = {
       scene3d.render();
       if (shouldMorph) {
         var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
-        scene3d.updateMorph(m);
+        // scene3d.updateMorph(m);
       }
     }
     // scene3d.render();
