@@ -685,12 +685,12 @@ function mapY(value) {
 
 function mapZ(x, y, sphereVertices) {
   var found = _.find(sphereVertices, function (vertex) {
-    var tolerance = 0.2;
+    var tolerance = 0.1;
     return _.inRange(x, vertex.x - tolerance, vertex.x + tolerance) && _.inRange(y, vertex.y - tolerance, vertex.y + tolerance);
   });
 
   if (!found) return 0;
-  return found.z;
+  return found.z + randomF(-0.01, 0.01);
 }
 
 function generateVector3(point, sphereVertices) {
@@ -702,7 +702,7 @@ function generateVector3(point, sphereVertices) {
 
 module.exports = function (triangles) {
   var geometry = new THREE.Geometry();
-  var sphere = new THREE.SphereGeometry(1.5, 30, 30);
+  var sphere = new THREE.SphereGeometry(1.5, 60, 60);
 
   triangles.forEach(function (triangle) {
     var v1 = generateVector3(triangle[0], sphere.vertices);
@@ -744,6 +744,38 @@ module.exports = function (triangles) {
     geometry.faceVertexUvs[0].push(faceuv);
   });
 
+  // geometry.faces.forEach(function (face) {
+  //   var mirrorVertexA = geometry.vertices[face.a];
+  //   var mirrorVertexB = geometry.vertices[face.b];
+  //   var mirrorVertexC = geometry.vertices[face.c];
+  //
+  //   var v1 = new THREE.Vector3(mirrorVertexA.x, mirrorVertexA.y, mirrorVertexA.z * -1);
+  //   geometry.vertices.push(v1);
+  //   var v1Index = geometry.vertices.length;
+  //   var v2 = new THREE.Vector3(mirrorVertexB.x, mirrorVertexB.y, mirrorVertexB.z * -1);
+  //   geometry.vertices.push(v2);
+  //   var v2Index = geometry.vertices.length;
+  //   var v3 = new THREE.Vector3(mirrorVertexC.x, mirrorVertexC.y, mirrorVertexC.z * -1);
+  //   geometry.vertices.push(v3);
+  //   var v3Index = geometry.vertices.length;
+  //   console.log(v1Index, v2Index, v3Index);
+  //   var newFace = new THREE.Face3(v1Index, v2Index, v3Index);
+  //
+  //   newFace.normal = new THREE.Vector3(0, 0, 1);
+  //   var colour = new THREE.Color('white');
+  //   newFace.color = colour;
+  //   geometry.faces.push(newFace);
+  //
+  //   var faceuv = [
+  //     new THREE.Vector2(0, 1),
+  //     new THREE.Vector2(1, 1),
+  //     new THREE.Vector2(1, 0),
+  //     new THREE.Vector2(0, 0)
+  //   ];
+  //
+  //   geometry.faceVertexUvs[0].push(faceuv);
+  // });
+
   var targets = [];
 
   geometry.vertices.forEach(function () {
@@ -760,10 +792,8 @@ module.exports = function (triangles) {
   geometry.computeVertexNormals();
   geometry.computeMorphNormals();
   geometry.computeBoundingBox();
-  // geometry.computeBoundingSphere();
 
-  // var newSphere = new THREE.SphereGeometry((geometry.boundingBox.max.y - geometry.boundingBox.min.y) / 2, 10, 10, 0, 3);
-  // newSphere.merge(geometry);
+
   return geometry;
 };
 
@@ -1080,7 +1110,7 @@ var material = new THREE.MeshPhongMaterial({
   morphTargets: true,
   morphNormals: true,
   shading: THREE.FlatShading,
-  side: THREE.FrontSide,
+  side: THREE.DoubleSide,
   vertexColors: THREE.FaceColors,
   transparent: true,
   opacity: 0
@@ -1154,15 +1184,16 @@ module.exports.init = function (triangles) {
   setTimeout(function () {
     dynamics.animate(wireframe.scale, {
       z: 2.5,
-      x: 1.2,
-      y: 1.2
+      x: 1.1,
+      y: 1.1
     }, {
       duration: 3000
     });
+
     dynamics.animate(mesh.scale, {
       z: 2.5,
-      x: 1.2,
-      y: 1.2
+      x: 1.1,
+      y: 1.1
     }, {
       duration: 3000
     });
