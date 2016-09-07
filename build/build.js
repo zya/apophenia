@@ -580,8 +580,9 @@ function between(x, min, max) {
 function isCenter(point) {
   var cx = space.size.x / 2;
   var cy = space.size.y / 2;
-  var x = between(point.x, cx - 100, cx + 100);
-  var y = between(point.y, cy - 100, cy + 100);
+  var tolerance = cx / 6;
+  var x = between(point.x, cx - tolerance, cx + tolerance);
+  var y = between(point.y, cy - tolerance, cy + tolerance);
   return x && y;
 }
 
@@ -668,6 +669,8 @@ var map = require('./map');
 var space = require('./pt').space;
 var ratio = space.size.x / space.size.y;
 
+var colour = new THREE.Color('white');
+
 function getIndex(vertices, v) {
   var t = _.findIndex(vertices, function (vertex) {
     return vertex.x === v.x && vertex.y === v.y;
@@ -692,11 +695,11 @@ function mapY(value) {
 
 function mapZ(x, y, sphereVertices) {
   var found = _.find(sphereVertices, function (vertex) {
-    var tolerance = 0.08;
+    var tolerance = 0.075;
     return _.inRange(x, vertex.x - tolerance, vertex.x + tolerance) && _.inRange(y, vertex.y - tolerance, vertex.y + tolerance);
   });
 
-  if (!found) return 0;
+  if (!found) return randomF(-0.01, -0.02);
 
   return found.z;
 }
@@ -706,6 +709,32 @@ function generateVector3(point, sphereVertices) {
   var y = mapY(point.y);
   var z = mapZ(x, y, sphereVertices) * -1;
   return new THREE.Vector3(x, y, z);
+}
+
+function generateFaces(a, b, c, normal, vertices, faces) {
+  var aIndex = getIndex3d(vertices, a);
+  var bIndex = getIndex3d(vertices, b);
+  var cIndex = getIndex3d(vertices, c);
+
+  if (aIndex === -1) {
+    vertices.push(a);
+    aIndex = getIndex3d(vertices, a);
+  }
+
+  if (bIndex === -1) {
+    vertices.push(b);
+    bIndex = getIndex3d(vertices, b);
+  }
+
+  if (cIndex === -1) {
+    vertices.push(c);
+    cIndex = getIndex3d(vertices, c);
+  }
+
+  var f = new THREE.Face3(aIndex, bIndex, cIndex);
+  f.normal = normal;
+  f.color = colour;
+  faces.push(f);
 }
 
 module.exports = function (triangles) {
@@ -718,6 +747,8 @@ module.exports = function (triangles) {
   var sphere = new THREE.SphereGeometry(radius / 2, 50, 50);
 
   triangles.forEach(function (triangle) {
+
+    // add the normal faces
     var v1 = generateVector3(triangle[0], sphere.vertices);
     var v2 = generateVector3(triangle[1], sphere.vertices);
     var v3 = generateVector3(triangle[2], sphere.vertices);
@@ -743,7 +774,7 @@ module.exports = function (triangles) {
 
     var face = new THREE.Face3(v3Index, v2Index, v1Index);
     face.normal = new THREE.Vector3(0, 0, -1);
-    var colour = new THREE.Color('white');
+
     face.color = colour;
     geometry.faces.push(face);
 
@@ -755,6 +786,8 @@ module.exports = function (triangles) {
     ];
 
     geometry.faceVertexUvs[0].push(faceuv);
+
+    // add the mirrored faces
 
     var v1Mirror = generateVector3(triangle[0], sphere.vertices);
     var v2Mirror = generateVector3(triangle[1], sphere.vertices);
@@ -802,9 +835,6 @@ module.exports = function (triangles) {
     vertex.z += randomF(-0.05, 0.05);
   });
 
-  // var t = _.sortBy(geometry.vertices, 'z');
-  // var min = t.minBy(geometry.vertices.)
-
   var targets = [];
 
   geometry.vertices.forEach(function () {
@@ -816,7 +846,6 @@ module.exports = function (triangles) {
     vertices: targets
   });
 
-
   // geometry.center();
   geometry.mergeVertices();
   geometry.computeFaceNormals();
@@ -824,7 +853,35 @@ module.exports = function (triangles) {
   geometry.computeMorphNormals();
   geometry.computeBoundingBox();
 
-  return geometry;
+  var secondary = new THREE.Geometry();
+  var newSphere = new THREE.SphereGeometry(radius / 3.2, 80, 80);
+
+  newSphere.faces.forEach(function (face) {
+    var a = newSphere.vertices[face.a];
+    var b = newSphere.vertices[face.b];
+    var c = newSphere.vertices[face.c];
+
+    if (_.inRange(a.z, -0.25, 0.25) && randomF(0, 1) > 0.95) {
+      generateFaces(a, b, c, face.normal, secondary.vertices, secondary.faces);
+    }
+  });
+
+  secondary.vertices.forEach(function (vertex) {
+    vertex.z += randomF(-0.01, 0.01);
+    vertex.x += randomF(-0.01, 0.01);
+    vertex.y += randomF(-0.01, 0.01);
+  });
+
+  secondary.mergeVertices();
+  secondary.computeFaceNormals();
+  secondary.computeVertexNormals();
+  secondary.computeMorphNormals();
+  secondary.computeBoundingBox();
+
+  return {
+    main: geometry,
+    secondary: secondary
+  };
 };
 
 },{"./map":15,"./pt":18,"lodash":125,"random-float":146,"three":182}],12:[function(require,module,exports){
@@ -1197,7 +1254,10 @@ directionalLight.position.set(1.5, 1, 2);
 
 // initialise
 module.exports.init = function (triangles) {
-  geometry = generateGeometry(triangles);
+  var geometries = generateGeometry(triangles);
+  var secondary = geometries.secondary;
+
+  geometry = geometries.main;
   var spaceHeight = 2;
   var distance = 5;
   var fov = 2 * Math.atan(spaceHeight / (2 * distance)) * (180 / Math.PI);
@@ -1206,15 +1266,20 @@ module.exports.init = function (triangles) {
   controls = new OrbitControls(camera);
 
   mesh = new THREE.Mesh(geometry, material);
+  var secondaryWireframe = new THREE.Mesh(secondary, wireframeMaterial);
 
   mesh.id2 = 'mainMesh';
   wireframe = new THREE.Mesh(geometry, wireframeMaterial);
-  wireframe.scale.set(1, 1, 0);
+  wireframe.scale.set(1, 1, 0.00000001);
 
+  var radius = geometry.boundingBox.max.y + Math.abs(geometry.boundingBox.min.y);
+  var sphereG = new THREE.SphereGeometry(radius / 4, 10, 10);
+  var sphere = new THREE.Mesh(sphereG, wireframeMaterial);
 
-  // var radius = geometry.boundingBox.max.y + Math.abs(geometry.boundingBox.min.y);
-  // var sphereG = new THREE.SphereGeometry(radius / 2, 10, 10, 0, -3);
-  // var sphere = new THREE.Mesh(sphereG, wireframeMaterial);
+  setTimeout(function () {
+    scene.add(sphere);
+    scene.add(secondaryWireframe);
+  }, 8000);
 
   setTimeout(function () {
     dynamics.animate(wireframe.scale, {
@@ -1254,10 +1319,8 @@ module.exports.init = function (triangles) {
   scene.add(mesh);
 
   // var edges = new THREE.FaceNormalsHelper(mesh, 2, 0x00ff00, 1);
-  //
   // scene.add(edges);
 
-  // scene.add(sphere);
   controls.update();
   setTimeout(function () {
     dynamics.animate(material, {
