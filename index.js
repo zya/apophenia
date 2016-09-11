@@ -123,7 +123,12 @@ function explodeSpotlight() {
   }, 500);
 }
 
-// transitionTo3D();
+function parallaxPoints(point, xOffset, yOffset) {
+  if (point.originalRadius > 1.9) {
+    point.x -= (xOffset * point.originalRadius) * _.random(0.1, 0.5);
+    point.y -= (yOffset * point.originalRadius) * _.random(0.1, 0.5);
+  }
+}
 
 var sketch = {
   animate: function () {
@@ -151,6 +156,10 @@ var sketch = {
     if (shouldDrawPoints) {
       points.forEach(_.partial(randomisePoint, _, transitionParams.randomMovementRate));
     }
+
+    var xOffset = (mouseX / space.size.x) - 0.5;
+    var yOffset = (mouseY / space.size.y) - 0.5;
+    points.forEach(_.partial(parallaxPoints, _, xOffset, yOffset));
 
     //calculate intersection of spot lights and points
     var pointsInsideCircle = [];
