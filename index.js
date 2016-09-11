@@ -22,8 +22,8 @@ var connections = require('./lib/connections');
 var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
-var sine = require('./lib/sine');
-var map = require('./lib/map');
+// var sine = require('./lib/sine');
+// var map = require('./lib/map');
 
 var space = pt.space;
 var form = pt.form;
@@ -123,7 +123,7 @@ function explodeSpotlight() {
   }, 500);
 }
 
-transitionTo3D();
+// transitionTo3D();
 
 var sketch = {
   animate: function () {
@@ -189,7 +189,7 @@ var sketch = {
     if (threeD) {
       scene3d.render();
       if (shouldMorph) {
-        var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
+        // var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
         // scene3d.updateMorph(m);
       }
     }

@@ -1,7 +1,7 @@
 {
-  "name": "pt-play",
+  "name": "M.O.D",
   "version": "1.0.0",
-  "description": "",
+  "description": "Meditation On Dots",
   "main": "index.js",
   "dependencies": {
     "dynamics.js": "^1.1.5",
@@ -9,7 +9,7 @@
     "lodash": "^4.7.0",
     "moment": "^2.12.0",
     "node-uuid": "^1.4.7",
-    "ptjs": "github:williamngan/pt",
+    "ptjs": "^0.2.1",
     "random-float": "^1.0.0",
     "random-int": "^1.0.0",
     "stats.js": "^0.16.0",
