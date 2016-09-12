@@ -61,6 +61,7 @@ var white = colours.white.hex();
 var hasTransitioned = false;
 var shouldDrawPoints = true;
 var shouldIntersect = true;
+var shouldDrawConnections = true;
 var shouldMorph = false;
 var threeD = false;
 
@@ -80,7 +81,7 @@ function fadeAllPointsOut() {
 
   setTimeout(function () {
     shouldDrawPoints = false;
-  }, 3000);
+  }, 9000);
 }
 
 function transitionTo3D() {
@@ -88,6 +89,9 @@ function transitionTo3D() {
   threeD = true;
   setTimeout(function () {
     scene3d.displayCanvas(); //commented out for now
+    setTimeout(function () {
+      shouldDrawConnections = false;
+    }, 5000);
   }, 300);
 
   setTimeout(function () {
@@ -155,16 +159,20 @@ var sketch = {
     ripples.detectCollisions(points);
 
     //draw connections
-    connections.draw(pairsInsideSpotlight);
+    if (shouldDrawConnections) {
+      connections.draw(pairsInsideSpotlight);
+    }
 
     //randomise points movements
     if (shouldDrawPoints) {
       points.forEach(_.partial(randomisePoint, _, pointTransitionParams.randomMovementRate));
     }
 
-    var xOffset = (mouseX / space.size.x) - 0.5;
-    var yOffset = (mouseY / space.size.y) - 0.5;
-    points.forEach(_.partial(parallaxPoints, _, xOffset, yOffset));
+    if (!hasTransitioned) {
+      var xOffset = (mouseX / space.size.x) - 0.5;
+      var yOffset = (mouseY / space.size.y) - 0.5;
+      points.forEach(_.partial(parallaxPoints, _, xOffset, yOffset));
+    }
 
     //calculate intersection of spot lights and points
     var pointsInsideCircle = [];
@@ -186,7 +194,9 @@ var sketch = {
     pairsInsideSpotlight = temporaryPairsInsideCircle;
 
     //draw points
-    points.forEach(drawPoint);
+    if (shouldDrawPoints) {
+      points.forEach(drawPoint);
+    }
 
     //calculate change
     if (!_.isEqual(currentPoints, pointsInsideCircle)) {
@@ -225,7 +235,7 @@ var sketch = {
       ripples.add();
 
       var discoveryPercentage = connections.getDiscoveryPercentage();
-      if (discoveryPercentage > 0.75 && !hasTransitioned) {
+      if (discoveryPercentage > 0.70 && !hasTransitioned) {
         hasTransitioned = true;
         var duration = slowDownPointMovement();
         setTimeout(function () {
@@ -241,8 +251,6 @@ var sketch = {
       spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
       break;
     }
-
-
   },
   onTouchAction: function (type, x, y, evt) {
     if (type === 'move' || type === 'down') {
@@ -527,29 +535,23 @@ module.exports.getSpecialTriangles = function () {
   return specialTriangles;
 };
 
+function revealConnectionInTime(connection, time) {
+  (function (connection) {
+    setTimeout(function () {
+      connection.opacity = 0;
+      connection.revealSpeed = _.random(0.009, 0.015);
+    }, time);
+  })(connection);
+}
+
 module.exports.reveal = function (cb) {
   specialConnections.forEach(function (connection, index) {
     if (index % 4 === 0) {
-      (function (connection) {
-        setTimeout(function () {
-          connection.opacity = 0;
-          connection.revealSpeed = _.random(0.009, 0.015);
-        }, 4000);
-      })(connection);
+      revealConnectionInTime(connection, _.random(3400, 4800));
     } else if (index % 3 === 0) {
-      (function (connection) {
-        setTimeout(function () {
-          connection.opacity = 0;
-          connection.revealSpeed = _.random(0.003, 0.016);
-        }, 7000);
-      })(connection);
+      revealConnectionInTime(connection, _.random(6000, 7500));
     } else {
-      (function (connection) {
-        setTimeout(function () {
-          connection.opacity = 0;
-          connection.revealSpeed = _.random(0.0008, 0.012);
-        }, 1500);
-      })(connection);
+      revealConnectionInTime(connection, _.random(1000, 2800));
     }
   });
 
