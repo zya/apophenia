@@ -49,9 +49,11 @@ var threeD = false;
 
 var transitionParams = {
   randomMovementRate: 1,
-  insideConnectionsOpacity: 1,
-  spotLightSize: 0,
-  outSideConnectionOpacityRate: 1
+  spotLightSize: 1,
+};
+
+var pointTransitionParams = {
+  randomMovementRate: 1
 };
 
 function fadeAllPointsOut() {
@@ -63,7 +65,6 @@ function fadeAllPointsOut() {
     shouldDrawPoints = false;
   }, 3000);
 }
-
 
 function transitionTo3D() {
   scene3d.init(connections.getSpecialTriangles());
@@ -85,30 +86,17 @@ var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 
 function slowDownPointMovement() {
-  var duration = 3000;
+  var duration = 2000;
 
   setTimeout(function () {
-    dynamics.animate(transitionParams, {
+    dynamics.animate(pointTransitionParams, {
       randomMovementRate: 0
     }, {
       duration: duration
     });
-  }, 500);
+  }, 100);
 
   return duration;
-}
-
-function slowDownInsideConnectionsOpacity() {
-  var duration = 3000;
-
-  setTimeout(function () {
-    dynamics.animate(transitionParams, {
-      insideConnectionsOpacity: 0,
-      outSideConnectionOpacityRate: 0
-    }, {
-      duration: duration
-    });
-  }, 500);
 }
 
 function explodeSpotlight() {
@@ -116,7 +104,7 @@ function explodeSpotlight() {
   setTimeout(function () {
     shouldIntersect = false;
     dynamics.animate(transitionParams, {
-      spotLightSize: 3000
+      spotLightSize: 0
     }, {
       duration: duration
     });
@@ -125,8 +113,8 @@ function explodeSpotlight() {
 
 function parallaxPoints(point, xOffset, yOffset) {
   if (point.originalRadius > 1.9) {
-    point.x -= (xOffset * point.originalRadius) * _.random(0.1, 0.5);
-    point.y -= (yOffset * point.originalRadius) * _.random(0.1, 0.5);
+    point.x -= (xOffset * point.originalRadius) * _.random(0.1, 0.3);
+    point.y -= (yOffset * point.originalRadius) * _.random(0.1, 0.3);
   }
 }
 
@@ -142,7 +130,7 @@ var sketch = {
     spotLight.y += (mouseY - spotLight.y) * (easingStrength * delta);
     form.fill(white, 0.1).stroke(false);
     form.circle(spotLight);
-    spotLight.setRadius(spotLight.radius + transitionParams.spotLightSize);
+    spotLight.setRadius(spotLight.radius * transitionParams.spotLightSize);
 
     // draw ripple circles
     ripples.draw();
@@ -150,11 +138,11 @@ var sketch = {
     ripples.detectCollisions(points);
 
     //draw connections
-    connections.draw(pairsInsideSpotlight, transitionParams.insideConnectionsOpacity, transitionParams.outSideConnectionOpacityRate);
+    connections.draw(pairsInsideSpotlight);
 
     //randomise points movements
     if (shouldDrawPoints) {
-      points.forEach(_.partial(randomisePoint, _, transitionParams.randomMovementRate));
+      points.forEach(_.partial(randomisePoint, _, pointTransitionParams.randomMovementRate));
     }
 
     var xOffset = (mouseX / space.size.x) - 0.5;
@@ -220,15 +208,14 @@ var sketch = {
       ripples.add();
 
       var discoveryPercentage = connections.getDiscoveryPercentage();
-      if (discoveryPercentage > 0.70 && !hasTransitioned) {
+      if (discoveryPercentage > 0.75 && !hasTransitioned) {
         hasTransitioned = true;
         var duration = slowDownPointMovement();
         setTimeout(function () {
-          slowDownInsideConnectionsOpacity();
           fadeAllPointsOut();
-        }, duration + 2000);
-        setTimeout(explodeSpotlight, duration + 4000);
-        setTimeout(transitionTo3D, duration + 5000);
+          connections.reveal(transitionTo3D);
+        }, duration + 3000);
+        setTimeout(explodeSpotlight, 100);
         return;
       }
       break;

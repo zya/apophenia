@@ -66,9 +66,11 @@ var threeD = false;
 
 var transitionParams = {
   randomMovementRate: 1,
-  insideConnectionsOpacity: 1,
-  spotLightSize: 0,
-  outSideConnectionOpacityRate: 1
+  spotLightSize: 1,
+};
+
+var pointTransitionParams = {
+  randomMovementRate: 1
 };
 
 function fadeAllPointsOut() {
@@ -80,7 +82,6 @@ function fadeAllPointsOut() {
     shouldDrawPoints = false;
   }, 3000);
 }
-
 
 function transitionTo3D() {
   scene3d.init(connections.getSpecialTriangles());
@@ -102,30 +103,17 @@ var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 
 function slowDownPointMovement() {
-  var duration = 3000;
+  var duration = 2000;
 
   setTimeout(function () {
-    dynamics.animate(transitionParams, {
+    dynamics.animate(pointTransitionParams, {
       randomMovementRate: 0
     }, {
       duration: duration
     });
-  }, 500);
+  }, 100);
 
   return duration;
-}
-
-function slowDownInsideConnectionsOpacity() {
-  var duration = 3000;
-
-  setTimeout(function () {
-    dynamics.animate(transitionParams, {
-      insideConnectionsOpacity: 0,
-      outSideConnectionOpacityRate: 0
-    }, {
-      duration: duration
-    });
-  }, 500);
 }
 
 function explodeSpotlight() {
@@ -133,7 +121,7 @@ function explodeSpotlight() {
   setTimeout(function () {
     shouldIntersect = false;
     dynamics.animate(transitionParams, {
-      spotLightSize: 3000
+      spotLightSize: 0
     }, {
       duration: duration
     });
@@ -142,8 +130,8 @@ function explodeSpotlight() {
 
 function parallaxPoints(point, xOffset, yOffset) {
   if (point.originalRadius > 1.9) {
-    point.x -= (xOffset * point.originalRadius) * _.random(0.1, 0.5);
-    point.y -= (yOffset * point.originalRadius) * _.random(0.1, 0.5);
+    point.x -= (xOffset * point.originalRadius) * _.random(0.1, 0.3);
+    point.y -= (yOffset * point.originalRadius) * _.random(0.1, 0.3);
   }
 }
 
@@ -159,7 +147,7 @@ var sketch = {
     spotLight.y += (mouseY - spotLight.y) * (easingStrength * delta);
     form.fill(white, 0.1).stroke(false);
     form.circle(spotLight);
-    spotLight.setRadius(spotLight.radius + transitionParams.spotLightSize);
+    spotLight.setRadius(spotLight.radius * transitionParams.spotLightSize);
 
     // draw ripple circles
     ripples.draw();
@@ -167,11 +155,11 @@ var sketch = {
     ripples.detectCollisions(points);
 
     //draw connections
-    connections.draw(pairsInsideSpotlight, transitionParams.insideConnectionsOpacity, transitionParams.outSideConnectionOpacityRate);
+    connections.draw(pairsInsideSpotlight);
 
     //randomise points movements
     if (shouldDrawPoints) {
-      points.forEach(_.partial(randomisePoint, _, transitionParams.randomMovementRate));
+      points.forEach(_.partial(randomisePoint, _, pointTransitionParams.randomMovementRate));
     }
 
     var xOffset = (mouseX / space.size.x) - 0.5;
@@ -237,15 +225,14 @@ var sketch = {
       ripples.add();
 
       var discoveryPercentage = connections.getDiscoveryPercentage();
-      if (discoveryPercentage > 0.70 && !hasTransitioned) {
+      if (discoveryPercentage > 0.75 && !hasTransitioned) {
         hasTransitioned = true;
         var duration = slowDownPointMovement();
         setTimeout(function () {
-          slowDownInsideConnectionsOpacity();
           fadeAllPointsOut();
-        }, duration + 2000);
-        setTimeout(explodeSpotlight, duration + 4000);
-        setTimeout(transitionTo3D, duration + 5000);
+          connections.reveal(transitionTo3D);
+        }, duration + 3000);
+        setTimeout(explodeSpotlight, 100);
         return;
       }
       break;
@@ -417,6 +404,7 @@ module.exports = {
 'use strict';
 
 var _ = require('lodash');
+var dynamics = require('dynamics.js');
 
 var updateConnections = require('./updateConnections');
 var colours = require('./colours');
@@ -436,6 +424,11 @@ var specialPairs = [];
 
 var sines = [];
 var discoveryPercentage = 0.0;
+var shouldReveal = false;
+
+var params = {
+  opacityRate: 1
+};
 
 function updateSines() {
   var now = Date.now();
@@ -461,6 +454,11 @@ function drawTriangle(triplet) {
 }
 
 function drawConnection(connection, colour, opacity, width) {
+  if (connection.revealSpeed) {
+    connection.opacity += connection.revealSpeed;
+    opacity = connection.opacity;
+  }
+
   var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + opacity + ')';
   var line = new lib.Line(connection.from).to(connection.to);
   form.stroke(c, width);
@@ -486,13 +484,13 @@ module.exports.createSpecialShape = function (points) {
   updateConnections(points, specialPairs, specialConnections, specialTriangles);
 };
 
-module.exports.draw = function (pairsInsideSpotlight, insideConnectionsOpacity, outSideConnectionOpacityRate) {
+module.exports.draw = function (pairsInsideSpotlight) {
   updateSines();
 
   connections.forEach(function (connection, index) {
     if (_.includes(pairsInsideSpotlight, connection.id)) return;
 
-    drawConnection(connection, colours.darkGrey, config.connectionsOpacity * outSideConnectionOpacityRate, config.connectionsWidth);
+    drawConnection(connection, colours.darkGrey, config.connectionsOpacity * params.opacityRate, config.connectionsWidth);
 
     if (connection.special) {
       var sin = sines[index % 10];
@@ -501,14 +499,16 @@ module.exports.draw = function (pairsInsideSpotlight, insideConnectionsOpacity, 
   });
 
   connectionsInside.forEach(function (connection) {
-    drawConnection(connection, colours.lighterGrey, insideConnectionsOpacity, config.connectionsWidth);
+    drawConnection(connection, colours.lighterGrey, 1.0, config.connectionsWidth);
 
     if (connection.special) {
-      drawConnection(connection, colours.orange, insideConnectionsOpacity, 1.0);
+      drawConnection(connection, colours.orange, 1.0, 1.0);
     }
   });
 
-  // exports.drawSpecialShape();
+  if (shouldReveal) {
+    exports.drawSpecialShape();
+  }
 };
 
 module.exports.drawTriangles = function () {
@@ -516,7 +516,7 @@ module.exports.drawTriangles = function () {
 };
 
 module.exports.drawSpecialShape = function () {
-  specialConnections.forEach(_.partial(drawConnection, _, colours.orange, 1.0, 1.0));
+  specialConnections.forEach(_.partial(drawConnection, _, colours.orange, 0.0, 1.0));
 };
 
 module.exports.getDiscoveryPercentage = function () {
@@ -527,7 +527,46 @@ module.exports.getSpecialTriangles = function () {
   return specialTriangles;
 };
 
-},{"../config":1,"./colours":6,"./pt":18,"./updateConnections":24,"lodash":250}],8:[function(require,module,exports){
+module.exports.reveal = function (cb) {
+  specialConnections.forEach(function (connection, index) {
+    if (index % 4 === 0) {
+      (function (connection) {
+        setTimeout(function () {
+          connection.opacity = 0;
+          connection.revealSpeed = _.random(0.009, 0.015);
+        }, 4000);
+      })(connection);
+    } else if (index % 3 === 0) {
+      (function (connection) {
+        setTimeout(function () {
+          connection.opacity = 0;
+          connection.revealSpeed = _.random(0.003, 0.016);
+        }, 7000);
+      })(connection);
+    } else {
+      (function (connection) {
+        setTimeout(function () {
+          connection.opacity = 0;
+          connection.revealSpeed = _.random(0.0008, 0.012);
+        }, 1500);
+      })(connection);
+    }
+  });
+
+  shouldReveal = true;
+
+  setTimeout(function () {
+    dynamics.animate(params, {
+      opacityRate: 0
+    }, {
+      duration: 6000
+    });
+  }, 2000);
+
+  setTimeout(cb, 8000);
+};
+
+},{"../config":1,"./colours":6,"./pt":18,"./updateConnections":24,"dynamics.js":248,"lodash":250}],8:[function(require,module,exports){
 'use strict';
 
 window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
@@ -14627,7 +14666,7 @@ module.exports={
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:indutny/elliptic"
+    "url": "git+ssh://git@github.com/indutny/elliptic.git"
   },
   "keywords": [
     "EC",
@@ -14635,7 +14674,10 @@ module.exports={
     "curve",
     "Cryptography"
   ],
-  "author": "Fedor Indutny <fedor@indutny.com>",
+  "author": {
+    "name": "Fedor Indutny",
+    "email": "fedor@indutny.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/indutny/elliptic/issues"
@@ -14661,7 +14703,34 @@ module.exports={
     "brorand": "^1.0.1",
     "hash.js": "^1.0.0",
     "inherits": "^2.0.1"
-  }
+  },
+  "gitHead": "c53f5cf3d832c0073eb4a4ed423a464cbce68f3e",
+  "_id": "elliptic@6.3.1",
+  "_shasum": "17781f2109ab0ec686b146bdcff5d2e8c6aeceda",
+  "_from": "elliptic@>=6.0.0 <7.0.0",
+  "_npmVersion": "3.8.6",
+  "_nodeVersion": "6.0.0",
+  "_npmUser": {
+    "name": "indutny",
+    "email": "fedor@indutny.com"
+  },
+  "dist": {
+    "shasum": "17781f2109ab0ec686b146bdcff5d2e8c6aeceda",
+    "tarball": "https://registry.npmjs.org/elliptic/-/elliptic-6.3.1.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "indutny",
+      "email": "fedor@indutny.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/elliptic-6.3.1.tgz_1465921413402_0.5202967382501811"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.3.1.tgz",
+  "readme": "ERROR: No README data found!"
 }
 
 },{}],91:[function(require,module,exports){
@@ -17169,92 +17238,8 @@ arguments[4][88][0].apply(exports,arguments)
 },{"../hash":149,"dup":88}],154:[function(require,module,exports){
 arguments[4][89][0].apply(exports,arguments)
 },{"dup":89,"inherits":225}],155:[function(require,module,exports){
-module.exports={
-  "name": "elliptic",
-  "version": "6.3.1",
-  "description": "EC cryptography",
-  "main": "lib/elliptic.js",
-  "files": [
-    "lib"
-  ],
-  "scripts": {
-    "jscs": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
-    "jshint": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
-    "lint": "npm run jscs && npm run jshint",
-    "unit": "istanbul test _mocha --reporter=spec test/index.js",
-    "test": "npm run lint && npm run unit",
-    "version": "grunt dist && git add dist/"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/indutny/elliptic.git"
-  },
-  "keywords": [
-    "EC",
-    "Elliptic",
-    "curve",
-    "Cryptography"
-  ],
-  "author": {
-    "name": "Fedor Indutny",
-    "email": "fedor@indutny.com"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/indutny/elliptic/issues"
-  },
-  "homepage": "https://github.com/indutny/elliptic",
-  "devDependencies": {
-    "brfs": "^1.4.3",
-    "coveralls": "^2.11.3",
-    "grunt": "^0.4.5",
-    "grunt-browserify": "^5.0.0",
-    "grunt-contrib-connect": "^1.0.0",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-uglify": "^1.0.1",
-    "grunt-mocha-istanbul": "^3.0.1",
-    "grunt-saucelabs": "^8.6.2",
-    "istanbul": "^0.4.2",
-    "jscs": "^2.9.0",
-    "jshint": "^2.6.0",
-    "mocha": "^2.1.0"
-  },
-  "dependencies": {
-    "bn.js": "^4.4.0",
-    "brorand": "^1.0.1",
-    "hash.js": "^1.0.0",
-    "inherits": "^2.0.1"
-  },
-  "gitHead": "c53f5cf3d832c0073eb4a4ed423a464cbce68f3e",
-  "_id": "elliptic@6.3.1",
-  "_shasum": "17781f2109ab0ec686b146bdcff5d2e8c6aeceda",
-  "_from": "elliptic@>=6.0.0 <7.0.0",
-  "_npmVersion": "3.8.6",
-  "_nodeVersion": "6.0.0",
-  "_npmUser": {
-    "name": "indutny",
-    "email": "fedor@indutny.com"
-  },
-  "dist": {
-    "shasum": "17781f2109ab0ec686b146bdcff5d2e8c6aeceda",
-    "tarball": "https://registry.npmjs.org/elliptic/-/elliptic-6.3.1.tgz"
-  },
-  "maintainers": [
-    {
-      "name": "indutny",
-      "email": "fedor@indutny.com"
-    }
-  ],
-  "_npmOperationalInternal": {
-    "host": "packages-16-east.internal.npmjs.com",
-    "tmp": "tmp/elliptic-6.3.1.tgz_1465921413402_0.5202967382501811"
-  },
-  "directories": {},
-  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.3.1.tgz",
-  "readme": "ERROR: No README data found!"
-}
-
-},{}],156:[function(require,module,exports){
+arguments[4][90][0].apply(exports,arguments)
+},{"dup":90}],156:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 var inherits = require('inherits')
