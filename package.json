@@ -14,7 +14,7 @@
     "random-int": "^1.0.0",
     "stats.js": "^0.16.0",
     "teoria": "^2.2.0",
-    "three": "^0.79.0",
+    "three": "^0.80.0",
     "three-orbit-controls": "^72.0.0"
   },
   "devDependencies": {
