@@ -82,6 +82,10 @@ function transitionTo3D() {
   }, 5000);
 }
 
+// setTimeout(function () {
+//   transitionTo3D();
+// }, 1000);
+
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
 

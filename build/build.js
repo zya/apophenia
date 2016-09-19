@@ -99,6 +99,10 @@ function transitionTo3D() {
   }, 5000);
 }
 
+// setTimeout(function () {
+//   transitionTo3D();
+// }, 1000);
+
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
 
@@ -837,14 +841,14 @@ module.exports = function (triangles) {
     face.color = colour;
     geometry.faces.push(face);
 
-    var faceuv = [
+    var faceUV = [
       new THREE.Vector2(0, 1),
       new THREE.Vector2(1, 1),
       new THREE.Vector2(1, 0),
       new THREE.Vector2(0, 0)
     ];
 
-    geometry.faceVertexUvs[0].push(faceuv);
+    geometry.faceVertexUvs[0].push(faceUV);
 
     // add the mirrored faces
     var v1Mirror = generateVector3(triangle[0], sphere.vertices);
@@ -875,18 +879,18 @@ module.exports = function (triangles) {
     }
 
     var faceMirror = new THREE.Face3(v3MirrorIndex, v2MirrorIndex, v1MirrorIndex);
-    faceMirror.normal = new THREE.Vector3(0, 0, -1);
+    faceMirror.normal = new THREE.Vector3(0, 0, 1);
     faceMirror.color = colour;
     geometry.faces.push(faceMirror);
 
-    var faceMirroruv = [
+    var faceMirrorUV = [
       new THREE.Vector2(0, 1),
       new THREE.Vector2(1, 1),
       new THREE.Vector2(1, 0),
       new THREE.Vector2(0, 0)
     ];
 
-    geometry.faceVertexUvs[0].push(faceMirroruv);
+    geometry.faceVertexUvs[0].push(faceMirrorUV);
   });
 
   geometry.vertices.forEach(function (vertex) {
@@ -906,7 +910,7 @@ module.exports = function (triangles) {
 
   // geometry.center();
   geometry.mergeVertices();
-  geometry.computeFaceNormals();
+  // geometry.computeFaceNormals();
   geometry.computeVertexNormals();
   geometry.computeMorphNormals();
   geometry.computeBoundingBox();
@@ -1245,6 +1249,20 @@ var renderer = new THREE.WebGLRenderer({
   antialias: true
 });
 
+var path = '../assets/images/skybox/';
+var format = '.jpg';
+var urls = [
+	path + 'px' + format,
+  path + 'nx' + format,
+	path + 'py' + format,
+  path + 'ny' + format,
+	path + 'pz' + format,
+  path + 'nz' + format
+];
+
+var reflectionCube = new THREE.CubeTextureLoader().load(urls);
+reflectionCube.format = THREE.RGBFormat;
+
 renderer.domElement.className = 'test';
 renderer.domElement.style.visibility = 'hidden';
 renderer.domElement.style.opacity = 0;
@@ -1263,10 +1281,16 @@ var material = new THREE.MeshPhongMaterial({
   side: THREE.DoubleSide,
   vertexColors: THREE.FaceColors,
   transparent: true,
-  opacity: 0
-    // normalMap: normalMap,
+  opacity: 0,
+  envMap: reflectionCube,
+  combine: THREE.MixOperation,
+  reflectivity: 0.25,
+  specular: 0xaa0000,
+  refractionRatio: 0.3
     // normalScale: new THREE.Vector2(0, 0)
 });
+
+window.material = material;
 
 // wire frame material
 var wireframeMaterial = new THREE.MeshNormalMaterial({
@@ -1276,6 +1300,8 @@ var wireframeMaterial = new THREE.MeshNormalMaterial({
   transparent: true,
   opacity: 0
 });
+
+var multi = new THREE.MultiMaterial([material, wireframeMaterial]);
 
 // ambient light
 scene.add(new THREE.AmbientLight('white', 0.04));
@@ -1328,7 +1354,7 @@ module.exports.init = function (triangles) {
   camera.position.z = distance;
   controls = new OrbitControls(camera);
 
-  mesh = new THREE.Mesh(geometry, material);
+  mesh = new THREE.Mesh(geometry, multi);
   var secondaryWireframe = new THREE.Mesh(secondary, wireframeMaterial);
 
   mesh.id2 = 'mainMesh';
@@ -1363,6 +1389,14 @@ module.exports.init = function (triangles) {
 
   }, 5000);
 
+  setTimeout(function () {
+    dynamics.animate(material, {
+      opacity: 1
+    }, {
+      duration: 3000
+    });
+  }, 8200);
+
   mesh.rotation.z = Math.PI;
   mesh.rotation.y = Math.PI;
   mesh.flipSided = true;
@@ -1385,13 +1419,7 @@ module.exports.init = function (triangles) {
   // scene.add(edges);
 
   controls.update();
-  setTimeout(function () {
-    dynamics.animate(material, {
-      opacity: 1
-    }, {
-      duration: 3000
-    });
-  }, 2000);
+
 };
 
 module.exports.render = function () {
