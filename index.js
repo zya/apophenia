@@ -4,6 +4,7 @@ var _ = require('lodash');
 var dynamics = require('dynamics.js');
 var Stats = require('stats.js');
 var randomF = require('random-float');
+var async = require('async');
 
 var stats = new Stats();
 
@@ -22,8 +23,6 @@ var connections = require('./lib/connections');
 var ripples = require('./lib/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
-// var sine = require('./lib/sine');
-// var map = require('./lib/map');
 
 var space = pt.space;
 var form = pt.form;
@@ -45,7 +44,6 @@ var hasTransitioned = false;
 var shouldDrawPoints = true;
 var shouldIntersect = true;
 var shouldDrawConnections = true;
-var shouldMorph = false;
 var threeD = false;
 
 var transitionParams = {
@@ -57,7 +55,7 @@ var pointTransitionParams = {
   randomMovementRate: 1
 };
 
-function fadeAllPointsOut() {
+function fadeAllPointsOut(done) {
   points.forEach(function (point) {
     point.fadeOutSpeed = randomF(0.003, 0.01);
   });
@@ -65,21 +63,40 @@ function fadeAllPointsOut() {
   setTimeout(function () {
     shouldDrawPoints = false;
   }, 9000);
+
+  setTimeout(done, 2500);
 }
 
-function transitionTo3D() {
+function initialise3DScene(done) {
   scene3d.init(connections.getSpecialTriangles());
-  threeD = true;
   setTimeout(function () {
-    scene3d.displayCanvas(); //commented out for now
-    setTimeout(function () {
-      shouldDrawConnections = false;
-    }, 5000);
-  }, 300);
+    threeD = true;
+    done();
+  }, 50);
+}
 
+function display3DScene(done) {
+  scene3d.displayCanvas();
   setTimeout(function () {
-    shouldMorph = true;
-  }, 5000);
+    shouldDrawConnections = false;
+    done();
+  }, 4000);
+}
+
+function stopDrawingConnections(done) {
+  setTimeout(function () {
+    shouldDrawConnections = false;
+    done();
+  }, 5100);
+}
+
+function transitionTo3D(done) {
+  async.series([
+    initialise3DScene,
+    display3DScene,
+    scene3d.startTransition,
+    stopDrawingConnections
+  ], done);
 }
 
 // setTimeout(function () {
@@ -93,7 +110,7 @@ document.body.appendChild(stats.dom);
 var special = _.filter(points, ['special', true]);
 connections.createSpecialShape(special);
 
-function slowDownPointMovement() {
+function slowDownPointMovement(done) {
   var duration = 2000;
 
   setTimeout(function () {
@@ -104,10 +121,10 @@ function slowDownPointMovement() {
     });
   }, 100);
 
-  return duration;
+  setTimeout(done, duration + 300);
 }
 
-function explodeSpotlight() {
+function explodeSpotlight(done) {
   var duration = 12000;
   setTimeout(function () {
     shouldIntersect = false;
@@ -116,6 +133,7 @@ function explodeSpotlight() {
     }, {
       duration: duration
     });
+    done();
   }, 500);
 }
 
@@ -199,44 +217,42 @@ var sketch = {
     // 3d stuff - commente out for now
     if (threeD) {
       scene3d.render();
-      if (shouldMorph) {
-        // var m = map(sine(1.5, 1, Date.now() * 0.0005, 0), -1, 1, -0.005, -0.03);
-        // scene3d.updateMorph(m);
-      }
     }
-    // scene3d.render();
 
     stats.end();
   },
   onMouseAction: function (type, x, y) {
     switch (type) {
-      case 'move':
-        mouseX = x;
-        mouseY = y;
-        break;
-      case 'down':
-        if (hasTransitioned) return;
-        spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
-        currentPoints.forEach(playLead);
-        connections.update(currentPoints);
-        ripples.add();
+    case 'move':
+      mouseX = x;
+      mouseY = y;
+      break;
+    case 'down':
+      if (hasTransitioned) return;
+      spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
+      currentPoints.forEach(playLead);
+      connections.update(currentPoints);
+      ripples.add();
 
-        var discoveryPercentage = connections.getDiscoveryPercentage();
-        if (discoveryPercentage > 0.70 && !hasTransitioned) {
-          hasTransitioned = true;
-          var duration = slowDownPointMovement();
-          setTimeout(function () {
-            fadeAllPointsOut();
-            connections.reveal(transitionTo3D);
-          }, duration + 3000);
-          setTimeout(explodeSpotlight, 100);
-          return;
-        }
-        break;
-      case 'up':
-        if (hasTransitioned) return;
-        spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
-        break;
+      var discoveryPercentage = connections.getDiscoveryPercentage();
+      if (discoveryPercentage > 0.1 && !hasTransitioned) {
+        hasTransitioned = true;
+
+        async.series([
+          explodeSpotlight,
+          slowDownPointMovement,
+          fadeAllPointsOut,
+          connections.reveal,
+          transitionTo3D
+        ]);
+
+        return;
+      }
+      break;
+    case 'up':
+      if (hasTransitioned) return;
+      spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
+      break;
     }
   },
   onTouchAction: function (type, x, y, evt) {
