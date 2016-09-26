@@ -307,7 +307,7 @@ space.bindMouse();
 space.bindTouch();
 space.play();
 
-},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":12,"./lib/intersectSpotlightAndPoints":13,"./lib/playLead":17,"./lib/pt":18,"./lib/randomisePoint":19,"./lib/ripples":20,"./lib/scene3D":21,"./lib/updateTemporaryPairs":25,"async":27,"dynamics.js":250,"lodash":252,"random-float":256,"stats.js":258}],3:[function(require,module,exports){
+},{"./config":1,"./lib/changeHandler":4,"./lib/colours":6,"./lib/connections":7,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":12,"./lib/intersectSpotlightAndPoints":13,"./lib/playLead":18,"./lib/pt":19,"./lib/randomisePoint":20,"./lib/ripples":21,"./lib/scene3D":22,"./lib/updateTemporaryPairs":25,"async":27,"dynamics.js":250,"lodash":252,"random-float":256,"stats.js":258}],3:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -588,7 +588,7 @@ module.exports.reveal = function (cb) {
   setTimeout(cb, 7300);
 };
 
-},{"../config":1,"./colours":6,"./pt":18,"./updateConnections":24,"dynamics.js":250,"lodash":252}],8:[function(require,module,exports){
+},{"../config":1,"./colours":6,"./pt":19,"./updateConnections":24,"dynamics.js":250,"lodash":252}],8:[function(require,module,exports){
 'use strict';
 
 window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
@@ -702,7 +702,7 @@ function createPoints(amount) {
 
 module.exports = createPoints;
 
-},{"./colours":6,"./music":16,"./pt":18,"lodash":252,"node-uuid":254,"random-float":256,"random-int":257}],10:[function(require,module,exports){
+},{"./colours":6,"./music":17,"./pt":19,"lodash":252,"node-uuid":254,"random-float":256,"random-int":257}],10:[function(require,module,exports){
 'use strict';
 
 var form = require('./pt').form;
@@ -737,7 +737,7 @@ function drawPoint(point) {
 
 module.exports = drawPoint;
 
-},{"./globals":12,"./pt":18}],11:[function(require,module,exports){
+},{"./globals":12,"./pt":19}],11:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -964,7 +964,7 @@ module.exports = function (triangles) {
   };
 };
 
-},{"./map":15,"./pt":18,"lodash":252,"random-float":256,"three":277}],12:[function(require,module,exports){
+},{"./map":15,"./pt":19,"lodash":252,"random-float":256,"three":277}],12:[function(require,module,exports){
 'use strict';
 
 var timeAtPreviousFrame;
@@ -1040,6 +1040,62 @@ module.exports = map;
 },{}],16:[function(require,module,exports){
 'use strict';
 
+var THREE = require('three');
+
+var path = '../assets/images/skybox/';
+var format = '.jpg';
+var urls = [
+	path + 'px' + format,
+  path + 'nx' + format,
+	path + 'py' + format,
+  path + 'ny' + format,
+	path + 'pz' + format,
+  path + 'nz' + format
+];
+
+var reflectionCube = new THREE.CubeTextureLoader().load(urls);
+reflectionCube.format = THREE.RGBFormat;
+
+var shellMaterial = new THREE.MeshStandardMaterial({
+  morphTargets: true,
+  morphNormals: true,
+  shading: THREE.FlatShading,
+  side: THREE.Frontide,
+  vertexColors: THREE.FaceColors,
+  transparent: true,
+  opacity: 0,
+  envMap: reflectionCube,
+  envMapIntensity: 1.2,
+  roughness: 0.7,
+  metalness: 0.4
+    // combine: THREE.MixOperation,
+    // reflectivity: 0.25,
+    // specular: 0xaa0000,
+    // refractionRatio: 0.3
+    // normalScale: new THREE.Vector2(0, 0)
+});
+
+var depth = new THREE.ShaderMaterial({
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );}',
+  fragmentShader: 'varying vec2 vUv;void main() {gl_FragColor = vec4( vec3( vUv, 0. ), 1. );}'
+});
+
+var wireframe = new THREE.MeshNormalMaterial({
+  morphTargets: true,
+  side: THREE.FrontSide,
+  wireframe: true,
+  transparent: true,
+  wireframeLinewidth: 1.4,
+  opacity: 0
+});
+
+module.exports.shell = shellMaterial;
+module.exports.depth = depth;
+module.exports.wireframe = wireframe;
+
+},{"three":277}],17:[function(require,module,exports){
+'use strict';
+
 var teoria = require('teoria');
 
 var g3 = teoria.note('g3');
@@ -1048,7 +1104,7 @@ var notes = scale.notes();
 
 module.exports.notes = notes;
 
-},{"teoria":259}],17:[function(require,module,exports){
+},{"teoria":259}],18:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
@@ -1093,7 +1149,7 @@ function playLead(point, index) {
 
 module.exports = playLead;
 
-},{"./audio":3,"./changePointColour":5,"./context":8,"./ripples":20,"random-float":256}],18:[function(require,module,exports){
+},{"./audio":3,"./changePointColour":5,"./context":8,"./ripples":21,"random-float":256}],19:[function(require,module,exports){
 'use strict';
 
 var pt = require('ptjs');
@@ -1116,7 +1172,7 @@ module.exports.spotLight = spotLight;
 module.exports.spotLightRatio = spotLightRatio;
 module.exports.lib = pt;
 
-},{"../config":1,"./colours":6,"ptjs":255}],19:[function(require,module,exports){
+},{"../config":1,"./colours":6,"ptjs":255}],20:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
@@ -1130,7 +1186,7 @@ function randomisePoint(point, rate) {
 
 module.exports = randomisePoint;
 
-},{"random-float":256}],20:[function(require,module,exports){
+},{"random-float":256}],21:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1238,7 +1294,7 @@ module.exports.clean = function () {
   });
 };
 
-},{"../config":1,"./colours":6,"./globals":12,"./pt":18,"lodash":252,"random-float":256}],21:[function(require,module,exports){
+},{"../config":1,"./colours":6,"./globals":12,"./pt":19,"lodash":252,"random-float":256}],22:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -1249,35 +1305,22 @@ var OrbitControls = require('three-orbit-controls')(THREE);
 
 var generateGeometry = require('./generate3DGeometry');
 var globals = require('./globals');
-var sine = require('./sine');
+// var sine = require('./sine');
 var space = require('./pt').space;
+var materials = require('./materials');
 
 var geometry, mesh, wireframe, camera, controls, sphere, aura;
 var shouldSpin = false;
 // scene and camera
 var scene = new THREE.Scene();
 
-var raycaster = new THREE.Raycaster();
+// var raycaster = new THREE.Raycaster();
 
 // renderer
 var renderer = new THREE.WebGLRenderer({
   alpha: true,
   antialias: true
 });
-
-var path = '../assets/images/skybox/';
-var format = '.jpg';
-var urls = [
-	path + 'px' + format,
-  path + 'nx' + format,
-	path + 'py' + format,
-  path + 'ny' + format,
-	path + 'pz' + format,
-  path + 'nz' + format
-];
-
-var reflectionCube = new THREE.CubeTextureLoader().load(urls);
-reflectionCube.format = THREE.RGBFormat;
 
 renderer.domElement.className = 'test';
 renderer.domElement.style.visibility = 'hidden';
@@ -1290,34 +1333,13 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 // var displacementMap = textureLoader.load('../assets/images/displacement.jpg');
 
 // main material
-var material = new THREE.MeshPhongMaterial({
-  morphTargets: true,
-  morphNormals: true,
-  shading: THREE.FlatShading,
-  side: THREE.Frontide,
-  vertexColors: THREE.FaceColors,
-  transparent: true,
-  opacity: 0,
-  envMap: reflectionCube,
-  combine: THREE.MixOperation,
-  reflectivity: 0.25,
-  specular: 0xaa0000,
-  refractionRatio: 0.3
-    // normalScale: new THREE.Vector2(0, 0)
-});
+var material = materials.shell;
 
 // wire frame material
-var wireframeMaterial = new THREE.MeshNormalMaterial({
-  morphTargets: true,
-  side: THREE.FrontSide,
-  wireframe: true,
-  transparent: true,
-  wireframeLinewidth: 1.4,
-  opacity: 0
-});
+var wireframeMaterial = materials.wireframe;
 
 // ambient light
-scene.add(new THREE.AmbientLight('white', 0.04));
+
 
 // spot light
 var spotLight = new THREE.SpotLight(0xffc60f);
@@ -1330,23 +1352,23 @@ spotLight.distance = 8;
 spotLight.intensity = 0.5;
 spotLight.shadow.mapSize.width = 512;
 spotLight.shadow.mapSize.height = 512;
-scene.add(spotLight);
 
 // var lightHelper = new THREE.SpotLightHelper(spotLight);
 // scene.add(lightHelper);
 
 // point light
 var pointLight = new THREE.PointLight(0x390fff);
-pointLight.intensity = 0.5;
+pointLight.intensity = 0.3;
 pointLight.distance = 2;
-pointLight.decay = 0.25;
-pointLight.position.z = 0.2;
-scene.add(pointLight);
+pointLight.decay = 0.8;
+pointLight.position.z = 0.4;
+
 // var c = new THREE.Mesh(new THREE.SphereGeometry(0.01, 0.01, 0.01));
 
-var directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
-directionalLight.position.set(1.5, 1, 2);
-// scene.add(directionalLight);
+var directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
+directionalLight.position.set(4, 1.5, -10);
+window.dir = directionalLight;
+
 
 // var pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
 // scene.add(pointLightHelper);
@@ -1432,13 +1454,19 @@ module.exports.init = function (triangles) {
 
   // var h = new THREE.FaceNormalsHelper(mesh);
   // scene.add(h);
-  scene.add(wireframe);
-  scene.add(mesh);
 
   // var edges = new THREE.FaceNormalsHelper(mesh, 2, 0x00ff00, 1);
   // scene.add(edges);
 
   controls.update();
+
+  scene.add(new THREE.AmbientLight('white', 0.09));
+  scene.add(directionalLight);
+  // scene.add(spotLight);
+  // scene.add(pointLight);
+
+  scene.add(wireframe);
+  scene.add(mesh);
 
 };
 
@@ -1456,13 +1484,13 @@ module.exports.render = function () {
   if (shouldSpin) {
     mesh.rotation.y += 0.003;
     sphere.rotation.y -= 0.007;
-    aura.rotation.y -= 0.009;
+    aura.rotation.y += 0.009;
   }
 
   mesh.scale.copy(wireframe.scale);
 
-  spotLight.position.x = sine(0.7, 0.35, Date.now() * 0.001, 0) * 2;
-  spotLight.position.y = 4.5 + sine(1.5, 0.2, Date.now() * 0.001, 0.5) * 8;
+  // spotLight.position.x = sine(0.7, 0.35, Date.now() * 0.001, 0) * 2;
+  // spotLight.position.y = 4.5 + sine(1.5, 0.2, Date.now() * 0.001, 0.5) * 8;
 
   var mouseVertex = new THREE.Vector2(((mouse.x / space.size.x) - 0.5) * 2, (((mouse.y / space.size.y) - 0.5) * 2) * -1);
   pointLight.position.x = mouseVertex.x;
@@ -1478,23 +1506,23 @@ module.exports.render = function () {
   // material.normalScale.x = op;
   // material.normalScale.y = op;
 
-  raycaster.setFromCamera(new THREE.Vector2(mouseVertex.x, mouseVertex.y), camera);
-  var intersects = raycaster.intersectObject(mesh);
-
-  mesh.geometry.faces.forEach(function (face) {
-    face.color.copy(new THREE.Color('white'));
-  });
-
-  document.body.style.cursor = 'auto';
-  if (intersects.length > 0) {
-    intersects.forEach(function (intersect) {
-      if (intersect.object.id2 === 'mainMesh') {
-        document.body.style.cursor = 'pointer';
-        mesh.geometry.faces[intersect.faceIndex].color.copy(new THREE.Color('red'));
-        mesh.geometry.colorsNeedUpdate = true;
-      }
-    });
-  }
+  // raycaster.setFromCamera(new THREE.Vector2(mouseVertex.x, mouseVertex.y), camera);
+  // var intersects = raycaster.intersectObject(mesh);
+  //
+  // mesh.geometry.faces.forEach(function (face) {
+  //   face.color.copy(new THREE.Color('white'));
+  // });
+  //
+  // document.body.style.cursor = 'auto';
+  // if (intersects.length > 0) {
+  //   intersects.forEach(function (intersect) {
+  //     if (intersect.object.id2 === 'mainMesh') {
+  //       document.body.style.cursor = 'pointer';
+  //       mesh.geometry.faces[intersect.faceIndex].color.copy(new THREE.Color('red'));
+  //       mesh.geometry.colorsNeedUpdate = true;
+  //     }
+  //   });
+  // }
 
   renderer.render(scene, camera);
 };
@@ -1528,17 +1556,7 @@ module.exports.hideCanvas = function () {
 
 module.exports.display = document.getElementById('pt').appendChild(renderer.domElement);
 
-},{"./generate3DGeometry":11,"./globals":12,"./pt":18,"./sine":22,"async":27,"dynamics.js":250,"three":277,"three-orbit-controls":276}],22:[function(require,module,exports){
-'use strict';
-// f(x) = A sin(wt + p)
-
-function sine(freq, amp, time, phase) {
-  return amp * Math.sin((freq * time) + phase);
-}
-
-module.exports = sine;
-
-},{}],23:[function(require,module,exports){
+},{"./generate3DGeometry":11,"./globals":12,"./materials":16,"./pt":19,"async":27,"dynamics.js":250,"three":277,"three-orbit-controls":276}],23:[function(require,module,exports){
 'use strict';
 
 var trash = [];
