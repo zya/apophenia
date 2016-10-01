@@ -332,7 +332,7 @@ leadGain.connect(convolver);
 synthGain.gain.value = 0.0;
 leadGain.gain.value = 0.0;
 
-load('./assets/ir3.mp3', function (buffer) {
+load('./assets/audio/ir3.mp3', function (buffer) {
   convolver.buffer = buffer;
 });
 
@@ -1355,7 +1355,7 @@ var material = new THREE.MeshStandardMaterial({
 // roseWireframe.rotation.copy(rose.rotation);
 
 module.exports.load = function (cb) {
-  loader.load('../assets/rose.obj', function (object) {
+  loader.load('../assets/models/rose.obj', function (object) {
     var geo = object.children[0].geometry;
     geo.center();
 
