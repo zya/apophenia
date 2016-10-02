@@ -116,9 +116,9 @@ function transitionTo3D(done) {
   ], done);
 }
 
-setTimeout(function () {
-  transitionTo3D();
-}, 1000);
+// setTimeout(function () {
+//   transitionTo3D();
+// }, 1000);
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
@@ -1401,11 +1401,14 @@ var shouldSpin = false;
 var scene = new THREE.Scene();
 
 var roseMesh = new THREE.Object3D();
+var raycaster = new THREE.Raycaster();
+
+var loaded = false;
 
 rose.load(function (mesh) {
+  loaded = true;
   roseMesh = mesh;
 });
-// var raycaster = new THREE.Raycaster();
 
 // renderer
 var renderer = new THREE.WebGLRenderer({
@@ -1419,16 +1422,11 @@ renderer.domElement.style.opacity = 0;
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 
-// var normalMap = textureLoader.load('/assets/images/normal-map.jpg');
-// var textureMap = textureLoader.load('../assets/images/normal-map.jpg');
-// var displacementMap = textureLoader.load('../assets/images/displacement.jpg');
-
 // main material
 var material = materials.shell;
 
 // wire frame material
 var wireframeMaterial = materials.wireframe;
-
 
 // spot light
 var spotLight = new THREE.SpotLight(0xffc60f);
@@ -1591,9 +1589,20 @@ function addTheInsideMeshes(done) {
   done();
 }
 
-module.exports.render = function () {
+setInterval(function () {
   var mouse = globals.getMousePosition();
+  var mouseVertex = new THREE.Vector2(((mouse.x / space.size.x) - 0.5) * 2, (((mouse.y / space.size.y) - 0.5) * 2) * -1);
+  raycaster.setFromCamera(new THREE.Vector2(mouseVertex.x, mouseVertex.y), camera);
+  var intersects = raycaster.intersectObjects([mesh, roseMesh]);
 
+  if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
+    document.body.style.cursor = 'pointer';
+  } else {
+    document.body.style.cursor = 'auto';
+  }
+}, 100);
+
+module.exports.render = function () {
   if (shouldSpin) {
     mesh.rotation.y += 0.007;
     sphere.rotation.y -= 0.006;
@@ -1603,19 +1612,7 @@ module.exports.render = function () {
   }
 
   mesh.scale.copy(wireframe.scale);
-
-  // spotLight.position.x = sine(0.7, 0.35, Date.now() * 0.001, 0) * 2;
-  // spotLight.position.y = 4.5 + sine(1.5, 0.2, Date.now() * 0.001, 0.5) * 8;
-
-  var mouseVertex = new THREE.Vector2(((mouse.x / space.size.x) - 0.5) * 2, (((mouse.y / space.size.y) - 0.5) * 2) * -1);
-  pointLight.position.x = mouseVertex.x;
-  pointLight.position.y = mouseVertex.y;
-
-  spotLight.lookAt(mesh.position);
-  // roseMesh.rotation.y += mouseVertex.x * 0.0006;
-  // roseMesh.rotation.x -= mouseVertex.y * 0.0006;
   wireframe.rotation.copy(mesh.rotation);
-
   wireframeMaterial.opacity = 1;
 
   renderer.render(scene, camera);
