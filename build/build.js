@@ -116,9 +116,9 @@ function transitionTo3D(done) {
   ], done);
 }
 
-// setTimeout(function () {
-//   transitionTo3D();
-// }, 1000);
+setTimeout(function () {
+  transitionTo3D();
+}, 1000);
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
@@ -1077,8 +1077,11 @@ module.exports = map;
 'use strict';
 
 var THREE = require('three');
+var textureLoader = new THREE.TextureLoader();
 
 var darkNavyBlue = require('./colours').darkNavyBlue;
+var stoneBumpMap = textureLoader.load('../assets/images/stone-bump-map-01.jpg');
+var stoneNormalMap = textureLoader.load('../assets/images/stone-normal-map-01.jpg');
 
 var path = '../assets/images/skybox/';
 var format = '.jpg';
@@ -1103,10 +1106,15 @@ var shellMaterial = new THREE.MeshStandardMaterial({
   transparent: true,
   opacity: 0,
   envMap: reflectionCube,
-  envMapIntensity: 1.4,
+  envMapIntensity: 1.0,
+  emissive: 0x1c00499,
+  emissiveIntensity: 0.03,
   roughness: 0.6,
   metalness: 0.9,
-  color: new THREE.Color(darkNavyBlue.x / 255, darkNavyBlue.y / 255, darkNavyBlue.z / 255)
+  color: new THREE.Color(darkNavyBlue.x / 255, darkNavyBlue.y / 255, darkNavyBlue.z / 255),
+  emissiveMap: stoneBumpMap,
+  normalMap: stoneNormalMap,
+  normalScale: new THREE.Vector2(0.05, 0.05)
     // combine: THREE.MixOperation,
     // reflectivity: 0.25,
     // specular: 0xaa0000,
@@ -1456,6 +1464,7 @@ directionalLight2.position.set(-4, -1.5, 12);
 var directionalLight3 = new THREE.DirectionalLight('orange', 0.4);
 directionalLight3.position.set(0, -1.5, -2);
 
+
 // var pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
 // scene.add(pointLightHelper);
 
@@ -1555,6 +1564,10 @@ module.exports.init = function (triangles) {
 
   controls.update();
 
+  directionalLight.lookAt(mesh);
+  directionalLight2.lookAt(mesh);
+  directionalLight3.lookAt(mesh);
+
   scene.add(new THREE.AmbientLight('orange', 0.09));
   scene.add(directionalLight);
   scene.add(directionalLight2);
@@ -1562,8 +1575,6 @@ module.exports.init = function (triangles) {
   // scene.add(spotLight);
   // scene.add(pointLight);
 
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
   scene.add(wireframe);
   scene.add(mesh);
 
@@ -1588,7 +1599,7 @@ module.exports.render = function () {
     sphere.rotation.y -= 0.006;
     floaters.rotation.y += 0.006;
     aura.rotation.y -= 0.006;
-    roseMesh.rotation.y += 0.001;
+    // roseMesh.rotation.y += 0.001;
   }
 
   mesh.scale.copy(wireframe.scale);
