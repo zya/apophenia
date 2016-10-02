@@ -1098,12 +1098,12 @@ var shellMaterial = new THREE.MeshStandardMaterial({
   morphTargets: true,
   morphNormals: true,
   shading: THREE.FlatShading,
-  side: THREE.Frontide,
+  side: THREE.FrontSide,
   vertexColors: THREE.FaceColors,
   transparent: true,
   opacity: 0,
   envMap: reflectionCube,
-  envMapIntensity: 1.3,
+  envMapIntensity: 1.4,
   roughness: 0.6,
   metalness: 0.9,
   color: new THREE.Color(darkNavyBlue.x / 255, darkNavyBlue.y / 255, darkNavyBlue.z / 255)
@@ -1453,12 +1453,22 @@ var directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.2);
 directionalLight2.position.set(-4, -1.5, 12);
 // window.dir = directionalLight;
 
+var directionalLight3 = new THREE.DirectionalLight('orange', 0.4);
+directionalLight3.position.set(0, -1.5, -2);
 
 // var pointLightHelper = new THREE.PointLightHelper(pointLight, 1);
 // scene.add(pointLightHelper);
 
 // var directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 10);
 // scene.add(directionalLightHelper);
+
+var redLight = new THREE.PointLight('red');
+redLight.intensity = 0.2;
+redLight.distance = 0.8;
+redLight.decay = 2;
+redLight.position.z = -1;
+scene.add(redLight);
+window.redLight = redLight;
 
 function scaleUpTo3D(done) {
   async.parallel([
@@ -1545,11 +1555,15 @@ module.exports.init = function (triangles) {
 
   controls.update();
 
-  scene.add(new THREE.AmbientLight('white', 0.09));
+  scene.add(new THREE.AmbientLight('orange', 0.09));
   scene.add(directionalLight);
+  scene.add(directionalLight2);
+  scene.add(directionalLight3);
   // scene.add(spotLight);
   // scene.add(pointLight);
 
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
   scene.add(wireframe);
   scene.add(mesh);
 
@@ -1561,6 +1575,7 @@ function addTheInsideMeshes(done) {
   scene.add(roseMesh);
   scene.add(aura);
   material.side = THREE.DoubleSide;
+  material.transparent = false;
   material.needsUpdate = true;
   done();
 }
