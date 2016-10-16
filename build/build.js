@@ -1131,7 +1131,6 @@ var wireframe = new THREE.MeshNormalMaterial({
   morphTargets: true,
   side: THREE.FrontSide,
   wireframe: true,
-  color: 'white',
   transparent: true,
   wireframeLinewidth: 1.4,
   opacity: 0
@@ -1576,6 +1575,18 @@ module.exports.init = function (triangles) {
   scene.add(wireframe);
   scene.add(mesh);
 
+  setInterval(function () {
+    var mouse = globals.getMousePosition();
+    var mouseVertex = new THREE.Vector2(((mouse.x / space.size.x) - 0.5) * 2, (((mouse.y / space.size.y) - 0.5) * 2) * -1);
+    raycaster.setFromCamera(new THREE.Vector2(mouseVertex.x, mouseVertex.y), camera);
+    var intersects = raycaster.intersectObjects([mesh, roseMesh]);
+
+    if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
+      document.body.style.cursor = 'pointer';
+    } else {
+      document.body.style.cursor = 'auto';
+    }
+  }, 100);
 };
 
 function addTheInsideMeshes(done) {
@@ -1588,19 +1599,6 @@ function addTheInsideMeshes(done) {
   material.needsUpdate = true;
   done();
 }
-
-setInterval(function () {
-  var mouse = globals.getMousePosition();
-  var mouseVertex = new THREE.Vector2(((mouse.x / space.size.x) - 0.5) * 2, (((mouse.y / space.size.y) - 0.5) * 2) * -1);
-  raycaster.setFromCamera(new THREE.Vector2(mouseVertex.x, mouseVertex.y), camera);
-  var intersects = raycaster.intersectObjects([mesh, roseMesh]);
-
-  if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
-    document.body.style.cursor = 'pointer';
-  } else {
-    document.body.style.cursor = 'auto';
-  }
-}, 100);
 
 module.exports.render = function () {
   if (shouldSpin) {
