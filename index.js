@@ -101,6 +101,7 @@ function transitionTo3D(done) {
 
 // setTimeout(function () {
 //   transitionTo3D();
+//   fadeAllPointsOut();
 // }, 1000);
 
 stats.showPanel(0);
@@ -223,22 +224,22 @@ var sketch = {
   },
   onMouseAction: function (type, x, y) {
     switch (type) {
-    case 'move':
-      mouseX = x;
-      mouseY = y;
-      break;
-    case 'down':
-      if (hasTransitioned) return;
-      spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
-      currentPoints.forEach(playLead);
-      connections.update(currentPoints);
-      ripples.add();
+      case 'move':
+        mouseX = x;
+        mouseY = y;
+        break;
+      case 'down':
+        if (hasTransitioned) return;
+        spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
+        currentPoints.forEach(playLead);
+        connections.update(currentPoints);
+        ripples.add();
 
-      var discoveryPercentage = connections.getDiscoveryPercentage();
-      if (discoveryPercentage > 0.1 && !hasTransitioned) {
-        hasTransitioned = true;
+        var discoveryPercentage = connections.getDiscoveryPercentage();
+        if (discoveryPercentage > 0.1 && !hasTransitioned) {
+          hasTransitioned = true;
 
-        async.series([
+          async.series([
           explodeSpotlight,
           slowDownPointMovement,
           fadeAllPointsOut,
@@ -246,13 +247,13 @@ var sketch = {
           transitionTo3D
         ]);
 
-        return;
-      }
-      break;
-    case 'up':
-      if (hasTransitioned) return;
-      spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
-      break;
+          return;
+        }
+        break;
+      case 'up':
+        if (hasTransitioned) return;
+        spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
+        break;
     }
   },
   onTouchAction: function (type, x, y, evt) {
