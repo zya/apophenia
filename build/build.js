@@ -1361,6 +1361,8 @@ var rose = require('./rose');
 var aura = require('./aura');
 
 var geometry, mesh, wireframe, camera, controls, sphere;
+var shouldEmitMouseOnEvent = true;
+var shouldEmitMouseOffEvent = false;
 var shouldSpin = false;
 // scene and camera
 var scene = new THREE.Scene();
@@ -1449,6 +1451,26 @@ function startSpinning(done) {
   }, 500);
 }
 
+function mouseOn() {
+  shouldEmitMouseOnEvent = false;
+  shouldEmitMouseOffEvent = true;
+  dynamics.animate(redLight, {
+    intensity: redLight.intensity + 0.1
+  }, {
+    duration: 1000
+  });
+}
+
+function mouseOff() {
+  shouldEmitMouseOnEvent = true;
+  shouldEmitMouseOffEvent = false;
+
+  dynamics.animate(redLight, {
+    intensity: redLight.intensity - 0.1
+  }, {
+    duration: 1000
+  });
+}
 // initialise
 module.exports.init = function (triangles) {
   var geometries = generateGeometry(triangles);
@@ -1495,8 +1517,14 @@ module.exports.init = function (triangles) {
 
     if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
       document.body.style.cursor = 'pointer';
+      if (shouldEmitMouseOnEvent) {
+        mouseOn();
+      }
     } else {
       document.body.style.cursor = 'auto';
+      if (shouldEmitMouseOffEvent) {
+        mouseOff();
+      }
     }
   }, 100);
 };
