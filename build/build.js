@@ -116,10 +116,10 @@ function transitionTo3D(done) {
   ], done);
 }
 
-setTimeout(function () {
-  transitionTo3D();
-  fadeAllPointsOut();
-}, 500);
+// setTimeout(function () {
+//   transitionTo3D();
+//   fadeAllPointsOut();
+// }, 500);
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
@@ -1370,9 +1370,12 @@ var scene = new THREE.Scene();
 var roseMesh = new THREE.Object3D();
 var raycaster = new THREE.Raycaster();
 
+var mouseOffsetX = 0;
+var mouseOffsetY = 0;
+
 var loaded = false;
 
-rose.load(function (mesh) {
+rose.load(function (err, mesh) {
   loaded = true;
   roseMesh = mesh;
 });
@@ -1399,12 +1402,19 @@ var wireframeMaterial = materials.wireframe;
 // scene.add(lightHelper);
 
 var redLight = new THREE.PointLight('red');
-redLight.intensity = 0.03;
+redLight.intensity = 0.04;
 redLight.distance = 10;
 redLight.decay = 0.02;
 redLight.position.z = 0.2;
 
-var spotLightForRose = new THREE.SpotLight(0xffffff);
+
+var blueLight = new THREE.PointLight('blue');
+blueLight.intensity = 0.3;
+blueLight.distance = 10;
+blueLight.decay = 0.03;
+blueLight.position.z = 0.3;
+
+var spotLightForRose = new THREE.SpotLight('0xffffff');
 spotLightForRose.position.set(0, 0, 0.7);
 spotLightForRose.intensity = 7;
 spotLightForRose.distance = 0.7;
@@ -1455,7 +1465,13 @@ function mouseOn() {
   shouldEmitMouseOnEvent = false;
   shouldEmitMouseOffEvent = true;
   dynamics.animate(redLight, {
-    intensity: redLight.intensity + 0.1
+    intensity: redLight.intensity + 0.2
+  }, {
+    duration: 1000
+  });
+
+  dynamics.animate(blueLight, {
+    intensity: blueLight.intensity + 0.2
   }, {
     duration: 1000
   });
@@ -1466,7 +1482,13 @@ function mouseOff() {
   shouldEmitMouseOffEvent = false;
 
   dynamics.animate(redLight, {
-    intensity: redLight.intensity - 0.1
+    intensity: redLight.intensity - 0.2
+  }, {
+    duration: 1000
+  });
+
+  dynamics.animate(blueLight, {
+    intensity: blueLight.intensity - 0.2
   }, {
     duration: 1000
   });
@@ -1527,12 +1549,22 @@ module.exports.init = function (triangles) {
       }
     }
   }, 100);
+
+  setInterval(updateMousePosition, 200);
 };
+
+function updateMousePosition() {
+  var mouse = globals.getMousePosition();
+  var mouseVertex = new THREE.Vector2(((mouse.x / space.size.x) - 0.5) * 2, (((mouse.y / space.size.y) - 0.5) * 2) * -1);
+  mouseOffsetX = mouseVertex.x;
+  mouseOffsetY = mouseVertex.y;
+}
 
 function addTheInsideMeshes(done) {
   scene.add(roseMesh);
   scene.add(aura);
   scene.add(redLight);
+  scene.add(blueLight);
   scene.add(spotLightForRose);
   material.side = THREE.DoubleSide;
   material.transparent = false;
@@ -1547,7 +1579,6 @@ module.exports.render = function () {
     mesh.rotation.y += 0.007;
     sphere.rotation.y -= 0.006;
     aura.rotation.y -= 0.006;
-    // roseMesh.rotation.y += 0.001;
   }
 
   mesh.scale.copy(wireframe.scale);
@@ -1557,6 +1588,9 @@ module.exports.render = function () {
   spotLightForRose.lookAt(roseMesh);
 
   wireframeMaterial.needsUpdate = true;
+
+  rose.updateRotation(mouseOffsetX, mouseOffsetY);
+
   renderer.render(scene, camera);
 };
 
