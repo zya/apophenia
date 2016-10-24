@@ -99,10 +99,10 @@ function transitionTo3D(done) {
   ], done);
 }
 
-// setTimeout(function () {
-//   transitionTo3D();
-//   fadeAllPointsOut();
-// }, 1000);
+setTimeout(function () {
+  transitionTo3D();
+  fadeAllPointsOut();
+}, 500);
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
