@@ -380,6 +380,11 @@ aura.updateMorph = function () {
 
 module.exports = aura;
 
+module.exports.setSize = function (reference) {
+  var scale = reference / (aura.geometry.boundingBox.max.y * 2.8);
+  aura.scale.set(scale, scale, scale);
+};
+
 },{"./colours":7,"lodash":254,"three":279}],5:[function(require,module,exports){
 'use strict';
 
@@ -1340,8 +1345,13 @@ module.exports.updateRotation = function (x, y) {
   rose.rotation.x -= y * 0.007;
   rose.rotation.y += x * 0.008;
 
-  rose.rotation.y = _.clamp(rose.rotation.y, initialRotation - 0.6, initialRotation + 0.6);
-  rose.rotation.x = _.clamp(rose.rotation.x, -0.5, 0.5);
+  rose.rotation.y = _.clamp(rose.rotation.y, initialRotation - 0.4, initialRotation + 0.4);
+  rose.rotation.x = _.clamp(rose.rotation.x, -0.3, 0.3);
+};
+
+module.exports.setSize = function (reference) {
+  var scale = reference / (rose.geometry.boundingBox.max.y * 3);
+  rose.scale.set(scale, scale, scale);
 };
 
 },{"../node_modules/three/examples/js/loaders/OBJLoader":280,"lodash":254,"three":279}],24:[function(require,module,exports){
@@ -1512,8 +1522,11 @@ module.exports.init = function (triangles) {
   wireframe.scale.set(1, 1, 0.00000001);
 
   var radius = geometry.boundingBox.max.y + Math.abs(geometry.boundingBox.min.y);
+
   var sphereG = new THREE.SphereGeometry(radius / 4, 10, 10);
   sphere = new THREE.Mesh(sphereG, wireframeMaterial);
+
+  rose.setSize(geometry.boundingBox.max.y);
 
   mesh.rotation.z = Math.PI;
   mesh.rotation.y = Math.PI;
