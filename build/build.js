@@ -1033,12 +1033,11 @@ var THREE = require('three');
 var textureLoader = new THREE.TextureLoader();
 
 var colours = require('./colours');
-// var background = colours.background;
-// var stoneBumpMap = textureLoader.load('../assets/images/stone-bump-map-01.jpg');
-// var stoneNormalMap = textureLoader.load('../assets/images/stone-normal-map-01.jpg');
-var dotsNormalMap = textureLoader.load('../assets/images/dots-normal-map-01.jpg');
+var urlPath = location.pathname;
+var dotsNormalMap = textureLoader.load(urlPath + 'assets/images/dots-normal-map-01.jpg');
 
-var path = '../assets/images/skybox/';
+var path = urlPath + 'assets/images/skybox/';
+
 var format = '.jpg';
 var urls = [
 	path + 'px' + format,
@@ -1081,15 +1080,6 @@ var depth = new THREE.ShaderMaterial({
   vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );}',
   fragmentShader: 'varying vec2 vUv;void main() {gl_FragColor = vec4( vec3( vUv, 0. ), 1. );}'
 });
-
-// var wireframe = new THREE.MeshNormalMaterial({
-//   morphTargets: true,
-//   side: THREE.FrontSide,
-//   wireframe: true,
-//   transparent: true,
-//   wireframeLinewidth: 1.4,
-//   opacity: 0
-// });
 
 var wireframe = new THREE.MeshLambertMaterial({
   wireframe: true,
@@ -1326,7 +1316,9 @@ var material = new THREE.MeshStandardMaterial({
 // roseWireframe.rotation.copy(rose.rotation);
 
 module.exports.load = function (cb) {
-  loader.load('../assets/models/rose.obj', function (object) {
+  var urlPath = location.pathname;
+
+  loader.load(urlPath + 'assets/models/rose.obj', function (object) {
     var geometry = object.children[0].geometry;
     geometry.center();
     geometry.computeFaceNormals();
@@ -1348,9 +1340,6 @@ var THREE = require('three');
 var dynamics = require('dynamics.js');
 var async = require('async');
 var OrbitControls = require('three-orbit-controls')(THREE);
-// var textureLoader = new THREE.TextureLoader();
-window.THREE = THREE;
-require('../node_modules/three/examples/js/loaders/OBJLoader');
 
 var generateGeometry = require('./generate3DGeometry');
 var globals = require('./globals');
@@ -1589,7 +1578,7 @@ module.exports.hideCanvas = function () {
 
 module.exports.display = document.getElementById('pt').appendChild(renderer.domElement);
 
-},{"../node_modules/three/examples/js/loaders/OBJLoader":280,"./aura":4,"./generate3DGeometry":12,"./globals":13,"./materials":17,"./pt":20,"./rose":23,"async":29,"dynamics.js":252,"three":279,"three-orbit-controls":278}],25:[function(require,module,exports){
+},{"./aura":4,"./generate3DGeometry":12,"./globals":13,"./materials":17,"./pt":20,"./rose":23,"async":29,"dynamics.js":252,"three":279,"three-orbit-controls":278}],25:[function(require,module,exports){
 'use strict';
 
 var trash = [];
