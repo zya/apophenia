@@ -1308,6 +1308,10 @@ var _ = require('lodash');
 window.THREE = THREE;
 require('../node_modules/three/examples/js/loaders/OBJLoader');
 
+var textureLoader = new THREE.TextureLoader();
+var urlPath = location.pathname;
+var dotsNormalMap = textureLoader.load(urlPath + 'assets/images/dots-normal-map-01.jpg');
+
 var loader = new THREE.OBJLoader();
 var scale = 0.028;
 
@@ -1319,7 +1323,9 @@ var material = new THREE.MeshPhongMaterial({
   // color: 'red',
   emissiveIntensity: 0.05,
   shading: THREE.SmoothShading,
-  shininess: 30
+  shininess: 30,
+  normalMap: dotsNormalMap,
+  normalScale: new THREE.Vector3(0.1, 0.1)
 });
 
 var geometry;
