@@ -1318,7 +1318,8 @@ var material = new THREE.MeshPhongMaterial({
   emissive: 'red',
   // color: 'red',
   emissiveIntensity: 0.05,
-  shading: THREE.SmoothShading
+  shading: THREE.SmoothShading,
+  shininess: 30
 });
 
 var geometry;
@@ -1417,7 +1418,7 @@ var wireframeMaterial = materials.wireframe;
 // scene.add(lightHelper);
 
 var redLight = new THREE.PointLight('red');
-redLight.intensity = 0.04;
+redLight.intensity = 0.01;
 redLight.distance = 9;
 redLight.decay = 0.02;
 redLight.position.z = 0.2;
@@ -1480,7 +1481,7 @@ function mouseOn() {
   shouldEmitMouseOnEvent = false;
   shouldEmitMouseOffEvent = true;
   dynamics.animate(redLight, {
-    intensity: redLight.intensity + 0.35
+    intensity: redLight.intensity + 0.45
   }, {
     duration: 1000
   });
@@ -1493,7 +1494,7 @@ function mouseOn() {
 
   if (loaded) {
     dynamics.animate(roseMaterial, {
-      emissiveIntensity: roseMaterial.emissiveIntensity + 0.15
+      emissiveIntensity: roseMaterial.emissiveIntensity + 0.25
     }, {
       duration: 1000
     });
@@ -1513,7 +1514,7 @@ function mouseOff() {
   shouldEmitMouseOffEvent = false;
 
   dynamics.animate(redLight, {
-    intensity: redLight.intensity - 0.35
+    intensity: redLight.intensity - 0.45
   }, {
     duration: 1000
   });
@@ -1525,7 +1526,7 @@ function mouseOff() {
   });
 
   dynamics.animate(roseMaterial, {
-    emissiveIntensity: roseMaterial.emissiveIntensity - 0.15
+    emissiveIntensity: roseMaterial.emissiveIntensity - 0.25
   }, {
     duration: 1000
   });
