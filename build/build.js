@@ -1098,6 +1098,7 @@ var wireframe = new THREE.MeshLambertMaterial({
 module.exports.shell = shellMaterial;
 module.exports.depth = depth;
 module.exports.wireframe = wireframe;
+module.exports.dotsNormalMap = dotsNormalMap;
 
 },{"./colours":7,"three":279}],18:[function(require,module,exports){
 'use strict';
@@ -1368,19 +1369,20 @@ module.exports.setSize = function (reference) {
 'use strict';
 
 var THREE = require('three');
+var _ = require('lodash');
 var dynamics = require('dynamics.js');
 var async = require('async');
 var OrbitControls = require('three-orbit-controls')(THREE);
 
 var generateGeometry = require('./generate3DGeometry');
 var globals = require('./globals');
-// var sine = require('./sine');
+var colours = require('./colours');
 var space = require('./pt').space;
 var materials = require('./materials');
 var rose = require('./rose');
 var aura = require('./aura');
 
-var geometry, mesh, wireframe, camera, controls, sphere;
+var geometry, mesh, wireframe, camera, controls, sphere, group, groupMaterial;
 var shouldEmitMouseOnEvent = true;
 var shouldEmitMouseOffEvent = false;
 var shouldSpin = false;
@@ -1512,6 +1514,12 @@ function mouseOn() {
     }, {
       duration: 1000
     });
+
+    dynamics.animate(groupMaterial, {
+      emissiveIntensity: 0.7
+    }, {
+      duration: 1000
+    });
   }
 }
 
@@ -1544,6 +1552,12 @@ function mouseOff() {
   }, {
     duration: 1000
   });
+
+  dynamics.animate(groupMaterial, {
+    emissiveIntensity: 0.1
+  }, {
+    duration: 1000
+  });
 }
 
 function raycast() {
@@ -1562,8 +1576,31 @@ function raycast() {
     }
   }
 }
+
+function addSpheres() {
+  var geom = new THREE.SphereGeometry(0.005);
+  groupMaterial = new THREE.MeshStandardMaterial({
+    metalness: 0.0,
+    roughness: 0.0,
+    color: new THREE.Color(colours.lightBlue.r, colours.lightBlue.g, colours.lightBlue.b),
+    emissive: 'red',
+    emissiveIntensity: 0.1,
+    normalMap: materials.dotsNormalMap
+  });
+
+
+  group = new THREE.Group();
+  for (var i = 0; i < 500; i++) {
+    var mesh = new THREE.Mesh(geom, groupMaterial);
+    mesh.position.set(_.random(-3.5, 3.5, true), _.random(-3.5, 3.5, true), _.random(-8, 8, true));
+    group.add(mesh);
+  }
+
+  scene.add(group);
+}
 // initialise
 module.exports.init = function (triangles) {
+  scene.fog = new THREE.Fog('black', -1, 16);
   var geometries = generateGeometry(triangles);
   geometry = geometries.main;
 
@@ -1603,6 +1640,8 @@ module.exports.init = function (triangles) {
   scene.add(wireframe);
   scene.add(mesh);
 
+  addSpheres();
+
   setInterval(raycast, 100);
   setInterval(updateMousePosition, 200);
 };
@@ -1633,6 +1672,8 @@ module.exports.render = function () {
     mesh.rotation.y += 0.007;
     sphere.rotation.y -= 0.006;
     aura.rotation.y -= 0.006;
+    group.rotation.y -= 0.003;
+    group.rotation.x -= 0.001;
   }
 
   if (loaded) {
@@ -1646,6 +1687,7 @@ module.exports.render = function () {
   spotLightForRose.lookAt(roseMesh);
 
   wireframeMaterial.needsUpdate = true;
+  groupMaterial.needsUpdate = true;
 
   rose.updateRotation(mouseOffsetX, mouseOffsetY);
 
@@ -1681,7 +1723,7 @@ module.exports.hideCanvas = function () {
 
 module.exports.display = document.getElementById('pt').appendChild(renderer.domElement);
 
-},{"./aura":4,"./generate3DGeometry":12,"./globals":13,"./materials":17,"./pt":20,"./rose":23,"async":29,"dynamics.js":252,"three":279,"three-orbit-controls":278}],25:[function(require,module,exports){
+},{"./aura":4,"./colours":7,"./generate3DGeometry":12,"./globals":13,"./materials":17,"./pt":20,"./rose":23,"async":29,"dynamics.js":252,"lodash":254,"three":279,"three-orbit-controls":278}],25:[function(require,module,exports){
 'use strict';
 
 var trash = [];
