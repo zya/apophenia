@@ -1,5 +1,5 @@
 {
-  "name": "M.O.D",
+  "name": "apophenia",
   "version": "1.0.0",
   "description": "Meditation On Dots",
   "main": "index.js",
@@ -15,7 +15,7 @@
     "random-int": "^1.0.0",
     "stats.js": "^0.16.0",
     "teoria": "^2.2.0",
-    "three": "^0.80.0",
+    "three": "^0.82.1",
     "three-orbit-controls": "^72.0.0"
   },
   "devDependencies": {
