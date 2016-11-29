@@ -1307,6 +1307,7 @@ module.exports.clean = function () {
 
 var THREE = require('three');
 var _ = require('lodash');
+var dynamics = require('dynamics.js');
 window.THREE = THREE;
 require('../node_modules/three/examples/js/loaders/OBJLoader');
 
@@ -1318,6 +1319,9 @@ var loader = new THREE.OBJLoader();
 var scale = 0.028;
 
 var rose = new THREE.Object3D();
+var animatables = {
+  morph: 0
+};
 
 var material = new THREE.MeshPhongMaterial({
   side: THREE.DoubleSide,
@@ -1327,7 +1331,8 @@ var material = new THREE.MeshPhongMaterial({
   shading: THREE.SmoothShading,
   shininess: 30,
   normalMap: dotsNormalMap,
-  normalScale: new THREE.Vector3(0.1, 0.1)
+  normalScale: new THREE.Vector3(0.1, 0.1),
+  morphTargets: true
 });
 
 material.userData = {
@@ -1342,10 +1347,21 @@ module.exports.load = function (cb) {
   var urlPath = location.pathname;
 
   loader.load(urlPath + 'assets/models/rose.obj', function (object) {
-    geometry = object.children[0].geometry;
+    geometry = new THREE.Geometry().fromBufferGeometry(object.children[0].geometry);
     geometry.center();
     geometry.computeFaceNormals();
     geometry.computeVertexNormals();
+
+    var targets = [];
+
+    geometry.vertices.forEach(function (vertex) {
+      targets.push(new THREE.Vector3(vertex.x + _.random(-0.6, 0.6), vertex.y + _.random(-0.6, 0.6), vertex.z + _.random(-0.6, 0.6)));
+    });
+
+    geometry.morphTargets.push({
+      name: 'random',
+      vertices: targets
+    });
 
     rose = new THREE.Mesh(geometry, material);
     rose.scale.set(scale, scale, scale);
@@ -1372,7 +1388,30 @@ module.exports.setSize = function (reference) {
   rose.scale.set(scale, scale, scale);
 };
 
-},{"../node_modules/three/examples/js/loaders/OBJLoader":187,"lodash":129,"three":186}],24:[function(require,module,exports){
+module.exports.update = function () {
+  rose.morphTargetInfluences[0] = animatables.morph;
+};
+
+module.exports.distort = function () {
+  dynamics.animate(animatables, {
+    morph: _.random(1, 2)
+  }, {
+    type: dynamics.easeOut,
+    friction: 1,
+    duration: 300
+  });
+  setTimeout(function () {
+    dynamics.animate(animatables, {
+      morph: 0
+    }, {
+      type: dynamics.easeOut,
+      friction: 1,
+      duration: 300
+    });
+  }, 400);
+};
+
+},{"../node_modules/three/examples/js/loaders/OBJLoader":187,"dynamics.js":95,"lodash":129,"three":186}],24:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -1394,6 +1433,7 @@ var geometry, mesh, wireframe, camera, sphere, group, groupMaterial;
 var shouldEmitMouseOnEvent = true;
 var shouldEmitMouseOffEvent = false;
 var shouldSpin = false;
+var isHover = false;
 // scene and camera
 var scene = new THREE.Scene();
 
@@ -1491,7 +1531,7 @@ dynamicSpotLight.shadow.mapSize.width = 2048 * 2;
 dynamicSpotLight.shadow.mapSize.height = 2048 * 2;
 dynamicSpotLight.shadow.bias = -0.0001;
 scene.add(dynamicSpotLight);
-//
+
 // var spotLightHelper = new THREE.SpotLightHelper(dynamicSpotLight);
 // scene.add(spotLightHelper);
 
@@ -1545,8 +1585,9 @@ function startSpinning(done) {
 function mouseOn() {
   shouldEmitMouseOnEvent = false;
   shouldEmitMouseOffEvent = true;
+  isHover = true;
   dynamics.animate(redLight, {
-    intensity: redLightIntensityInitial + 0.60
+    intensity: redLightIntensityInitial + 0.70
   }, {
     duration: 1000
   });
@@ -1559,7 +1600,7 @@ function mouseOn() {
 
   if (loaded) {
     dynamics.animate(roseMaterial, {
-      emissiveIntensity: roseMaterial.userData.emissiveIntensityInitial + 0.25
+      emissiveIntensity: roseMaterial.userData.emissiveIntensityInitial + 0.80
     }, {
       duration: 1000
     });
@@ -1594,6 +1635,7 @@ function mouseOn() {
 function mouseOff() {
   shouldEmitMouseOnEvent = true;
   shouldEmitMouseOffEvent = false;
+  isHover = false;
 
   dynamics.animate(redLight, {
     intensity: redLightIntensityInitial
@@ -1680,6 +1722,12 @@ function addSpheres() {
   group.castShadow = true;
   scene.add(group);
 }
+
+renderer.domElement.addEventListener('click', function () {
+  if (isHover) {
+    rose.distort();
+  }
+});
 
 // initialise
 module.exports.init = function (triangles) {
@@ -1772,7 +1820,7 @@ module.exports.render = function () {
   wireframe.rotation.copy(mesh.rotation);
 
   spotLightForRose.lookAt(roseMesh);
-  dynamicSpotLight.lookAt(mesh);
+  dynamicSpotLight.lookAt(roseMesh.position);
 
   wireframeMaterial.needsUpdate = true;
   groupMaterial.needsUpdate = true;
@@ -1786,8 +1834,11 @@ module.exports.render = function () {
   // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
   // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
   dynamicSpotLight.position.x += ((mouseOffsetX * 3) - dynamicSpotLight.position.x) * 0.1;
-  dynamicSpotLight.position.y += ((mouseOffsetY * 1.3) - dynamicSpotLight.position.y) * 0.1;
+  dynamicSpotLight.position.y += ((mouseOffsetY * 2) - dynamicSpotLight.position.y) * 0.1;
+  redLight.position.x += (((mouseOffsetX * 2) - redLight.position.x) * 0.1) * -1;
+  redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
 
+  rose.update();
   renderer.render(scene, camera);
 };
 
