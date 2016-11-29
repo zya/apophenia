@@ -1393,12 +1393,14 @@ module.exports.update = function () {
 };
 
 module.exports.distort = function () {
+  var duration = _.random(270, 350);
+
   dynamics.animate(animatables, {
     morph: _.random(1, 2)
   }, {
     type: dynamics.easeOut,
     friction: 1,
-    duration: 300
+    duration: duration
   });
   setTimeout(function () {
     dynamics.animate(animatables, {
@@ -1406,9 +1408,9 @@ module.exports.distort = function () {
     }, {
       type: dynamics.easeOut,
       friction: 1,
-      duration: 300
+      duration: duration
     });
-  }, 400);
+  }, duration + 100);
 };
 
 },{"../node_modules/three/examples/js/loaders/OBJLoader":187,"dynamics.js":95,"lodash":129,"three":186}],24:[function(require,module,exports){
@@ -1491,9 +1493,9 @@ redLight.intensity = redLightIntensityInitial;
 redLight.distance = 9;
 redLight.decay = 0.02;
 redLight.position.z = 0.2;
-// redLight.castShadow = true;
-// redLight.shadow.mapSize.width = 2048;
-// redLight.shadow.mapSize.height = 2048;
+redLight.castShadow = true;
+redLight.shadow.mapSize.width = 2048;
+redLight.shadow.mapSize.height = 2048;
 
 var blueLightIntesitiyInitial = 0.25;
 var blueLight = new THREE.PointLight('blue');
@@ -1835,8 +1837,8 @@ module.exports.render = function () {
   // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
   dynamicSpotLight.position.x += ((mouseOffsetX * 3) - dynamicSpotLight.position.x) * 0.1;
   dynamicSpotLight.position.y += ((mouseOffsetY * 2) - dynamicSpotLight.position.y) * 0.1;
-  redLight.position.x += (((mouseOffsetX * 2) - redLight.position.x) * 0.1) * -1;
-  redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
+  redLight.position.x += (((mouseOffsetX) - redLight.position.x) * 0.1);
+  // redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
 
   rose.update();
   renderer.render(scene, camera);
