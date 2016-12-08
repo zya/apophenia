@@ -1392,7 +1392,9 @@ var material = new THREE.MeshPhongMaterial({
   shininess: 30,
   normalMap: dotsNormalMap,
   normalScale: new THREE.Vector3(0.1, 0.1),
-  morphTargets: true
+  morphTargets: true,
+  transparent: true,
+  opacity: 0
 });
 
 material.userData = {
@@ -1445,7 +1447,7 @@ module.exports.updateRotation = function (x, y) {
 module.exports.setSize = function (reference) {
   scale = reference / (geometry.boundingBox.max.y * 3);
   rose.userData.scale = scale;
-  rose.scale.set(scale, scale, scale);
+  rose.scale.set(0, 0, 0);
 };
 
 module.exports.update = function () {
@@ -1495,6 +1497,13 @@ module.exports.reduce = function () {
   });
 };
 
+module.exports.reveal = function () {
+  material.opacity = 1;
+  material.transparent = false;
+  material.needsUpdate = true;
+  rose.scale.set(scale, scale, scale);
+};
+
 },{"../node_modules/three/examples/js/loaders/OBJLoader":187,"dynamics.js":95,"lodash":129,"three":186}],24:[function(require,module,exports){
 'use strict';
 
@@ -1538,7 +1547,7 @@ var loaded = false;
 rose.load(function (err, mesh, material) {
   loaded = true;
   roseMesh = mesh;
-  roseMesh.visible = false;
+  // roseMesh.visible = false;
   auraMesh.visible = false;
   roseMaterial = material;
   scene.add(roseMesh);
@@ -1572,7 +1581,7 @@ var wireframeMaterial = materials.wireframe;
 
 var redLightIntensityInitial = 0.01;
 var redLight = new THREE.PointLight('red');
-redLight.intensity = redLightIntensityInitial;
+redLight.intensity = 0;
 redLight.distance = 9;
 redLight.decay = 0.02;
 redLight.position.z = 0.2;
@@ -1580,9 +1589,9 @@ redLight.castShadow = true;
 redLight.shadow.mapSize.width = 2048;
 redLight.shadow.mapSize.height = 2048;
 
-var blueLightIntesitiyInitial = 0.25;
+var blueLightIntensitiInitial = 0.25;
 var blueLight = new THREE.PointLight('blue');
-blueLight.intensity = 0.25;
+blueLight.intensity = 0;
 blueLight.distance = 6;
 blueLight.decay = 0.03;
 blueLight.position.z = 0.3;
@@ -1591,9 +1600,10 @@ blueLight.position.z = 0.3;
 // blueLight.shadowMapWidth = 2048;
 // blueLight.shadowMapHeight = 2048;
 
+var spotLightForRoseIntensityInitial = 4.5;
 var spotLightForRose = new THREE.SpotLight('white');
 spotLightForRose.position.set(0, 0, 0.6);
-spotLightForRose.intensity = 4.5;
+spotLightForRose.intensity = 0;
 spotLightForRose.distance = 0.7;
 spotLightForRose.angle = 1.2;
 spotLightForRose.penumbra = 1.0;
@@ -1678,7 +1688,7 @@ function mouseOn() {
   });
 
   dynamics.animate(blueLight, {
-    intensity: blueLightIntesitiyInitial - 0.15
+    intensity: blueLightIntensitiInitial - 0.15
   }, {
     duration: 1000
   });
@@ -1725,7 +1735,7 @@ function mouseOff() {
   });
 
   dynamics.animate(blueLight, {
-    intensity: blueLightIntesitiyInitial
+    intensity: blueLightIntensitiInitial
   }, {
     duration: 1000
   });
@@ -1856,6 +1866,10 @@ module.exports.init = function (triangles) {
 
   addSpheres();
 
+  scene.add(redLight);
+  scene.add(blueLight);
+  scene.add(spotLightForRose);
+
   setInterval(raycast, 100);
   setInterval(updateMousePosition, 100);
 };
@@ -1867,17 +1881,16 @@ function updateMousePosition() {
   mouseOffsetY = mouseVertex.y;
 }
 
-function addTheInsideMeshes(done) {
-  roseMesh.visible = true;
-  auraMesh.visible = true;
-  //
-  scene.add(redLight);
-  scene.add(blueLight);
-  scene.add(spotLightForRose);
+function addInsideMeshes(done) {
+  rose.reveal();
 
+  spotLightForRose.intensity = spotLightForRoseIntensityInitial;
+  redLight.intensity = redLightIntensityInitial;
+  blueLight.intensity = blueLightIntensitiInitial;
+
+  auraMesh.visible = true;
   material.side = THREE.DoubleSide;
 
-  // startPulsing();
   done();
 }
 
@@ -1940,7 +1953,7 @@ module.exports.displayCanvas = function () {
 module.exports.startTransition = function (done) {
   async.series([
     scaleUpTo3D,
-    addTheInsideMeshes,
+    addInsideMeshes,
     startSpinning
     // startMovingLights
   ], done);
