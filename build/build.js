@@ -345,21 +345,36 @@ module.exports.leadDestination = leadGain;
 
 var THREE = require('three');
 var _ = require('lodash');
+var dynamics = require('dynamics.js');
 
 var colours = require('./colours');
+var scale = 0;
+
+var animatables = {
+  morph: 0.6,
+  morph2: 0.0
+};
 
 var geometry = new THREE.SphereGeometry(0.42, 7, 7);
 geometry.mergeVertices();
+geometry.computeBoundingBox();
 
 var targets = [];
+var targets2 = [];
 
 geometry.vertices.forEach(function (vertex) {
   targets.push(new THREE.Vector3(vertex.x + _.random(-0.11, 0.11), vertex.y + _.random(-0.11, 0.11), vertex.z + _.random(-0.11, 0.11)));
+  targets2.push(new THREE.Vector3(vertex.x + _.random(-0.11, 0.11), vertex.y + _.random(-0.11, 0.11), vertex.z + _.random(-0.11, 0.11)));
 });
 
 geometry.morphTargets.push({
   name: 'random',
   vertices: targets
+});
+
+geometry.morphTargets.push({
+  name: 'random2',
+  vertices: targets2
 });
 
 var material = new THREE.MeshPhongMaterial({
@@ -373,20 +388,65 @@ var material = new THREE.MeshPhongMaterial({
 
 var aura = new THREE.Mesh(geometry, material);
 aura.castShadow = true;
-aura.morphTargetInfluences[0] = 0.6;
 
-aura.updateMorph = function () {
-  aura.morphTargetInfluences[0] += _.random(-0.05, 0.05);
+module.exports.mesh = aura;
+
+module.exports.update = function () {
+  aura.morphTargetInfluences[0] = animatables.morph;
+  aura.morphTargetInfluences[1] = animatables.morph2;
 };
 
-module.exports = aura;
+module.exports.expand = function () {
+  var duration = 1100;
+  dynamics.animate(aura.scale, {
+    x: scale * 1.3,
+    y: scale * 1.3,
+    z: scale * 1.3,
+  }, {
+    duration: duration
+  });
+};
+
+module.exports.reduce = function () {
+  var duration = 1100;
+  dynamics.animate(aura.scale, {
+    x: scale,
+    y: scale,
+    z: scale,
+  }, {
+    duration: duration
+  });
+};
+
+module.exports.distort = function () {
+  var duration = _.random(150, 260);
+
+  dynamics.animate(animatables, {
+    morph: _.random(0.65, 0.75),
+    morph2: _.random(0, 0.3)
+  }, {
+    type: dynamics.easeOut,
+    friction: 1,
+    duration: duration
+  });
+  setTimeout(function () {
+    dynamics.animate(animatables, {
+      morph: 0.6,
+      morph2: 0,
+    }, {
+      type: dynamics.easeOut,
+      friction: 1,
+      duration: duration
+    });
+  }, duration + 150);
+};
 
 module.exports.setSize = function (reference) {
-  var scale = reference / (aura.geometry.boundingBox.max.y * 2.8);
+  scale = reference / (geometry.boundingBox.max.y * 1.55);
   aura.scale.set(scale, scale, scale);
 };
 
-},{"./colours":7,"lodash":129,"three":186}],5:[function(require,module,exports){
+},{"./colours":7,"dynamics.js":95,"lodash":129,"three":186}],5:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1383,7 +1443,7 @@ module.exports.updateRotation = function (x, y) {
 };
 
 module.exports.setSize = function (reference) {
-  var scale = reference / (geometry.boundingBox.max.y * 3);
+  scale = reference / (geometry.boundingBox.max.y * 3);
   rose.userData.scale = scale;
   rose.scale.set(scale, scale, scale);
 };
@@ -1393,10 +1453,10 @@ module.exports.update = function () {
 };
 
 module.exports.distort = function () {
-  var duration = _.random(270, 350);
+  var duration = _.random(270, 450);
 
   dynamics.animate(animatables, {
-    morph: _.random(1, 2)
+    morph: _.random(1, 2.3)
   }, {
     type: dynamics.easeOut,
     friction: 1,
@@ -1411,6 +1471,28 @@ module.exports.distort = function () {
       duration: duration
     });
   }, duration + 100);
+};
+
+module.exports.expand = function () {
+  var duration = 1000;
+  dynamics.animate(rose.scale, {
+    x: scale * 1.2,
+    y: scale * 1.2,
+    z: scale * 1.2,
+  }, {
+    duration: duration
+  });
+};
+
+module.exports.reduce = function () {
+  var duration = 1000;
+  dynamics.animate(rose.scale, {
+    x: scale,
+    y: scale,
+    z: scale,
+  }, {
+    duration: duration
+  });
 };
 
 },{"../node_modules/three/examples/js/loaders/OBJLoader":187,"dynamics.js":95,"lodash":129,"three":186}],24:[function(require,module,exports){
@@ -1429,6 +1511,7 @@ var space = require('./pt').space;
 var materials = require('./materials');
 var rose = require('./rose');
 var aura = require('./aura');
+var auraMesh = aura.mesh;
 
 var geometry, mesh, wireframe, camera, sphere, group, groupMaterial;
 // var controls;
@@ -1456,10 +1539,10 @@ rose.load(function (err, mesh, material) {
   loaded = true;
   roseMesh = mesh;
   roseMesh.visible = false;
-  aura.visible = false;
+  auraMesh.visible = false;
   roseMaterial = material;
   scene.add(roseMesh);
-  scene.add(aura);
+  scene.add(auraMesh);
 });
 
 // renderer
@@ -1607,20 +1690,14 @@ function mouseOn() {
       duration: 1000
     });
 
-    dynamics.animate(roseMesh.scale, {
-      x: roseMesh.userData.scale * 1.2,
-      y: roseMesh.userData.scale * 1.2,
-      z: roseMesh.userData.scale * 1.2
-    }, {
-      duration: 1000
-    });
-
     dynamics.animate(groupMaterial, {
       emissiveIntensity: 0.7,
       opacity: 1
     }, {
       duration: 1000
     });
+
+    rose.expand();
   }
 
   if (shouldSpin) {
@@ -1632,6 +1709,8 @@ function mouseOn() {
       friction: 1
     });
   }
+
+  aura.expand();
 }
 
 function mouseOff() {
@@ -1657,13 +1736,7 @@ function mouseOff() {
     duration: 1000
   });
 
-  dynamics.animate(roseMesh.scale, {
-    x: roseMesh.userData.scale,
-    y: roseMesh.userData.scale,
-    z: roseMesh.userData.scale
-  }, {
-    duration: 1000
-  });
+  rose.reduce();
 
   dynamics.animate(groupMaterial, {
     emissiveIntensity: 0.1,
@@ -1681,6 +1754,8 @@ function mouseOff() {
       friction: 1
     });
   }
+
+  aura.reduce();
 }
 
 function raycast() {
@@ -1715,19 +1790,20 @@ function addSpheres() {
 
 
   group = new THREE.Group();
-  for (var i = 0; i < 700; i++) {
+  for (var i = 0; i < 1000; i++) {
     var mesh = new THREE.Mesh(geom, groupMaterial);
     mesh.position.set(_.random(-3.5, 3.5, true), _.random(-3.5, 3.5, true), _.random(-8, 8, true));
     group.add(mesh);
   }
 
-  group.castShadow = true;
+  // group.castShadow = true;
   scene.add(group);
 }
 
 renderer.domElement.addEventListener('click', function () {
   if (isHover) {
     rose.distort();
+    aura.distort();
   }
 });
 
@@ -1759,7 +1835,8 @@ module.exports.init = function (triangles) {
   var sphereG = new THREE.SphereGeometry(radius / 4, 10, 10);
   sphere = new THREE.Mesh(sphereG, wireframeMaterial);
 
-  rose.setSize(geometry.boundingBox.max.y);
+  rose.setSize(geometry.boundingBox.max.x);
+  aura.setSize(geometry.boundingBox.max.x);
 
   mesh.rotation.z = Math.PI;
   mesh.rotation.y = Math.PI;
@@ -1792,7 +1869,7 @@ function updateMousePosition() {
 
 function addTheInsideMeshes(done) {
   roseMesh.visible = true;
-  aura.visible = true;
+  auraMesh.visible = true;
   //
   scene.add(redLight);
   scene.add(blueLight);
@@ -1808,7 +1885,7 @@ module.exports.render = function () {
   if (shouldSpin) {
     mesh.rotation.y += spin.speed;
     sphere.rotation.y -= 0.006;
-    aura.rotation.y -= 0.006;
+    auraMesh.rotation.y -= 0.006;
     group.rotation.y -= 0.003;
     group.rotation.x -= 0.001;
   }
@@ -1841,6 +1918,7 @@ module.exports.render = function () {
   // redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
 
   rose.update();
+  aura.update();
   renderer.render(scene, camera);
 };
 
