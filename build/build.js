@@ -419,11 +419,11 @@ module.exports.reduce = function () {
 };
 
 module.exports.distort = function () {
-  var duration = _.random(150, 260);
+  var duration = _.random(300, 500);
 
   dynamics.animate(animatables, {
-    morph: _.random(0.65, 0.75),
-    morph2: _.random(0, 0.3)
+    morph: _.random(0.65, 0.70),
+    morph2: _.random(0.2, 0.35)
   }, {
     type: dynamics.easeOut,
     friction: 1,
@@ -1557,8 +1557,8 @@ renderer.domElement.style.opacity = 0;
 
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.shadowMap.cullFace = THREE.CullFaceBack;
-
+// renderer.shadowMap.cullFace = THREE.CullFaceBack;
+renderer.shadowMap.renderReverseSided = false;
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 // main material
@@ -1912,9 +1912,9 @@ module.exports.render = function () {
   // redLight.position.x += (mouseOffsetX - redLight.position.x) * 0.1;
   // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
   // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
-  dynamicSpotLight.position.x += ((mouseOffsetX * 3) - dynamicSpotLight.position.x) * 0.1;
-  dynamicSpotLight.position.y += ((mouseOffsetY * 2) - dynamicSpotLight.position.y) * 0.1;
-  redLight.position.x += (((mouseOffsetX) - redLight.position.x) * 0.1);
+  dynamicSpotLight.position.x += ((mouseOffsetX * 3) - dynamicSpotLight.position.x) * 0.03;
+  dynamicSpotLight.position.y += ((mouseOffsetY * 2) - dynamicSpotLight.position.y) * 0.03;
+  redLight.position.x += (((mouseOffsetX * 0.5) - redLight.position.x) * 0.1);
   // redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
 
   rose.update();
