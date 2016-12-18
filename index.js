@@ -68,19 +68,19 @@ function fadeAllPointsOut(done) {
 }
 
 function initialise3DScene(done) {
-  scene3d.init(connections.getSpecialTriangles());
-  setTimeout(function () {
-    threeD = true;
-    done();
-  }, 50);
+  scene3d.init(connections.getSpecialTriangles(), function () {
+    setTimeout(function () {
+      threeD = true;
+      done();
+    }, 300);
+  });
 }
 
 function display3DScene(done) {
-  scene3d.displayCanvas();
-  setTimeout(function () {
+  scene3d.displayCanvas(function () {
     shouldDrawConnections = false;
     done();
-  }, 4000);
+  });
 }
 
 function stopDrawingConnections(done) {
@@ -99,10 +99,10 @@ function transitionTo3D(done) {
   ], done);
 }
 
-setTimeout(function () {
-  transitionTo3D();
-  fadeAllPointsOut();
-}, 500);
+// setTimeout(function () {
+//   transitionTo3D();
+//   fadeAllPointsOut();
+// }, 500);
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
