@@ -56,6 +56,35 @@ var pointTransitionParams = {
   randomMovementRate: 1
 };
 
+
+scene3d.on('spinStart', function () {
+  console.log('started spinning');
+});
+
+scene3d.on('growStart', function () {
+  console.log('started growing');
+});
+
+scene3d.on('roseHoverOn', function () {
+  console.log('rose hover on');
+});
+
+scene3d.on('roseHoverOff', function () {
+  console.log('rose hover off');
+});
+
+scene3d.on('roseClick', function () {
+  console.log('rose click');
+});
+
+connections.on('revealStart', function () {
+  console.log('started revealing');
+});
+
+connections.on('revealEnd', function () {
+  console.log('finished revealing');
+});
+
 function fadeAllPointsOut(done) {
   points.forEach(function (point) {
     point.fadeOutSpeed = randomF(0.003, 0.01);

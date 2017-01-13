@@ -73,6 +73,35 @@ var pointTransitionParams = {
   randomMovementRate: 1
 };
 
+
+scene3d.on('spinStart', function () {
+  console.log('started spinning');
+});
+
+scene3d.on('growStart', function () {
+  console.log('started growing');
+});
+
+scene3d.on('roseHoverOn', function () {
+  console.log('rose hover on');
+});
+
+scene3d.on('roseHoverOff', function () {
+  console.log('rose hover off');
+});
+
+scene3d.on('roseClick', function () {
+  console.log('rose click');
+});
+
+connections.on('revealStart', function () {
+  console.log('started revealing');
+});
+
+connections.on('revealEnd', function () {
+  console.log('finished revealing');
+});
+
 function fadeAllPointsOut(done) {
   points.forEach(function (point) {
     point.fadeOutSpeed = randomF(0.003, 0.01);
@@ -623,6 +652,9 @@ var params = {
   opacityRate: 1
 };
 
+var revealStartCallback = function () {};
+var revealEndCallback = function () {};
+
 function updateSines() {
   var now = Date.now();
   sines[0] = Math.abs(Math.sin(now * 0.0005)) * 0.6;
@@ -725,19 +757,21 @@ function revealConnectionInTime(connection, time) {
   (function (connection) {
     setTimeout(function () {
       connection.opacity = 0;
-      connection.revealSpeed = _.random(0.02, 0.04);
+      connection.revealSpeed = _.random(0.025, 0.05);
     }, time);
   })(connection);
 }
 
 module.exports.reveal = function (cb) {
+  setTimeout(revealStartCallback, 1500);
+
   specialConnections.forEach(function (connection, index) {
     if (index % 4 === 0) {
-      revealConnectionInTime(connection, _.random(3400, 4800));
+      revealConnectionInTime(connection, _.random(1500, 3000));
     } else if (index % 3 === 0) {
-      revealConnectionInTime(connection, _.random(6000, 7500));
+      revealConnectionInTime(connection, _.random(3500, 4500));
     } else {
-      revealConnectionInTime(connection, _.random(1000, 2800));
+      revealConnectionInTime(connection, _.random(4800, 6000));
     }
   });
 
@@ -751,7 +785,15 @@ module.exports.reveal = function (cb) {
     });
   }, 2000);
 
-  setTimeout(cb, 7300);
+  setTimeout(function () {
+    cb();
+    revealEndCallback();
+  }, 6000);
+};
+
+module.exports.on = function (event, cb) {
+  if (event === 'revealStart') revealStartCallback = cb;
+  if (event === 'revealEnd') revealEndCallback = cb;
 };
 
 },{"../config":1,"./colours":8,"./pt":24,"./updateConnections":31,"dynamics.js":100,"lodash":134}],10:[function(require,module,exports){
@@ -1305,6 +1347,8 @@ Kick.prototype.start = function (startTime) {
     frequency = teoria.note.fromMIDI(notes[0].midi() - 24).fq();
   }
 
+  frequency = parseFloat(frequency.toFixed(3));
+
   that.osc.start(now);
   that.osc.frequency.setValueAtTime(that.osc.frequency.value, now);
   that.osc.frequency.linearRampToValueAtTime(frequency, now + 0.005);
@@ -1801,7 +1845,7 @@ var rose = require('./rose');
 var aura = require('./aura');
 var auraMesh = aura.mesh;
 
-var geometry, mesh, wireframe, camera, sphere, group, groupMaterial;
+var geometry, mesh, wireframe, camera, group, groupMaterial;
 // var controls;
 var shouldEmitMouseOnEvent = true;
 var shouldEmitMouseOffEvent = false;
@@ -1822,6 +1866,12 @@ var spin = {
 };
 
 var loaded = false;
+
+var spinStartCallback = function () {};
+var growStartCallback = function () {};
+var roseHoverOnCallback = function () {};
+var roseHoverOffCallback = function () {};
+var roseClickCallback = function () {};
 
 rose.load(function (err, mesh, material) {
   loaded = true;
@@ -1897,7 +1947,7 @@ scene.add(dynamicSpotLight);
 function scaleUpTo3D(done) {
   async.parallel([
     function morphTo3D(cb) {
-      console.log('morphing');
+      growStartCallback();
       dynamics.animate(wireframe.scale, {
         z: 1.0,
         x: 1.1,
@@ -1930,6 +1980,7 @@ function scaleUpTo3D(done) {
 function startSpinning(done) {
   setTimeout(function () {
     shouldSpin = true;
+    spinStartCallback();
     dynamics.animate(spin, {
       speed: 0.007
     }, {
@@ -1991,6 +2042,7 @@ function mouseOn() {
     });
 
     rose.expand();
+    roseHoverOnCallback();
   }
 
   if (shouldSpin) {
@@ -2061,6 +2113,7 @@ function mouseOff() {
   }
 
   aura.reduce();
+  roseHoverOffCallback();
 }
 
 function raycast() {
@@ -2111,6 +2164,7 @@ renderer.addClickListener(function () {
   if (isHover) {
     rose.distort();
     aura.distort();
+    roseClickCallback();
   }
 });
 
@@ -2151,7 +2205,7 @@ module.exports.init = function (triangles, done) {
   mesh.rotation.y = Math.PI;
   mesh.flipSided = true;
   mesh.doubleSided = true;
-  mesh.morphTargetBase = 0;
+  mesh.morphTargetBase = 0.00001;
 
   wireframe.rotation.copy(mesh.rotation);
 
@@ -2247,6 +2301,14 @@ module.exports.startTransition = function (done) {
 
 module.exports.hideCanvas = function () {
   renderer.hide();
+};
+
+module.exports.on = function (event, cb) {
+  if (event === 'spinStart') spinStartCallback = cb;
+  if (event === 'growStart') growStartCallback = cb;
+  if (event === 'roseHoverOn') roseHoverOnCallback = cb;
+  if (event === 'roseHoverOff') roseHoverOffCallback = cb;
+  if (event === 'roseClick') roseClickCallback = cb;
 };
 
 },{"./aura":5,"./colours":8,"./generate3DGeometry":13,"./globals":14,"./materials":18,"./pt":24,"./renderer":26,"./rose":28,"async":49,"dynamics.js":100,"lodash":134,"three":191}],30:[function(require,module,exports){
