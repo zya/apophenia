@@ -10,6 +10,7 @@ var stats = new Stats();
 
 var pt = require('./lib/pt');
 var colours = require('./lib/colours');
+var conductor = require('./lib/music/conductor');
 
 var createPoints = require('./lib/createPoints');
 var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
@@ -90,12 +91,14 @@ function stopDrawingConnections(done) {
   }, 5100);
 }
 
+
 function transitionTo3D(done) {
   async.series([
     initialise3DScene,
+    conductor.stopFirstSection,
     display3DScene,
     scene3d.startTransition,
-    stopDrawingConnections
+    stopDrawingConnections,
   ], done);
 }
 
@@ -144,6 +147,8 @@ function parallaxPoints(point, xOffset, yOffset) {
     point.y -= (yOffset * point.originalRadius) * _.random(0.1, 0.3);
   }
 }
+
+var alreadyIsSpecial = false;
 
 var sketch = {
   animate: function () {
@@ -208,8 +213,17 @@ var sketch = {
     if (!_.isEqual(currentPoints, pointsInsideCircle)) {
       var toRemove = _.difference(currentPoints, pointsInsideCircle);
       var toAdd = _.difference(pointsInsideCircle, currentPoints);
-      change(toAdd, toRemove, currentlyPlaying);
-      connections.updateInsideConnections(pointsInsideCircle);
+      var anySpecials = connections.updateInsideConnections(pointsInsideCircle);
+      var foundSpecial = false;
+
+      if (!alreadyIsSpecial && anySpecials) {
+        alreadyIsSpecial = true;
+        console.log('trigger special event');
+      }
+
+      if (!anySpecials) alreadyIsSpecial = false;
+
+      change(toAdd, toRemove, currentlyPlaying, foundSpecial);
     }
 
     //update the current points
@@ -236,7 +250,7 @@ var sketch = {
         ripples.add();
 
         var discoveryPercentage = connections.getDiscoveryPercentage();
-        if (discoveryPercentage > 0.1 && !hasTransitioned) {
+        if (discoveryPercentage > 0.6 && !hasTransitioned) {
           hasTransitioned = true;
 
           async.series([
@@ -290,3 +304,5 @@ space.add(sketch);
 space.bindMouse();
 space.bindTouch();
 space.play();
+
+conductor.startIntroKicks();
