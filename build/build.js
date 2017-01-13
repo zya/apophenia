@@ -388,7 +388,7 @@ kickGain.connect(limiter);
 
 synthGain.gain.value = 0.2;
 leadGain.gain.value = 0.12;
-kickGain.gain.value = 0.15;
+kickGain.gain.value = 0.12;
 
 load('./assets/audio/ir3.mp3', function (buffer) {
   convolver.buffer = buffer;
@@ -725,7 +725,7 @@ function revealConnectionInTime(connection, time) {
   (function (connection) {
     setTimeout(function () {
       connection.opacity = 0;
-      connection.revealSpeed = _.random(0.009, 0.015);
+      connection.revealSpeed = _.random(0.02, 0.04);
     }, time);
   })(connection);
 }
@@ -1300,6 +1300,10 @@ Kick.prototype.start = function (startTime) {
   var randomNote = notes[_.random(0, notes.length - 1, false)];
   var midi = randomNote.midi() - 24;
   var frequency = teoria.note.fromMIDI(midi).fq();
+
+  if (frequency > 80 || !frequency) {
+    frequency = teoria.note.fromMIDI(notes[0].midi() - 24).fq();
+  }
 
   that.osc.start(now);
   that.osc.frequency.setValueAtTime(that.osc.frequency.value, now);
