@@ -59,6 +59,7 @@ var pointTransitionParams = {
 
 scene3d.on('spinStart', function () {
   console.log('started spinning');
+  conductor.startSecondSection();
 });
 
 scene3d.on('growStart', function () {
@@ -66,6 +67,7 @@ scene3d.on('growStart', function () {
 });
 
 scene3d.on('roseHoverOn', function () {
+  conductor.playBass();
   console.log('rose hover on');
 });
 
@@ -74,6 +76,7 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
+  conductor.playLead();
   console.log('rose click');
 });
 
@@ -279,7 +282,7 @@ var sketch = {
         ripples.add();
 
         var discoveryPercentage = connections.getDiscoveryPercentage();
-        if (discoveryPercentage > 0.6 && !hasTransitioned) {
+        if (discoveryPercentage > 0.60 && !hasTransitioned) {
           hasTransitioned = true;
 
           async.series([
