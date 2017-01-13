@@ -417,7 +417,7 @@ kickGain.connect(limiter);
 
 synthGain.gain.value = 0.2;
 leadGain.gain.value = 0.12;
-kickGain.gain.value = 0.12;
+kickGain.gain.value = 0.14;
 
 load('./assets/audio/ir3.mp3', function (buffer) {
   convolver.buffer = buffer;
@@ -1292,31 +1292,28 @@ module.exports.stopFirstSection = function (done) {
 
 var _ = require('lodash');
 
-var Kick = require('./kick');
-var audio = require('../audio');
-
-var destination = audio.kickDestination;
+var kick = require('./kick');
 
 var interval = null;
 
 function schedule() {
-  var kick = new Kick(destination);
-  var time = _.random(500, 3000);
-
+  var time = _.random(100, 1000);
   setTimeout(function () {
-    kick.start(0);
+    kick.start();
   }, time);
 }
 
 module.exports.start = function () {
-  interval = setInterval(schedule, 11000);
+  interval = setInterval(function () {
+    schedule();
+  }, 10000);
 };
 
 module.exports.stop = function () {
   window.clearInterval(interval);
 };
 
-},{"../audio":4,"./kick":22,"lodash":134}],22:[function(require,module,exports){
+},{"./kick":22,"lodash":134}],22:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1324,8 +1321,11 @@ var teoria = require('teoria');
 
 var context = require('../context');
 var notes = require('../music').notes;
+var audio = require('../audio');
 
-function Kick(destination) {
+var destination = audio.kickDestination;
+
+function Kick() {
   this.osc = context.createOscillator();
   this.osc.frequency.value = 400;
   this.env = context.createGain();
@@ -1334,10 +1334,8 @@ function Kick(destination) {
   this.env.connect(destination);
 }
 
-Kick.prototype.start = function (startTime) {
+Kick.prototype.start = function () {
   var that = this;
-
-  var now = context.currentTime + startTime;
 
   var randomNote = notes[_.random(0, notes.length - 1, false)];
   var midi = randomNote.midi() - 24;
@@ -1347,22 +1345,28 @@ Kick.prototype.start = function (startTime) {
     frequency = teoria.note.fromMIDI(notes[0].midi() - 24).fq();
   }
 
-  frequency = parseFloat(frequency.toFixed(3));
-
-  that.osc.start(now);
-  that.osc.frequency.setValueAtTime(that.osc.frequency.value, now);
+  var now = context.currentTime;
+  that.osc.frequency.setValueAtTime(400, now);
   that.osc.frequency.linearRampToValueAtTime(frequency, now + 0.005);
   that.env.gain.setValueAtTime(that.env.gain.value, now);
   that.env.gain.linearRampToValueAtTime(1, now + 0.005);
   this.decayTime = now + _.random(3, 7);
   that.env.gain.linearRampToValueAtTime(0, this.decayTime);
 
+  that.osc.start(now);
   that.osc.stop(now + (this.decayTime + 1));
+
+  setTimeout(function () {
+    that.env.disconnect(0);
+  }, (that.decayTime + 2) * 1000);
 };
 
-module.exports = Kick;
+module.exports.start = function () {
+  var kick = new Kick();
+  kick.start();
+};
 
-},{"../context":10,"../music":19,"lodash":134,"teoria":183}],23:[function(require,module,exports){
+},{"../audio":4,"../context":10,"../music":19,"lodash":134,"teoria":183}],23:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
