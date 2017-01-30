@@ -282,7 +282,7 @@ var sketch = {
         ripples.add();
 
         var discoveryPercentage = connections.getDiscoveryPercentage();
-        if (discoveryPercentage > 0.60 && !hasTransitioned) {
+        if (discoveryPercentage > 0.10 && !hasTransitioned) {
           hasTransitioned = true;
 
           async.series([
