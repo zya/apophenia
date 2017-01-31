@@ -337,4 +337,12 @@ space.bindMouse();
 space.bindTouch();
 space.play();
 
+var play = document.getElementById('play-icon');
+var text = document.getElementById('text');
+text.style.display = 'none';
+
+play.addEventListener('click', function () {
+  // space.play();
+});
+
 conductor.startIntroKicks();

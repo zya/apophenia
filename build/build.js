@@ -354,6 +354,14 @@ space.bindMouse();
 space.bindTouch();
 space.play();
 
+var play = document.getElementById('play-icon');
+var text = document.getElementById('text');
+text.style.display = 'none';
+
+play.addEventListener('click', function () {
+  // space.play();
+});
+
 conductor.startIntroKicks();
 
 },{"./config":1,"./lib/changeHandler":6,"./lib/colours":8,"./lib/connections":9,"./lib/createPoints":11,"./lib/drawPoint":12,"./lib/globals":15,"./lib/intersectSpotlightAndPoints":16,"./lib/music/conductor":21,"./lib/playLead":25,"./lib/pt":26,"./lib/randomisePoint":27,"./lib/ripples":29,"./lib/scene3D":31,"./lib/updateTemporaryPairs":34,"async":51,"dynamics.js":109,"lodash":143,"random-float":165,"stats.js":189}],3:[function(require,module,exports){
@@ -615,7 +623,7 @@ module.exports = changePointColour;
 var pt = require('ptjs');
 
 var color = pt.Color;
-// rgb(90, 90, 90)
+
 module.exports = {
   white: new color(253, 255, 252),
   orange: new color(255, 159, 28),
