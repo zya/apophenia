@@ -615,11 +615,12 @@ module.exports = changePointColour;
 var pt = require('ptjs');
 
 var color = pt.Color;
-
+// rgb(90, 90, 90)
 module.exports = {
   white: new color(253, 255, 252),
   orange: new color(255, 159, 28),
   darkGrey: new color(61, 61, 61),
+  grey: new color(100, 100, 100),
   lighterGrey: new color(180, 180, 180),
   darkNavyBlue: new color(1, 22, 39),
   lightBlue: new color(46, 196, 182),
@@ -818,6 +819,7 @@ var lib = pt.lib;
 var space = pt.space;
 var colours = require('./colours');
 var lightBlue = colours.lightBlue;
+var grey = colours.grey;
 var randomInt = require('random-int');
 var randomFloat = require('random-float');
 var uuid = require('node-uuid');
@@ -826,12 +828,10 @@ var notes = require('./music').notes;
 
 function createPoint(x, y) {
   var point = new lib.Vector(x, y);
-  point.colour = lightBlue;
   var randomNote = notes[randomInt(0, notes.length - 1)];
   var multipliers = [1, 0.5, 2];
   point.fq = randomNote.fq() * multipliers[randomInt(0, 2)];
   point.id = uuid.v1();
-  point.colour = lightBlue;
   point.circle = new lib.Circle(250, 250).setRadius(1.1);
   point.connected = false;
   point.originalPosition = new lib.Vector(x, y);
@@ -840,6 +840,10 @@ function createPoint(x, y) {
     xRatio = 0.7;
   }
   point.originalRadius = randomFloat(0.95, 2.56) * xRatio;
+  point.originalBrightness = xRatio;
+  var colour = new lib.Color(grey.x + _.random(-15, 15), grey.y + _.random(-15, 15), grey.z + _.random(-15, 15));
+  point.colour = grey;
+  point.originalColour = colour;
 
   point.opacity = 1;
   point.fadeOutSpeed = 0;
@@ -921,13 +925,12 @@ module.exports = createPoints;
 
 var form = require('./pt').form;
 var globals = require('./globals');
+var colours = require('./colours');
 
 function drawPoint(point) {
   var delta = globals.getDelta();
-
   var newSize = point.originalRadius + 1.7;
   newSize = newSize < 2.2 ? newSize = 2.2 : newSize;
-
   if (point.intersected) {
     point.circle.setRadius(newSize);
   } else if (!point.intersected) {
@@ -935,6 +938,12 @@ function drawPoint(point) {
     if (point.connected) {
       point.circle.setRadius(newSize);
     }
+  }
+
+  if (point.intersected && !point.connected) {
+    point.colour = colours.lightBlue;
+  } else if (!point.intersected && !point.connected) {
+    point.colour = point.originalColour;
   }
 
   var targetX = (point.originalPosition.x - point.x) * (0.05 * delta);
@@ -951,7 +960,7 @@ function drawPoint(point) {
 
 module.exports = drawPoint;
 
-},{"./globals":15,"./pt":26}],13:[function(require,module,exports){
+},{"./colours":8,"./globals":15,"./pt":26}],13:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
