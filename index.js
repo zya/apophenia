@@ -282,7 +282,9 @@ var sketch = {
         ripples.add();
 
         var discoveryPercentage = connections.getDiscoveryPercentage();
-        if (discoveryPercentage > 0.10 && !hasTransitioned) {
+        conductor.proceed(discoveryPercentage);
+
+        if (discoveryPercentage > config.discoveryThreshold && !hasTransitioned) {
           hasTransitioned = true;
 
           async.series([
@@ -346,3 +348,4 @@ play.addEventListener('click', function () {
 });
 
 conductor.startIntroKicks();
+conductor.startBackground();

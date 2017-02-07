@@ -10,5 +10,6 @@
   "rippleRate": 9,
   "smallRippleRate": 1.4,
   "smallRippleStartOpacity": 0.5,
-  "smallRippleRateOpacity": 0.005
+  "smallRippleRateOpacity": 0.005,
+  "discoveryThreshold": 0.50
 }
