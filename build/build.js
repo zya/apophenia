@@ -436,7 +436,7 @@ bgGain.connect(limiter);
 
 synthGain.gain.value = 0.13;
 leadGain.gain.value = 0.12;
-kickGain.gain.value = 0.25;
+kickGain.gain.value = 0.20;
 bgGain.gain.value = 0.07;
 guitarGain.gain.value = 0.03;
 // synthGain.gain.value = 0;
@@ -2856,6 +2856,8 @@ module.exports = updateTemporaryPairs;
 },{}],40:[function(require,module,exports){
 'use strict';
 
+var _ = require('lodash');
+
 var context = require('./context');
 var Envelope = require('fastidious-envelope-generator');
 
@@ -2865,10 +2867,13 @@ function Voice(id, frequency, destination) {
   var osc = context.createOscillator();
   osc.frequency.value = frequency;
   var gain = context.createGain();
+  var panner = context.createStereoPanner();
   this.env = new Envelope(context, gain.gain);
   this.env.mode = 'ASR';
   osc.connect(gain);
-  gain.connect(destination);
+  gain.connect(panner);
+  panner.connect(destination);
+  panner.pan.value = _.random(-0.7, 0.7);
   gain.gain.value = 0;
   this.osc = osc;
   this.gain = gain;
@@ -2894,7 +2899,7 @@ Voice.prototype.stop = function (opts) {
 
 module.exports = Voice;
 
-},{"./context":10,"fastidious-envelope-generator":137}],41:[function(require,module,exports){
+},{"./context":10,"fastidious-envelope-generator":137,"lodash":151}],41:[function(require,module,exports){
 var accidentalValues = {
   'bb': -2,
   'b': -1,
