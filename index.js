@@ -18,7 +18,7 @@ var scene3d = require('./lib/scene3D');
 var randomisePoint = require('./lib/randomisePoint');
 var intersect = require('./lib/intersectSpotlightAndPoints');
 var change = require('./lib/changeHandler');
-var playLead = require('./lib/playLead');
+var pointClickEvent = require('./lib/pointClickEvent');
 var drawPoint = require('./lib/drawPoint');
 var connections = require('./lib/connections');
 var ripples = require('./lib/ripples');
@@ -277,7 +277,7 @@ var sketch = {
       case 'down':
         if (hasTransitioned) return;
         spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
-        currentPoints.forEach(playLead);
+        currentPoints.forEach(pointClickEvent);
         connections.update(currentPoints);
         ripples.add();
 
@@ -313,7 +313,7 @@ var sketch = {
 
     if (type === 'down') {
       spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
-      currentPoints.forEach(playLead);
+      currentPoints.forEach(pointClickEvent);
       connections.update(currentPoints);
       ripples.add();
     } else if (type === 'up') {
