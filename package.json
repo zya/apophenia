@@ -8,6 +8,7 @@
     "beet.js": "^1.7.0",
     "dynamics.js": "^1.1.5",
     "faster-delaunay": "^1.0.0",
+    "fastidious-envelope-generator": "^1.0.2",
     "lodash": "^4.7.0",
     "moment": "^2.12.0",
     "node-uuid": "^1.4.7",
