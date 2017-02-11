@@ -14,7 +14,7 @@ var conductor = require('./lib/music/conductor');
 
 var createPoints = require('./lib/createPoints');
 var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
-var scene3d = require('./lib/scene3D');
+var scene3d = require('./lib/3d/scene3D');
 var randomisePoint = require('./lib/randomisePoint');
 var intersect = require('./lib/intersectSpotlightAndPoints');
 var change = require('./lib/changeHandler');

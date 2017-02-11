@@ -32,7 +32,7 @@ var conductor = require('./lib/music/conductor');
 
 var createPoints = require('./lib/createPoints');
 var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
-var scene3d = require('./lib/scene3D');
+var scene3d = require('./lib/3d/scene3D');
 var randomisePoint = require('./lib/randomisePoint');
 var intersect = require('./lib/intersectSpotlightAndPoints');
 var change = require('./lib/changeHandler');
@@ -368,52 +368,53 @@ play.addEventListener('click', function () {
 conductor.startIntroKicks();
 conductor.startBackground();
 
-},{"./config":1,"./lib/changeHandler":5,"./lib/colours":7,"./lib/connections":8,"./lib/createPoints":9,"./lib/drawPoint":10,"./lib/globals":13,"./lib/intersectSpotlightAndPoints":14,"./lib/music/conductor":19,"./lib/pointClickEvent":32,"./lib/pt":33,"./lib/randomisePoint":34,"./lib/ripples":36,"./lib/scene3D":38,"./lib/updateTemporaryPairs":40,"async":56,"dynamics.js":116,"lodash":151,"random-float":178,"stats.js":202}],3:[function(require,module,exports){
+},{"./config":1,"./lib/3d/scene3D":10,"./lib/changeHandler":11,"./lib/colours":13,"./lib/connections":14,"./lib/createPoints":15,"./lib/drawPoint":16,"./lib/globals":17,"./lib/intersectSpotlightAndPoints":18,"./lib/music/conductor":22,"./lib/pointClickEvent":35,"./lib/pt":36,"./lib/randomisePoint":37,"./lib/ripples":38,"./lib/updateTemporaryPairs":40,"async":56,"dynamics.js":116,"lodash":151,"random-float":178,"stats.js":202}],3:[function(require,module,exports){
 'use strict';
+
 var THREE = require('three');
 window.THREE = THREE;
 
-require('../node_modules/three/examples/js/nodes/GLNode.js');
-require('../node_modules/three/examples/js/nodes/RawNode.js');
-require('../node_modules/three/examples/js/nodes/TempNode.js');
-require('../node_modules/three/examples/js/nodes/InputNode.js');
-require('../node_modules/three/examples/js/nodes/ConstNode.js');
-require('../node_modules/three/examples/js/nodes/FunctionNode.js');
-require('../node_modules/three/examples/js/nodes/FunctionCallNode.js');
-require('../node_modules/three/examples/js/nodes/NodeBuilder.js');
-require('../node_modules/three/examples/js/nodes/NodeLib.js');
-require('../node_modules/three/examples/js/nodes/NodeMaterial.js');
-require('../node_modules/three/examples/js/nodes/accessors/PositionNode.js');
-require('../node_modules/three/examples/js/nodes/accessors/NormalNode.js');
-require('../node_modules/three/examples/js/nodes/accessors/UVNode.js');
-require('../node_modules/three/examples/js/nodes/accessors/ColorsNode.js');
-require('../node_modules/three/examples/js/nodes/inputs/IntNode.js');
-require('../node_modules/three/examples/js/nodes/inputs/FloatNode.js');
-require('../node_modules/three/examples/js/nodes/inputs/ColorNode.js');
-require('../node_modules/three/examples/js/nodes/inputs/Vector2Node.js');
-require('../node_modules/three/examples/js/nodes/inputs/Vector3Node.js');
-require('../node_modules/three/examples/js/nodes/inputs/Vector4Node.js');
-require('../node_modules/three/examples/js/nodes/inputs/TextureNode.js');
-require('../node_modules/three/examples/js/nodes/inputs/CubeTextureNode.js');
-require('../node_modules/three/examples/js/nodes/inputs/ScreenNode.js');
-require('../node_modules/three/examples/js/nodes/math/Math1Node.js');
-require('../node_modules/three/examples/js/nodes/math/Math2Node.js');
-require('../node_modules/three/examples/js/nodes/math/Math3Node.js');
-require('../node_modules/three/examples/js/nodes/math/OperatorNode.js');
-require('../node_modules/three/examples/js/nodes/utils/SwitchNode.js');
-require('../node_modules/three/examples/js/nodes/utils/JoinNode.js');
-require('../node_modules/three/examples/js/nodes/utils/TimerNode.js');
-require('../node_modules/three/examples/js/nodes/utils/ColorAdjustmentNode.js');
-require('../node_modules/three/examples/js/nodes/utils/BlurNode.js');
+require('../../node_modules/three/examples/js/nodes/GLNode.js');
+require('../../node_modules/three/examples/js/nodes/RawNode.js');
+require('../../node_modules/three/examples/js/nodes/TempNode.js');
+require('../../node_modules/three/examples/js/nodes/InputNode.js');
+require('../../node_modules/three/examples/js/nodes/ConstNode.js');
+require('../../node_modules/three/examples/js/nodes/FunctionNode.js');
+require('../../node_modules/three/examples/js/nodes/FunctionCallNode.js');
+require('../../node_modules/three/examples/js/nodes/NodeBuilder.js');
+require('../../node_modules/three/examples/js/nodes/NodeLib.js');
+require('../../node_modules/three/examples/js/nodes/NodeMaterial.js');
+require('../../node_modules/three/examples/js/nodes/accessors/PositionNode.js');
+require('../../node_modules/three/examples/js/nodes/accessors/NormalNode.js');
+require('../../node_modules/three/examples/js/nodes/accessors/UVNode.js');
+require('../../node_modules/three/examples/js/nodes/accessors/ColorsNode.js');
+require('../../node_modules/three/examples/js/nodes/inputs/IntNode.js');
+require('../../node_modules/three/examples/js/nodes/inputs/FloatNode.js');
+require('../../node_modules/three/examples/js/nodes/inputs/ColorNode.js');
+require('../../node_modules/three/examples/js/nodes/inputs/Vector2Node.js');
+require('../../node_modules/three/examples/js/nodes/inputs/Vector3Node.js');
+require('../../node_modules/three/examples/js/nodes/inputs/Vector4Node.js');
+require('../../node_modules/three/examples/js/nodes/inputs/TextureNode.js');
+require('../../node_modules/three/examples/js/nodes/inputs/CubeTextureNode.js');
+require('../../node_modules/three/examples/js/nodes/inputs/ScreenNode.js');
+require('../../node_modules/three/examples/js/nodes/math/Math1Node.js');
+require('../../node_modules/three/examples/js/nodes/math/Math2Node.js');
+require('../../node_modules/three/examples/js/nodes/math/Math3Node.js');
+require('../../node_modules/three/examples/js/nodes/math/OperatorNode.js');
+require('../../node_modules/three/examples/js/nodes/utils/SwitchNode.js');
+require('../../node_modules/three/examples/js/nodes/utils/JoinNode.js');
+require('../../node_modules/three/examples/js/nodes/utils/TimerNode.js');
+require('../../node_modules/three/examples/js/nodes/utils/ColorAdjustmentNode.js');
+require('../../node_modules/three/examples/js/nodes/utils/BlurNode.js');
 
-},{"../node_modules/three/examples/js/nodes/ConstNode.js":215,"../node_modules/three/examples/js/nodes/FunctionCallNode.js":216,"../node_modules/three/examples/js/nodes/FunctionNode.js":217,"../node_modules/three/examples/js/nodes/GLNode.js":218,"../node_modules/three/examples/js/nodes/InputNode.js":219,"../node_modules/three/examples/js/nodes/NodeBuilder.js":220,"../node_modules/three/examples/js/nodes/NodeLib.js":221,"../node_modules/three/examples/js/nodes/NodeMaterial.js":222,"../node_modules/three/examples/js/nodes/RawNode.js":223,"../node_modules/three/examples/js/nodes/TempNode.js":224,"../node_modules/three/examples/js/nodes/accessors/ColorsNode.js":225,"../node_modules/three/examples/js/nodes/accessors/NormalNode.js":226,"../node_modules/three/examples/js/nodes/accessors/PositionNode.js":227,"../node_modules/three/examples/js/nodes/accessors/UVNode.js":228,"../node_modules/three/examples/js/nodes/inputs/ColorNode.js":229,"../node_modules/three/examples/js/nodes/inputs/CubeTextureNode.js":230,"../node_modules/three/examples/js/nodes/inputs/FloatNode.js":231,"../node_modules/three/examples/js/nodes/inputs/IntNode.js":232,"../node_modules/three/examples/js/nodes/inputs/ScreenNode.js":233,"../node_modules/three/examples/js/nodes/inputs/TextureNode.js":234,"../node_modules/three/examples/js/nodes/inputs/Vector2Node.js":235,"../node_modules/three/examples/js/nodes/inputs/Vector3Node.js":236,"../node_modules/three/examples/js/nodes/inputs/Vector4Node.js":237,"../node_modules/three/examples/js/nodes/math/Math1Node.js":238,"../node_modules/three/examples/js/nodes/math/Math2Node.js":239,"../node_modules/three/examples/js/nodes/math/Math3Node.js":240,"../node_modules/three/examples/js/nodes/math/OperatorNode.js":241,"../node_modules/three/examples/js/nodes/utils/BlurNode.js":243,"../node_modules/three/examples/js/nodes/utils/ColorAdjustmentNode.js":244,"../node_modules/three/examples/js/nodes/utils/JoinNode.js":245,"../node_modules/three/examples/js/nodes/utils/SwitchNode.js":246,"../node_modules/three/examples/js/nodes/utils/TimerNode.js":247,"three":213}],4:[function(require,module,exports){
+},{"../../node_modules/three/examples/js/nodes/ConstNode.js":215,"../../node_modules/three/examples/js/nodes/FunctionCallNode.js":216,"../../node_modules/three/examples/js/nodes/FunctionNode.js":217,"../../node_modules/three/examples/js/nodes/GLNode.js":218,"../../node_modules/three/examples/js/nodes/InputNode.js":219,"../../node_modules/three/examples/js/nodes/NodeBuilder.js":220,"../../node_modules/three/examples/js/nodes/NodeLib.js":221,"../../node_modules/three/examples/js/nodes/NodeMaterial.js":222,"../../node_modules/three/examples/js/nodes/RawNode.js":223,"../../node_modules/three/examples/js/nodes/TempNode.js":224,"../../node_modules/three/examples/js/nodes/accessors/ColorsNode.js":225,"../../node_modules/three/examples/js/nodes/accessors/NormalNode.js":226,"../../node_modules/three/examples/js/nodes/accessors/PositionNode.js":227,"../../node_modules/three/examples/js/nodes/accessors/UVNode.js":228,"../../node_modules/three/examples/js/nodes/inputs/ColorNode.js":229,"../../node_modules/three/examples/js/nodes/inputs/CubeTextureNode.js":230,"../../node_modules/three/examples/js/nodes/inputs/FloatNode.js":231,"../../node_modules/three/examples/js/nodes/inputs/IntNode.js":232,"../../node_modules/three/examples/js/nodes/inputs/ScreenNode.js":233,"../../node_modules/three/examples/js/nodes/inputs/TextureNode.js":234,"../../node_modules/three/examples/js/nodes/inputs/Vector2Node.js":235,"../../node_modules/three/examples/js/nodes/inputs/Vector3Node.js":236,"../../node_modules/three/examples/js/nodes/inputs/Vector4Node.js":237,"../../node_modules/three/examples/js/nodes/math/Math1Node.js":238,"../../node_modules/three/examples/js/nodes/math/Math2Node.js":239,"../../node_modules/three/examples/js/nodes/math/Math3Node.js":240,"../../node_modules/three/examples/js/nodes/math/OperatorNode.js":241,"../../node_modules/three/examples/js/nodes/utils/BlurNode.js":243,"../../node_modules/three/examples/js/nodes/utils/ColorAdjustmentNode.js":244,"../../node_modules/three/examples/js/nodes/utils/JoinNode.js":245,"../../node_modules/three/examples/js/nodes/utils/SwitchNode.js":246,"../../node_modules/three/examples/js/nodes/utils/TimerNode.js":247,"three":213}],4:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
 var _ = require('lodash');
 var dynamics = require('dynamics.js');
 
-var colours = require('./colours');
+var colours = require('../colours');
 var scale = 0;
 
 var animatables = {
@@ -512,421 +513,7 @@ module.exports.setSize = function (reference) {
   aura.scale.set(scale, scale, scale);
 };
 
-},{"./colours":7,"dynamics.js":116,"lodash":151,"three":213}],5:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var moment = require('moment');
-
-var context = require('./music/context');
-var trash = require('./music/trash');
-var Voice = require('./music/voice');
-
-function change(toAdd, toRemove, currentlyPlaying) {
-  var intersected = _.intersectionBy(currentlyPlaying, toRemove, 'id');
-
-  intersected.forEach(function (voice) {
-    voice.stop({
-      now: context.currentTime,
-      release: 3
-    });
-
-    var indexToDelete = currentlyPlaying.indexOf(voice);
-    voice.timestamp = moment();
-    trash.push(voice);
-    currentlyPlaying.splice(indexToDelete, 1);
-  });
-
-  toAdd.forEach(function (point) {
-    var voice = new Voice(point.id, point.fq);
-    voice.start({
-      now: context.currentTime,
-      peak: 0.02,
-      attack: 6
-    });
-    currentlyPlaying.push(voice);
-  });
-}
-
-module.exports = change;
-
-},{"./music/context":20,"./music/trash":30,"./music/voice":31,"lodash":151,"moment":159}],6:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var randomInt = require('random-int');
-
-var colours = require('./colours');
-
-var playingCircleSize = 4.5;
-var connectedPointSize = 2.5;
-
-var orange = colours.orange;
-var red = colours.red;
-var lightBlue = colours.lightBlue;
-
-function changePointColour(point) {
-  if (_.isEqual(point.colour, orange) || _.isEqual(point.colour, red)) {
-    point.colour = lightBlue;
-  } else {
-    point.colour = randomInt(0, 10) > 5 ? orange : red;
-  }
-
-  point.circle.setRadius(playingCircleSize);
-  point.connected = true;
-  setTimeout(function () {
-    point.circle.setRadius(connectedPointSize);
-  }, 200);
-}
-
-module.exports = changePointColour;
-
-},{"./colours":7,"lodash":151,"random-int":179}],7:[function(require,module,exports){
-'use strict';
-
-var pt = require('ptjs');
-
-var color = pt.Color;
-
-module.exports = {
-  white: new color(253, 255, 252),
-  orange: new color(255, 159, 28),
-  darkGrey: new color(61, 61, 61),
-  grey: new color(100, 100, 100),
-  lighterGrey: new color(180, 180, 180),
-  darkNavyBlue: new color(1, 22, 39),
-  lightBlue: new color(46, 196, 182),
-  darkerBlue: new color(48, 39, 199),
-  red: new color(231, 29, 54),
-  background: new color(0.4, 8.6, 15.3)
-};
-
-},{"ptjs":171}],8:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var dynamics = require('dynamics.js');
-
-var updateConnections = require('./updateConnections');
-var colours = require('./colours');
-var config = require('../config');
-var form = require('./pt').form;
-var lib = require('./pt').lib;
-
-var connections = [];
-var pairs = [];
-var connectionsInside = [];
-var triangles = [];
-var trianglesInside = [];
-
-var specialTriangles = [];
-var specialConnections = [];
-var specialPairs = [];
-
-var sines = [];
-var discoveryPercentage = 0.0;
-var shouldReveal = false;
-
-var params = {
-  opacityRate: 1
-};
-
-var revealStartCallback = function () {};
-var revealEndCallback = function () {};
-
-function updateSines() {
-  var now = Date.now();
-  sines[0] = Math.abs(Math.sin(now * 0.0005)) * 0.6;
-  sines[1] = Math.abs(Math.sin(now * 0.00015));
-  sines[2] = Math.abs(Math.sin(now * 0.00039));
-  sines[3] = Math.abs(Math.sin(now * 0.0006)) * 0.9;
-  sines[4] = Math.abs(Math.sin(now * 0.0005));
-  sines[5] = Math.abs(Math.sin(now * 0.0006));
-  sines[6] = Math.abs(Math.sin(now * 0.0007));
-  sines[7] = Math.abs(Math.sin(now * 0.0008));
-  sines[8] = Math.abs(Math.sin(now * 0.0009));
-  sines[9] = Math.abs(Math.sin(now * 0.0007)) * 0.7;
-}
-
-function drawTriangle(triplet) {
-  var tri = new lib.Triangle(triplet[0]);
-  tri.to(triplet[1], triplet[2]);
-
-  form.stroke(false);
-  form.fill(colours.orange);
-  form.triangle(tri);
-}
-
-function drawConnection(connection, colour, opacity, width) {
-  if (connection.revealSpeed) {
-    connection.opacity += connection.revealSpeed;
-    opacity = connection.opacity;
-  }
-
-  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + opacity + ')';
-  var line = new lib.Line(connection.from).to(connection.to);
-  form.stroke(c, width);
-  form.line(line);
-}
-
-module.exports.update = function (points) {
-  updateConnections(points, pairs, connections, triangles, specialPairs);
-
-  var connectionsLength = _.filter(connections, 'special').length;
-  var allSpecialConnectionsLength = specialConnections.length;
-  discoveryPercentage = connectionsLength / allSpecialConnectionsLength;
-};
-
-module.exports.updateInsideConnections = function (points) {
-  connectionsInside = [];
-  trianglesInside = [];
-  updateConnections(points, [], connectionsInside, trianglesInside, specialPairs);
-
-  return _.some(connectionsInside, ['special', true]);
-};
-
-module.exports.createSpecialShape = function (points) {
-  updateConnections(points, specialPairs, specialConnections, specialTriangles);
-};
-
-module.exports.draw = function (pairsInsideSpotlight) {
-  updateSines();
-
-  connections.forEach(function (connection, index) {
-    if (_.includes(pairsInsideSpotlight, connection.id)) return;
-
-    drawConnection(connection, colours.darkGrey, config.connectionsOpacity * params.opacityRate, config.connectionsWidth);
-
-    if (connection.special) {
-      var sin = sines[index % 10];
-      drawConnection(connection, colours.darkerBlue, sin, 1.0);
-    }
-  });
-
-  connectionsInside.forEach(function (connection) {
-    drawConnection(connection, colours.lighterGrey, 1.0, config.connectionsWidth);
-
-    if (connection.special) {
-      drawConnection(connection, colours.orange, 1.0, 1.0);
-    }
-  });
-
-  if (shouldReveal) {
-    exports.drawSpecialShape();
-  }
-};
-
-module.exports.drawTriangles = function () {
-  triangles.forEach(drawTriangle);
-};
-
-module.exports.drawSpecialShape = function () {
-  specialConnections.forEach(_.partial(drawConnection, _, colours.darkerBlue, 0.0, 1.0));
-};
-
-module.exports.getDiscoveryPercentage = function () {
-  return discoveryPercentage;
-};
-
-module.exports.getSpecialTriangles = function () {
-  return specialTriangles;
-};
-
-function revealConnectionInTime(connection, time) {
-  (function (connection) {
-    setTimeout(function () {
-      connection.opacity = 0;
-      connection.revealSpeed = _.random(0.025, 0.05);
-    }, time);
-  })(connection);
-}
-
-module.exports.reveal = function (cb) {
-  setTimeout(revealStartCallback, 1500);
-
-  specialConnections.forEach(function (connection, index) {
-    if (index % 4 === 0) {
-      revealConnectionInTime(connection, _.random(1500, 3000));
-    } else if (index % 3 === 0) {
-      revealConnectionInTime(connection, _.random(3500, 4500));
-    } else {
-      revealConnectionInTime(connection, _.random(4800, 6000));
-    }
-  });
-
-  shouldReveal = true;
-
-  setTimeout(function () {
-    dynamics.animate(params, {
-      opacityRate: 0
-    }, {
-      duration: 6000
-    });
-  }, 2000);
-
-  setTimeout(function () {
-    cb();
-    revealEndCallback();
-  }, 6000);
-};
-
-module.exports.on = function (event, cb) {
-  if (event === 'revealStart') revealStartCallback = cb;
-  if (event === 'revealEnd') revealEndCallback = cb;
-};
-
-},{"../config":1,"./colours":7,"./pt":33,"./updateConnections":39,"dynamics.js":116,"lodash":151}],9:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-
-var pt = require('./pt');
-var lib = pt.lib;
-var space = pt.space;
-var colours = require('./colours');
-var lightBlue = colours.lightBlue;
-var grey = colours.grey;
-var randomInt = require('random-int');
-var randomFloat = require('random-float');
-var uuid = require('node-uuid');
-
-var notes = require('./music/music').notes;
-
-function createPoint(x, y) {
-  var point = new lib.Vector(x, y);
-  var randomNote = notes[randomInt(0, notes.length - 1)];
-  var multipliers = [1, 0.5, 2];
-  point.fq = randomNote.fq() * multipliers[randomInt(0, 2)];
-  point.id = uuid.v1();
-  point.circle = new lib.Circle(250, 250).setRadius(1.1);
-  point.connected = false;
-  point.originalPosition = new lib.Vector(x, y);
-  var xRatio = space.size.x / 1250;
-  if (xRatio < 0.7) {
-    xRatio = 0.7;
-  }
-  point.originalRadius = randomFloat(0.95, 2.56) * xRatio;
-  point.originalBrightness = xRatio;
-  var colour = new lib.Color(grey.x + _.random(-15, 15), grey.y + _.random(-15, 15), grey.z + _.random(-15, 15));
-  point.colour = grey;
-  point.originalColour = colour;
-
-  point.opacity = 1;
-  point.fadeOutSpeed = 0;
-  return point;
-}
-
-function addCircularPoints(number, origin, r) {
-  var points = [];
-  for (var i = 0; i < number; i++) {
-    if (_.random(0, 10) > 3) {
-      var angle = (2 / number) * Math.PI * i;
-      var y = origin.y + r * Math.cos(angle);
-      var x = origin.x + r * Math.sin(angle);
-
-      var randomX = randomInt(-12, 12);
-      var randomY = randomInt(-12, 12);
-      var point = createPoint(x + randomX, y + randomY, lightBlue);
-
-      point.special = true;
-
-      points.push(point);
-    }
-  }
-  return points;
-}
-
-function between(x, min, max) {
-  return x >= min && x <= max;
-}
-
-function isCenter(point) {
-  var cx = space.size.x / 2;
-  var cy = space.size.y / 2;
-  var tolerance = cx / 5;
-  var x = between(point.x, cx - tolerance, cx + tolerance);
-  var y = between(point.y, cy - tolerance, cy + tolerance);
-  return x && y;
-}
-
-function createPoints(amount) {
-  var points = [];
-  for (var i = 0; i < amount; i++) {
-    var point = createPoint(Math.random() * space.size.x, Math.random() * space.size.y, lightBlue);
-
-    if (isCenter(point)) {
-      point.special = true;
-    }
-
-    points.push(point);
-  }
-
-  var bigCircle = addCircularPoints(55, {
-    x: space.size.x / 2,
-    y: space.size.y / 2
-  }, space.size.x / 6);
-
-  var mediumCircle = addCircularPoints(20, {
-    x: space.size.x / 2,
-    y: space.size.y / 2
-  }, space.size.x / 7.5);
-
-  var smallCircle = addCircularPoints(17, {
-    x: space.size.x / 2,
-    y: space.size.y / 2
-  }, space.size.x / 15);
-
-  var tinyCircle = addCircularPoints(8, {
-    x: space.size.x / 2,
-    y: space.size.y / 2
-  }, space.size.x / 24);
-
-  return points.concat(bigCircle, smallCircle, mediumCircle, tinyCircle);
-}
-
-module.exports = createPoints;
-
-},{"./colours":7,"./music/music":28,"./pt":33,"lodash":151,"node-uuid":160,"random-float":178,"random-int":179}],10:[function(require,module,exports){
-'use strict';
-
-var form = require('./pt').form;
-var globals = require('./globals');
-var colours = require('./colours');
-
-function drawPoint(point) {
-  var delta = globals.getDelta();
-  var newSize = point.originalRadius + 1.7;
-  newSize = newSize < 2.2 ? newSize = 2.2 : newSize;
-  if (point.intersected) {
-    point.circle.setRadius(newSize);
-  } else if (!point.intersected) {
-    point.circle.setRadius(point.originalRadius);
-    if (point.connected) {
-      point.circle.setRadius(newSize);
-    }
-  }
-
-  if (point.intersected && !point.connected) {
-    point.colour = colours.lightBlue;
-  } else if (!point.intersected && !point.connected) {
-    point.colour = point.originalColour;
-  }
-
-  var targetX = (point.originalPosition.x - point.x) * (0.05 * delta);
-  var targetY = (point.originalPosition.y - point.y) * (0.05 * delta);
-
-  point.x += targetX;
-  point.y += targetY;
-
-  point.opacity -= point.fadeOutSpeed;
-  var c = 'rgba(' + point.colour.x + ',' + point.colour.y + ',' + point.colour.z + ',' + point.opacity + ')';
-  form.fill(c).stroke(false);
-  form.circle(point.circle);
-}
-
-module.exports = drawPoint;
-
-},{"./colours":7,"./globals":13,"./pt":33}],11:[function(require,module,exports){
+},{"../colours":13,"dynamics.js":116,"lodash":151,"three":213}],5:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -934,7 +521,7 @@ var work = require('webworkify');
 var THREE = require('three');
 
 var worker = work(require('./geometryWorker'));
-var space = require('./pt').space;
+var space = require('../pt').space;
 
 module.exports = function (triangles, cb) {
   worker.addEventListener('message', function (event) {
@@ -989,13 +576,13 @@ module.exports = function (triangles, cb) {
   worker.postMessage(JSON.stringify(message));
 };
 
-},{"./geometryWorker":12,"./pt":33,"lodash":151,"three":213,"webworkify":267}],12:[function(require,module,exports){
+},{"../pt":36,"./geometryWorker":6,"lodash":151,"three":213,"webworkify":267}],6:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
 var THREE = require('three');
 
-var map = require('./map');
+var map = require('../map');
 
 var space;
 var ratio;
@@ -1183,70 +770,13 @@ module.exports = function (self) {
   };
 };
 
-},{"./map":15,"lodash":151,"three":213}],13:[function(require,module,exports){
-'use strict';
-
-var timeAtPreviousFrame;
-var delta = 1;
-var mouse = {
-  x: 0,
-  y: 0
-};
-
-module.exports.setDelta = function (now) {
-  var dt = now - (timeAtPreviousFrame || now);
-  timeAtPreviousFrame = now;
-  delta = dt / 16;
-};
-
-module.exports.getDelta = function () {
-  return delta;
-};
-
-module.exports.setMousePosition = function (x, y) {
-  mouse.x = x;
-  mouse.y = y;
-};
-
-module.exports.getMousePosition = function () {
-  return mouse;
-};
-
-},{}],14:[function(require,module,exports){
-'use strict';
-
-function intersectSpotlightAndPoints(spotLight, points) {
-  var intersectedPoints = [];
-  points.forEach(function (point) {
-    var intersected = spotLight.intersectPoint(point);
-    if (intersected) {
-      point.intersected = true;
-      intersectedPoints.push(point);
-    } else {
-      point.intersected = false;
-    }
-  });
-  return intersectedPoints;
-}
-
-module.exports = intersectSpotlightAndPoints;
-
-},{}],15:[function(require,module,exports){
-'use strict';
-
-var map = function (value, istart, istop, ostart, ostop) {
-  return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
-};
-
-module.exports = map;
-
-},{}],16:[function(require,module,exports){
+},{"../map":19,"lodash":151,"three":213}],7:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
 var textureLoader = new THREE.TextureLoader();
 
-var colours = require('./colours');
+var colours = require('../colours');
 var urlPath = location.pathname;
 var dotsNormalMap = textureLoader.load(urlPath + 'assets/images/dots-normal-map-resized.jpg');
 
@@ -1283,11 +813,11 @@ var shellMaterial = new THREE.MeshStandardMaterial({
   // emissiveMap: stoneBumpMap,
   normalMap: dotsNormalMap,
   normalScale: new THREE.Vector2(0.05, 0.05)
-    // combine: THREE.MixOperation,
-    // reflectivity: 0.25,
-    // specular: 0xaa0000,
-    // refractionRatio: 0.3
-    // normalScale: new THREE.Vector2(0, 0)
+  // combine: THREE.MixOperation,
+  // reflectivity: 0.25,
+  // specular: 0xaa0000,
+  // refractionRatio: 0.3
+  // normalScale: new THREE.Vector2(0, 0)
 });
 
 var depth = new THREE.ShaderMaterial({
@@ -1309,646 +839,26 @@ module.exports.depth = depth;
 module.exports.wireframe = wireframe;
 module.exports.dotsNormalMap = dotsNormalMap;
 
-},{"./colours":7,"three":213}],17:[function(require,module,exports){
-'use strict';
-
-var context = require('./context');
-var load = require('./load');
-
-var limiter = context.createDynamicsCompressor();
-var convolver = context.createConvolver();
-convolver.normalize = false;
-var synthGain = context.createGain();
-var leadGain = context.createGain();
-var kickGain = context.createGain();
-var bgGain = context.createGain();
-var guitarGain = context.createGain();
-
-limiter.ratio.value = 20;
-limiter.attack.value = 0.01;
-limiter.release.value = 0.01;
-limiter.threshold.value = -1;
-
-limiter.connect(context.destination);
-convolver.connect(limiter);
-synthGain.connect(convolver);
-leadGain.connect(convolver);
-guitarGain.connect(convolver);
-kickGain.connect(limiter);
-bgGain.connect(limiter);
-
-synthGain.gain.value = 0.13;
-leadGain.gain.value = 0.12;
-kickGain.gain.value = 0.20;
-bgGain.gain.value = 0.07;
-guitarGain.gain.value = 0.03;
-// synthGain.gain.value = 0;
-// leadGain.gain.value = 0;
-// kickGain.gain.value = 0;
-
-load('./assets/audio/ir3.mp3', function (err, buffer) {
-  convolver.buffer = buffer;
-});
-
-module.exports.synthDestination = synthGain;
-module.exports.leadDestination = leadGain;
-module.exports.kickDestination = kickGain;
-module.exports.bgDestination = bgGain;
-module.exports.guitarDestination = guitarGain;
-
-},{"./context":20,"./load":26}],18:[function(require,module,exports){
-'use strict';
-
-var load = require('./load');
-var grain = require('./grain');
-var map = require('../map');
-
-var destination = require('./audio').bgDestination;
-var discoveryMax = require('../../config').discoveryThreshold;
-
-var progress = 0;
-var target = 0;
-var bgBuffer = null;
-var interval = null;
-
-load('./assets/audio/bg-01.mp3', function (err, buffer) {
-  if (err) return console.error(err);
-  bgBuffer = buffer;
-});
-
-module.exports.proceed = function (amount) {
-  target = map(amount, 0, discoveryMax, 0, 1);
-};
-
-module.exports.start = function () {
-  setInterval(function () {
-    progress += (target - progress) * 0.15;
-    grain(bgBuffer, destination, 0.3, 0.5, progress);
-  }, 50);
-};
-
-module.exports.stop = function () {
-  window.clearInterval(interval);
-};
-
-},{"../../config":1,"../map":15,"./audio":17,"./grain":21,"./load":26}],19:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var teoria = require('teoria');
-
-var introKicks = require('./introKicks');
-var background = require('./background');
-var guitar = require('./guitar');
-var leadSynth = require('./leadSynth');
-var secondSection = require('./secondSection');
-var context = require('./context');
-var audio = require('./audio');
-var notes = require('./music').notes;
-
-module.exports.startIntroKicks = function () {
-  introKicks.start();
-};
-
-module.exports.stopFirstSection = function (done) {
-  introKicks.stop();
-  done();
-};
-
-module.exports.startSecondSection = function () {
-  secondSection.start();
-};
-
-module.exports.playLead = function () {
-  var osc = context.createOscillator();
-  var gain = context.createGain();
-  var now = context.currentTime;
-
-  var note = notes[_.random(0, notes.length - 1, false)];
-  var frequency = note.fq() * 6;
-
-  if (_.random(0, 100) > 50) frequency = note.fq() * 8;
-
-  osc.start(now);
-  osc.frequency.value = frequency;
-  osc.connect(gain);
-  gain.gain.value = 0;
-  gain.connect(audio.leadDestination);
-
-  gain.gain.cancelScheduledValues(now);
-  gain.gain.setTargetAtTime(0, now, 0.5);
-  gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
-  gain.gain.linearRampToValueAtTime(0, now + 0.2);
-
-  osc.stop(now + 1.5);
-
-  setTimeout(function () {
-    gain.disconnect();
-  }, 4000);
-};
-
-module.exports.playBass = function () {
-  var osc = context.createOscillator();
-  var gain = context.createGain();
-  var now = context.currentTime;
-
-  var note = notes[_.random(0, notes.length - 1, false)];
-  var midi = note.midi() - 12;
-  var frequency = teoria.note.fromMIDI(midi).fq();
-
-  osc.start(now);
-  osc.frequency.value = frequency;
-  osc.connect(gain);
-  gain.gain.value = 0;
-  gain.connect(audio.leadDestination);
-
-  gain.gain.cancelScheduledValues(now);
-  gain.gain.setTargetAtTime(0, now, 0.5);
-  gain.gain.linearRampToValueAtTime(0.2, now + 3);
-  gain.gain.linearRampToValueAtTime(0, now + 4.5);
-
-  osc.stop(now + 5);
-
-  setTimeout(function () {
-    gain.disconnect();
-  }, 5500);
-};
-
-module.exports.startBackground = function () {
-  background.start();
-};
-
-module.exports.proceed = function (amount) {
-  background.proceed(amount);
-};
-
-module.exports.playLeadGuitar = function (frequency, startTime) {
-  guitar.play(frequency, startTime);
-};
-
-module.exports.playLeadSynth = function (frequency, startTime) {
-  leadSynth.play(frequency, startTime);
-};
-
-},{"./audio":17,"./background":18,"./context":20,"./guitar":22,"./introKicks":23,"./leadSynth":25,"./music":28,"./secondSection":29,"lodash":151,"teoria":205}],20:[function(require,module,exports){
-'use strict';
-
-window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
-module.exports = new window.AudioContext();
-
-},{}],21:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-
-var context = require('./context');
-
-module.exports = function (buffer, destination, attack, release, offset) {
-  if (!buffer) return;
-
-  var source = context.createBufferSource();
-  var gain = context.createGain();
-  source.buffer = buffer;
-
-  source.connect(gain);
-  gain.connect(destination);
-
-  var now = context.currentTime;
-
-  var sampleOffset = offset * buffer.duration;
-  var randomisedOffset = sampleOffset + _.random(-0.15, 0.15);
-
-  if (randomisedOffset > buffer.duration) {
-    randomisedOffset = offset - 0.1;
-  } else if (randomisedOffset < 0) {
-    randomisedOffset = 0;
-  }
-
-  source.start(now, randomisedOffset, now + attack + release);
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(1, now + attack);
-  gain.gain.linearRampToValueAtTime(0, now + attack + release);
-  source.stop(now + attack + release);
-
-  setTimeout(function () {
-    gain.disconnect();
-  }, (attack + release + 0.001) * 1000);
-};
-
-},{"./context":20,"lodash":151}],22:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var teoria = require('teoria');
-
-var load = require('./load');
-var mtop = require('./mtop');
-var context = require('./context');
-var destination = require('./audio').guitarDestination;
-
-var guitarBuffer = null;
-
-load('./assets/audio/pluck-c-01.mp3', function (err, buffer) {
-  guitarBuffer = buffer;
-});
-
-module.exports.play = function (frequency, startTime) {
-  if (!guitarBuffer) return;
-
-  var change = _.random(0, 100);
-  if (change > 80) {
-    frequency = frequency / 2;
-  }
-  var note = teoria.note.fromFrequency(frequency);
-  var midi = note.note.midi();
-  var rate = mtop(midi);
-
-  var source = context.createBufferSource();
-  source.playbackRate.value = rate;
-  var gain = context.createGain();
-  source.buffer = guitarBuffer;
-
-  source.connect(gain);
-  gain.connect(destination);
-  source.start(startTime + _.random(0, 0.01));
-  // source.stop(startTime + guitarBuffer.des);
-};
-
-},{"./audio":17,"./context":20,"./load":26,"./mtop":27,"lodash":151,"teoria":205}],23:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-
-var kick = require('./kick');
-
-var interval = null;
-
-function schedule() {
-  var time = _.random(100, 1000);
-  setTimeout(function () {
-    kick.start();
-  }, time);
-}
-
-module.exports.start = function () {
-  interval = setInterval(function () {
-    schedule();
-  }, 10000);
-};
-
-module.exports.stop = function () {
-  window.clearInterval(interval);
-};
-
-},{"./kick":24,"lodash":151}],24:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var teoria = require('teoria');
-
-var context = require('./context');
-var notes = require('./music').notes;
-var audio = require('./audio');
-var load = require('./load');
-var mtop = require('./mtop');
-var kickBuffer = null;
-var shouldUseSample = false;
-
-var destination = audio.kickDestination;
-
-load('./assets/audio/kick-808-01.mp3', function (err, buffer) {
-  if (err) return console.log(err);
-
-  kickBuffer = buffer;
-});
-
-function playKickSample(note, now) {
-  if (!kickBuffer && !shouldUseSample) return;
-  var source = context.createBufferSource();
-  source.buffer = kickBuffer;
-  source.playbackRate.value = mtop(note.midi());
-  source.connect(destination);
-  source.start(now);
-}
-
-function Kick() {
-  this.osc = context.createOscillator();
-  this.osc.frequency.value = 400;
-  this.env = context.createGain();
-  this.env.gain.value = 0;
-  this.osc.connect(this.env);
-  this.env.connect(destination);
-}
-
-Kick.prototype.start = function (startTime, decay, random) {
-  var that = this;
-
-  var randomNote = notes[_.random(0, notes.length - 1, false)];
-  var midi = randomNote.midi() - 24;
-  var frequency = teoria.note.fromMIDI(midi).fq();
-
-  if (frequency > 80 || !frequency || random === false) {
-    frequency = teoria.note.fromMIDI(notes[0].midi() - 24).fq();
-  }
-
-  var now = startTime || context.currentTime;
-  this.osc.frequency.setValueAtTime(400, now);
-  this.osc.frequency.linearRampToValueAtTime(frequency, now + 0.005);
-  this.env.gain.setValueAtTime(that.env.gain.value, now);
-  this.env.gain.linearRampToValueAtTime(1, now + 0.005);
-  this.decayTime = decay ? now + decay : now + _.random(3, 7);
-  this.env.gain.linearRampToValueAtTime(0, that.decayTime);
-
-  this.osc.start(now);
-  this.osc.stop(now + (this.decayTime + 1));
-
-  setTimeout(function () {
-    that.env.disconnect(0);
-  }, (that.decayTime + 2) * 1000);
-
-  // playKickSample(randomNote, now);
-};
-
-module.exports.start = function (startTime, decay, random) {
-  var kick = new Kick();
-  kick.start(startTime, decay, random);
-};
-
-},{"./audio":17,"./context":20,"./load":26,"./mtop":27,"./music":28,"lodash":151,"teoria":205}],25:[function(require,module,exports){
-'use strict';
-
-var context = require('./context');
-var destination = require('./audio').leadDestination;
-
-module.exports.play = function (frequency, startTime) {
-  var osc = context.createOscillator();
-  var gain = context.createGain();
-  osc.start(startTime);
-  osc.frequency.value = frequency * 4;
-  osc.connect(gain);
-  gain.gain.value = 0;
-  gain.connect(destination);
-
-  gain.gain.cancelScheduledValues(startTime);
-  gain.gain.setTargetAtTime(0, startTime, 0.5);
-  gain.gain.linearRampToValueAtTime(0.2, startTime + 0.01);
-  gain.gain.linearRampToValueAtTime(0, startTime + 0.2);
-
-  osc.stop(startTime + 1.5);
-
-  setTimeout(function () {
-    gain.disconnect();
-  }, 4000);
-};
-
-},{"./audio":17,"./context":20}],26:[function(require,module,exports){
-'use strict';
-
-var context = require('./context');
-
-module.exports = function (path, cb) {
-  var request = new XMLHttpRequest();
-  request.open('GET', path, true);
-  request.responseType = 'arraybuffer';
-  request.onload = function () {
-    context.decodeAudioData(request.response, function (buffer) {
-      cb(null, buffer);
-    }, function (err) {
-      cb(err);
-    });
-  };
-
-  request.onerror = function (err) {
-    cb(err);
-  };
-
-  request.send();
-};
-
-},{"./context":20}],27:[function(require,module,exports){
-'use strict';
-
-module.exports = function mtop(midi) {
-  return Math.pow(2, (midi - 60) / 12);
-};
-
-},{}],28:[function(require,module,exports){
-'use strict';
-
-var teoria = require('teoria');
-
-var g3 = teoria.note('g3');
-var scale = g3.scale('minorpentatonic');
-var notes = scale.notes();
-
-module.exports.notes = notes;
-
-},{"teoria":205}],29:[function(require,module,exports){
-'use strict';
-
-var Beet = require('beet.js');
-
-var kick = require('./kick');
-var context = require('./context');
-var notes = require('./music').notes;
-var synthDestination = require('./audio').leadDestination;
-
-var beet = new Beet({
-  context: context,
-  tempo: 100
-});
-
-var pattern = beet.pattern(4, 9);
-
-function on(time) {
-  kick.start(time, 1.0, false);
-}
-
-function off(time, step) {
-  if (step > notes.length) step = 0;
-  var note = notes[step];
-
-  var osc = context.createOscillator();
-  var gain = context.createGain();
-
-  osc.start(time);
-  osc.frequency.value = note.fq() * 2;
-  osc.connect(gain);
-  gain.gain.value = 0;
-  gain.connect(synthDestination);
-
-  gain.gain.cancelScheduledValues(time);
-  gain.gain.setTargetAtTime(0, time, 0.5);
-  gain.gain.linearRampToValueAtTime(0.1, time + 0.001);
-  gain.gain.linearRampToValueAtTime(0, time + 0.05);
-
-  osc.stop(time + 1.5);
-
-  setTimeout(function () {
-    gain.disconnect();
-  }, 4000);
-}
-
-var layer = beet.layer(pattern, on, off);
-beet.add(layer);
-
-module.exports.start = function () {
-  beet.start();
-};
-
-},{"./audio":17,"./context":20,"./kick":24,"./music":28,"beet.js":58}],30:[function(require,module,exports){
-'use strict';
-
-var trash = [];
-var moment = require('moment');
-
-setInterval(function () {
-  trash.forEach(function (voice, index) {
-    if (voice.timestamp.isBefore(moment().subtract(7, 'seconds'))) {
-      trash.splice(index, 1);
-    }
-  });
-  // console.log('trash size', trash.length);
-}, 10000);
-
-module.exports.push = function (item) {
-  trash.push(item);
-};
-
-},{"moment":159}],31:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var Envelope = require('fastidious-envelope-generator');
-
-var context = require('./context');
-var destination = require('./audio').synthDestination;
-
-
-function Voice(id, frequency) {
-  this.id = id;
-
-  var osc = context.createOscillator();
-  osc.frequency.value = frequency;
-  var gain = context.createGain();
-  var panner = context.createStereoPanner();
-  this.env = new Envelope(context, gain.gain);
-  this.env.mode = 'ASR';
-  osc.connect(gain);
-  gain.connect(panner);
-  panner.connect(destination);
-  panner.pan.value = _.random(-0.7, 0.7);
-  gain.gain.value = 0;
-  this.osc = osc;
-  this.gain = gain;
-  this.startTime = 0;
-  this.timeDelta = 0;
-}
-
-Voice.prototype.start = function (opts) {
-  this.osc.start(0);
-  this.peak = opts.peak;
-  this.attack = opts.attack;
-  this.unit = this.peak / this.attack;
-  this.env.attackLevel = opts.peak;
-  this.env.attackRate = opts.attack / 1000;
-  this.env.gateOn(opts.now + 0.001);
-};
-
-Voice.prototype.stop = function (opts) {
-  this.env.releaseRate = opts.release;
-  this.env.gateOff(opts.now + 0.001);
-  this.osc.stop(opts.now + opts.release + 2);
-};
-
-module.exports = Voice;
-
-},{"./audio":17,"./context":20,"fastidious-envelope-generator":137,"lodash":151}],32:[function(require,module,exports){
-'use strict';
-
-var randomFloat = require('random-float');
-
-var context = require('./music/context');
-var changePointColour = require('./changePointColour');
-var ripples = require('./ripples');
-var conductor = require('./music/conductor');
-
-function playLead(point, index) {
-  var now = context.currentTime;
-
-  var startTime = now + (index * 0.5);
-  if (index > 0) {
-    startTime += randomFloat(-0.2, 0.2);
-  }
-
-  conductor.playLeadSynth(point.fq, startTime);
-  conductor.playLeadGuitar(point.fq, startTime);
-
-  setTimeout(function () {
-    changePointColour(point);
-    ripples.addSmallRipple(point);
-  }, (startTime - context.currentTime) * 1000);
-}
-
-module.exports = playLead;
-
-},{"./changePointColour":6,"./music/conductor":19,"./music/context":20,"./ripples":36,"random-float":178}],33:[function(require,module,exports){
-'use strict';
-
-var pt = require('ptjs');
-var config = require('../config');
-var colours = require('./colours');
-var spotLightRatio = config.spotLightSizeRatio;
-
-var background = colours.background.rgb();
-var space = new pt.CanvasSpace('#pt').setup({
-  bgcolor: background,
-  retina: true
-});
-space.autoResize(true);
-var form = new pt.Form(space);
-var spotLight = new pt.Circle(250, 250).setRadius(space.size.x / spotLightRatio);
-
-module.exports.space = space;
-module.exports.form = form;
-module.exports.spotLight = spotLight;
-module.exports.spotLightRatio = spotLightRatio;
-module.exports.lib = pt;
-
-},{"../config":1,"./colours":7,"ptjs":171}],34:[function(require,module,exports){
-'use strict';
-
-var randomFloat = require('random-float');
-
-function randomisePoint(point, rate) {
-  var randomX = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
-  var randomY = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
-  point.set(point.x + (randomX * rate), point.y + (randomY * rate));
-  point.circle.set(point.x, point.y);
-}
-
-module.exports = randomisePoint;
-
-},{"random-float":178}],35:[function(require,module,exports){
+},{"../colours":13,"three":213}],8:[function(require,module,exports){
 'use strict';
 
 var dynamics = require('dynamics.js');
-var colours = require('./colours');
+var colours = require('../colours');
 
 var THREE = require('three');
 window.THREE = THREE;
 require('./allTheNodes');
-require('../node_modules/three/examples/js/shaders/CopyShader');
-require('../node_modules/three/examples/js/shaders/BokehShader');
-require('../node_modules/three/examples/js/shaders/ConvolutionShader');
-require('../node_modules/three/examples/js/shaders/LuminosityHighPassShader');
-require('../node_modules/three/examples/js/shaders/FXAAShader');
-require('../node_modules/three/examples/js/postprocessing/EffectComposer');
-require('../node_modules/three/examples/js/postprocessing/RenderPass');
-require('../node_modules/three/examples/js/postprocessing/ShaderPass');
-require('../node_modules/three/examples/js/postprocessing/UnrealBloomPass');
-require('../node_modules/three/examples/js/postprocessing/BokehPass');
-require('../node_modules/three/examples/js/nodes/postprocessing/NodePass');
+require('../../node_modules/three/examples/js/shaders/CopyShader');
+require('../../node_modules/three/examples/js/shaders/BokehShader');
+require('../../node_modules/three/examples/js/shaders/ConvolutionShader');
+require('../../node_modules/three/examples/js/shaders/LuminosityHighPassShader');
+require('../../node_modules/three/examples/js/shaders/FXAAShader');
+require('../../node_modules/three/examples/js/postprocessing/EffectComposer');
+require('../../node_modules/three/examples/js/postprocessing/RenderPass');
+require('../../node_modules/three/examples/js/postprocessing/ShaderPass');
+require('../../node_modules/three/examples/js/postprocessing/UnrealBloomPass');
+require('../../node_modules/three/examples/js/postprocessing/BokehPass');
+require('../../node_modules/three/examples/js/nodes/postprocessing/NodePass');
 
 var camera, scene;
 
@@ -2061,122 +971,14 @@ module.exports.hide = function () {
   renderer.domElement.style.visibility = 'hidden';
 };
 
-},{"../node_modules/three/examples/js/nodes/postprocessing/NodePass":242,"../node_modules/three/examples/js/postprocessing/BokehPass":248,"../node_modules/three/examples/js/postprocessing/EffectComposer":249,"../node_modules/three/examples/js/postprocessing/RenderPass":250,"../node_modules/three/examples/js/postprocessing/ShaderPass":251,"../node_modules/three/examples/js/postprocessing/UnrealBloomPass":252,"../node_modules/three/examples/js/shaders/BokehShader":253,"../node_modules/three/examples/js/shaders/ConvolutionShader":254,"../node_modules/three/examples/js/shaders/CopyShader":255,"../node_modules/three/examples/js/shaders/FXAAShader":256,"../node_modules/three/examples/js/shaders/LuminosityHighPassShader":257,"./allTheNodes":3,"./colours":7,"dynamics.js":116,"three":213}],36:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var randomF = require('random-float');
-var pt = require('./pt');
-var colours = require('./colours');
-var globals = require('./globals');
-var config = require('../config');
-var spotLight = pt.spotLight;
-var form = pt.form;
-var space = pt.space;
-
-var ripples = [];
-var smallRipples = [];
-var white = colours.white;
-var lighterGrey = colours.lighterGrey;
-var collisions = [];
-
-function addrippleCircle() {
-  var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
-  circle.opacity = config.rippleStartOpacity;
-  circle.previousIntersected = [];
-  circle.timestamp = Date.now();
-  ripples.push(circle);
-}
-
-function addSmallRipple(point) {
-  var ripple = new pt.lib.Circle(point).setRadius(point.originalRadius);
-  ripple.opacity = config.rippleStartOpacity;
-  ripple.timestamp = Date.now();
-  smallRipples.push(ripple);
-}
-
-function drawRipple(ripple, sizeRate, opacityRate, colour) {
-  var delta = globals.getDelta();
-
-  ripple.opacity -= opacityRate * delta;
-
-  if (ripple.opacity < 0 || ripple.opacity > 1 || ripple.opacity < 0.01) {
-    ripple.opacity = 0.01;
-  }
-
-  ripple.radius += (sizeRate * (ripple.opacity * 2.0)) * delta;
-
-  form.fill(false);
-  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + ripple.opacity.toFixed(2) + ')';
-  form.stroke(c);
-  form.circle(ripple);
-}
-
-module.exports.add = addrippleCircle;
-module.exports.addSmallRipple = addSmallRipple;
-
-module.exports.draw = function () {
-  _.forEach(ripples, _.partial(drawRipple, _, config.rippleRate, config.rippleRateOpacity, white));
-  _.forEach(smallRipples, _.partial(drawRipple, _, config.smallRippleRate, config.smallRippleRateOpacity, lighterGrey));
-
-  collisions.forEach(function (collision) {
-    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(5, (collision.circle.opacity * 35))));
-    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(5, (collision.circle.opacity * 35))));
-  });
-
-  //clean up collisions
-  collisions = _.filter(collisions, function (collision) {
-    return collision.timestamp > Date.now() - 200;
-  });
-
-  //clean up ripples
-  ripples = _.filter(ripples, function (circle) {
-    return circle.timestamp > Date.now() - 3000;
-  });
-
-  //clean up small ripples
-  smallRipples = _.filter(smallRipples, function (ripple) {
-    return ripple.timestamp > Date.now() - 3000;
-  });
-};
-
-module.exports.detectCollisions = function (points) {
-  ripples.forEach(function (circle) {
-    points.forEach(function (point) {
-      var dx = circle.x - point.circle.x;
-      var dy = circle.y - point.circle.y;
-      var distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < circle.radius + point.circle.radius && distance > (circle.radius - 10) + point.circle.radius) {
-        collisions.push({
-          circle: circle,
-          point: point,
-          dx: (dx / space.size.x) * -1,
-          dy: (dy / space.size.y) * -1,
-          timestamp: Date.now()
-        });
-      }
-    });
-  });
-};
-
-module.exports.clean = function () {
-  ripples = _.reject(ripples, function (ripple) {
-    return ripple.radius > 1400;
-  });
-
-  smallRipples = _.filter(smallRipples, function (ripple) {
-    return ripple.timestamp > Date.now() - 3000;
-  });
-};
-
-},{"../config":1,"./colours":7,"./globals":13,"./pt":33,"lodash":151,"random-float":178}],37:[function(require,module,exports){
+},{"../../node_modules/three/examples/js/nodes/postprocessing/NodePass":242,"../../node_modules/three/examples/js/postprocessing/BokehPass":248,"../../node_modules/three/examples/js/postprocessing/EffectComposer":249,"../../node_modules/three/examples/js/postprocessing/RenderPass":250,"../../node_modules/three/examples/js/postprocessing/ShaderPass":251,"../../node_modules/three/examples/js/postprocessing/UnrealBloomPass":252,"../../node_modules/three/examples/js/shaders/BokehShader":253,"../../node_modules/three/examples/js/shaders/ConvolutionShader":254,"../../node_modules/three/examples/js/shaders/CopyShader":255,"../../node_modules/three/examples/js/shaders/FXAAShader":256,"../../node_modules/three/examples/js/shaders/LuminosityHighPassShader":257,"../colours":13,"./allTheNodes":3,"dynamics.js":116,"three":213}],9:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
 var _ = require('lodash');
 var dynamics = require('dynamics.js');
 window.THREE = THREE;
-require('../node_modules/three/examples/js/loaders/OBJLoader');
+require('../../node_modules/three/examples/js/loaders/OBJLoader');
 
 var textureLoader = new THREE.TextureLoader();
 var urlPath = location.pathname;
@@ -2311,7 +1113,7 @@ module.exports.reveal = function () {
   rose.scale.set(scale, scale, scale);
 };
 
-},{"../node_modules/three/examples/js/loaders/OBJLoader":214,"dynamics.js":116,"lodash":151,"three":213}],38:[function(require,module,exports){
+},{"../../node_modules/three/examples/js/loaders/OBJLoader":214,"dynamics.js":116,"lodash":151,"three":213}],10:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -2322,9 +1124,9 @@ var async = require('async');
 
 var generateGeometry = require('./generate3DGeometry');
 var renderer = require('./renderer');
-var globals = require('./globals');
-var colours = require('./colours');
-var space = require('./pt').space;
+var globals = require('../globals');
+var colours = require('../colours');
+var space = require('../pt').space;
 var materials = require('./materials');
 var rose = require('./rose');
 var aura = require('./aura');
@@ -2797,7 +1599,1206 @@ module.exports.on = function (event, cb) {
   if (event === 'roseClick') roseClickCallback = cb;
 };
 
-},{"./aura":4,"./colours":7,"./generate3DGeometry":11,"./globals":13,"./materials":16,"./pt":33,"./renderer":35,"./rose":37,"async":56,"dynamics.js":116,"lodash":151,"three":213}],39:[function(require,module,exports){
+},{"../colours":13,"../globals":17,"../pt":36,"./aura":4,"./generate3DGeometry":5,"./materials":7,"./renderer":8,"./rose":9,"async":56,"dynamics.js":116,"lodash":151,"three":213}],11:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var moment = require('moment');
+
+var context = require('./music/context');
+var trash = require('./music/trash');
+var Voice = require('./music/voice');
+
+function change(toAdd, toRemove, currentlyPlaying) {
+  var intersected = _.intersectionBy(currentlyPlaying, toRemove, 'id');
+
+  intersected.forEach(function (voice) {
+    voice.stop({
+      now: context.currentTime,
+      release: 3
+    });
+
+    var indexToDelete = currentlyPlaying.indexOf(voice);
+    voice.timestamp = moment();
+    trash.push(voice);
+    currentlyPlaying.splice(indexToDelete, 1);
+  });
+
+  toAdd.forEach(function (point) {
+    var voice = new Voice(point.id, point.fq);
+    voice.start({
+      now: context.currentTime,
+      peak: 0.02,
+      attack: 6
+    });
+    currentlyPlaying.push(voice);
+  });
+}
+
+module.exports = change;
+
+},{"./music/context":23,"./music/trash":33,"./music/voice":34,"lodash":151,"moment":159}],12:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var randomInt = require('random-int');
+
+var colours = require('./colours');
+
+var playingCircleSize = 4.5;
+var connectedPointSize = 2.5;
+
+var orange = colours.orange;
+var red = colours.red;
+var lightBlue = colours.lightBlue;
+
+function changePointColour(point) {
+  if (_.isEqual(point.colour, orange) || _.isEqual(point.colour, red)) {
+    point.colour = lightBlue;
+  } else {
+    point.colour = randomInt(0, 10) > 5 ? orange : red;
+  }
+
+  point.circle.setRadius(playingCircleSize);
+  point.connected = true;
+  setTimeout(function () {
+    point.circle.setRadius(connectedPointSize);
+  }, 200);
+}
+
+module.exports = changePointColour;
+
+},{"./colours":13,"lodash":151,"random-int":179}],13:[function(require,module,exports){
+'use strict';
+
+var pt = require('ptjs');
+
+var color = pt.Color;
+
+module.exports = {
+  white: new color(253, 255, 252),
+  orange: new color(255, 159, 28),
+  darkGrey: new color(61, 61, 61),
+  grey: new color(100, 100, 100),
+  lighterGrey: new color(180, 180, 180),
+  darkNavyBlue: new color(1, 22, 39),
+  lightBlue: new color(46, 196, 182),
+  darkerBlue: new color(48, 39, 199),
+  red: new color(231, 29, 54),
+  background: new color(0.4, 8.6, 15.3)
+};
+
+},{"ptjs":171}],14:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var dynamics = require('dynamics.js');
+
+var updateConnections = require('./updateConnections');
+var colours = require('./colours');
+var config = require('../config');
+var form = require('./pt').form;
+var lib = require('./pt').lib;
+
+var connections = [];
+var pairs = [];
+var connectionsInside = [];
+var triangles = [];
+var trianglesInside = [];
+
+var specialTriangles = [];
+var specialConnections = [];
+var specialPairs = [];
+
+var sines = [];
+var discoveryPercentage = 0.0;
+var shouldReveal = false;
+
+var params = {
+  opacityRate: 1
+};
+
+var revealStartCallback = function () {};
+var revealEndCallback = function () {};
+
+function updateSines() {
+  var now = Date.now();
+  sines[0] = Math.abs(Math.sin(now * 0.0005)) * 0.6;
+  sines[1] = Math.abs(Math.sin(now * 0.00015));
+  sines[2] = Math.abs(Math.sin(now * 0.00039));
+  sines[3] = Math.abs(Math.sin(now * 0.0006)) * 0.9;
+  sines[4] = Math.abs(Math.sin(now * 0.0005));
+  sines[5] = Math.abs(Math.sin(now * 0.0006));
+  sines[6] = Math.abs(Math.sin(now * 0.0007));
+  sines[7] = Math.abs(Math.sin(now * 0.0008));
+  sines[8] = Math.abs(Math.sin(now * 0.0009));
+  sines[9] = Math.abs(Math.sin(now * 0.0007)) * 0.7;
+}
+
+function drawTriangle(triplet) {
+  var tri = new lib.Triangle(triplet[0]);
+  tri.to(triplet[1], triplet[2]);
+
+  form.stroke(false);
+  form.fill(colours.orange);
+  form.triangle(tri);
+}
+
+function drawConnection(connection, colour, opacity, width) {
+  if (connection.revealSpeed) {
+    connection.opacity += connection.revealSpeed;
+    opacity = connection.opacity;
+  }
+
+  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + opacity + ')';
+  var line = new lib.Line(connection.from).to(connection.to);
+  form.stroke(c, width);
+  form.line(line);
+}
+
+module.exports.update = function (points) {
+  updateConnections(points, pairs, connections, triangles, specialPairs);
+
+  var connectionsLength = _.filter(connections, 'special').length;
+  var allSpecialConnectionsLength = specialConnections.length;
+  discoveryPercentage = connectionsLength / allSpecialConnectionsLength;
+};
+
+module.exports.updateInsideConnections = function (points) {
+  connectionsInside = [];
+  trianglesInside = [];
+  updateConnections(points, [], connectionsInside, trianglesInside, specialPairs);
+
+  return _.some(connectionsInside, ['special', true]);
+};
+
+module.exports.createSpecialShape = function (points) {
+  updateConnections(points, specialPairs, specialConnections, specialTriangles);
+};
+
+module.exports.draw = function (pairsInsideSpotlight) {
+  updateSines();
+
+  connections.forEach(function (connection, index) {
+    if (_.includes(pairsInsideSpotlight, connection.id)) return;
+
+    drawConnection(connection, colours.darkGrey, config.connectionsOpacity * params.opacityRate, config.connectionsWidth);
+
+    if (connection.special) {
+      var sin = sines[index % 10];
+      drawConnection(connection, colours.darkerBlue, sin, 1.0);
+    }
+  });
+
+  connectionsInside.forEach(function (connection) {
+    drawConnection(connection, colours.lighterGrey, 1.0, config.connectionsWidth);
+
+    if (connection.special) {
+      drawConnection(connection, colours.orange, 1.0, 1.0);
+    }
+  });
+
+  if (shouldReveal) {
+    exports.drawSpecialShape();
+  }
+};
+
+module.exports.drawTriangles = function () {
+  triangles.forEach(drawTriangle);
+};
+
+module.exports.drawSpecialShape = function () {
+  specialConnections.forEach(_.partial(drawConnection, _, colours.darkerBlue, 0.0, 1.0));
+};
+
+module.exports.getDiscoveryPercentage = function () {
+  return discoveryPercentage;
+};
+
+module.exports.getSpecialTriangles = function () {
+  return specialTriangles;
+};
+
+function revealConnectionInTime(connection, time) {
+  (function (connection) {
+    setTimeout(function () {
+      connection.opacity = 0;
+      connection.revealSpeed = _.random(0.025, 0.05);
+    }, time);
+  })(connection);
+}
+
+module.exports.reveal = function (cb) {
+  setTimeout(revealStartCallback, 1500);
+
+  specialConnections.forEach(function (connection, index) {
+    if (index % 4 === 0) {
+      revealConnectionInTime(connection, _.random(1500, 3000));
+    } else if (index % 3 === 0) {
+      revealConnectionInTime(connection, _.random(3500, 4500));
+    } else {
+      revealConnectionInTime(connection, _.random(4800, 6000));
+    }
+  });
+
+  shouldReveal = true;
+
+  setTimeout(function () {
+    dynamics.animate(params, {
+      opacityRate: 0
+    }, {
+      duration: 6000
+    });
+  }, 2000);
+
+  setTimeout(function () {
+    cb();
+    revealEndCallback();
+  }, 6000);
+};
+
+module.exports.on = function (event, cb) {
+  if (event === 'revealStart') revealStartCallback = cb;
+  if (event === 'revealEnd') revealEndCallback = cb;
+};
+
+},{"../config":1,"./colours":13,"./pt":36,"./updateConnections":39,"dynamics.js":116,"lodash":151}],15:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+
+var pt = require('./pt');
+var lib = pt.lib;
+var space = pt.space;
+var colours = require('./colours');
+var lightBlue = colours.lightBlue;
+var grey = colours.grey;
+var randomInt = require('random-int');
+var randomFloat = require('random-float');
+var uuid = require('node-uuid');
+
+var notes = require('./music/music').notes;
+
+function createPoint(x, y) {
+  var point = new lib.Vector(x, y);
+  var randomNote = notes[randomInt(0, notes.length - 1)];
+  var multipliers = [1, 0.5, 2];
+  point.fq = randomNote.fq() * multipliers[randomInt(0, 2)];
+  point.id = uuid.v1();
+  point.circle = new lib.Circle(250, 250).setRadius(1.1);
+  point.connected = false;
+  point.originalPosition = new lib.Vector(x, y);
+  var xRatio = space.size.x / 1250;
+  if (xRatio < 0.7) {
+    xRatio = 0.7;
+  }
+  point.originalRadius = randomFloat(0.95, 2.56) * xRatio;
+  point.originalBrightness = xRatio;
+  var colour = new lib.Color(grey.x + _.random(-15, 15), grey.y + _.random(-15, 15), grey.z + _.random(-15, 15));
+  point.colour = grey;
+  point.originalColour = colour;
+
+  point.opacity = 1;
+  point.fadeOutSpeed = 0;
+  return point;
+}
+
+function addCircularPoints(number, origin, r) {
+  var points = [];
+  for (var i = 0; i < number; i++) {
+    if (_.random(0, 10) > 3) {
+      var angle = (2 / number) * Math.PI * i;
+      var y = origin.y + r * Math.cos(angle);
+      var x = origin.x + r * Math.sin(angle);
+
+      var randomX = randomInt(-12, 12);
+      var randomY = randomInt(-12, 12);
+      var point = createPoint(x + randomX, y + randomY, lightBlue);
+
+      point.special = true;
+
+      points.push(point);
+    }
+  }
+  return points;
+}
+
+function between(x, min, max) {
+  return x >= min && x <= max;
+}
+
+function isCenter(point) {
+  var cx = space.size.x / 2;
+  var cy = space.size.y / 2;
+  var tolerance = cx / 5;
+  var x = between(point.x, cx - tolerance, cx + tolerance);
+  var y = between(point.y, cy - tolerance, cy + tolerance);
+  return x && y;
+}
+
+function createPoints(amount) {
+  var points = [];
+  for (var i = 0; i < amount; i++) {
+    var point = createPoint(Math.random() * space.size.x, Math.random() * space.size.y, lightBlue);
+
+    if (isCenter(point)) {
+      point.special = true;
+    }
+
+    points.push(point);
+  }
+
+  var bigCircle = addCircularPoints(55, {
+    x: space.size.x / 2,
+    y: space.size.y / 2
+  }, space.size.x / 6);
+
+  var mediumCircle = addCircularPoints(20, {
+    x: space.size.x / 2,
+    y: space.size.y / 2
+  }, space.size.x / 7.5);
+
+  var smallCircle = addCircularPoints(17, {
+    x: space.size.x / 2,
+    y: space.size.y / 2
+  }, space.size.x / 15);
+
+  var tinyCircle = addCircularPoints(8, {
+    x: space.size.x / 2,
+    y: space.size.y / 2
+  }, space.size.x / 24);
+
+  return points.concat(bigCircle, smallCircle, mediumCircle, tinyCircle);
+}
+
+module.exports = createPoints;
+
+},{"./colours":13,"./music/music":31,"./pt":36,"lodash":151,"node-uuid":160,"random-float":178,"random-int":179}],16:[function(require,module,exports){
+'use strict';
+
+var form = require('./pt').form;
+var globals = require('./globals');
+var colours = require('./colours');
+
+function drawPoint(point) {
+  var delta = globals.getDelta();
+  var newSize = point.originalRadius + 1.7;
+  newSize = newSize < 2.2 ? newSize = 2.2 : newSize;
+  if (point.intersected) {
+    point.circle.setRadius(newSize);
+  } else if (!point.intersected) {
+    point.circle.setRadius(point.originalRadius);
+    if (point.connected) {
+      point.circle.setRadius(newSize);
+    }
+  }
+
+  if (point.intersected && !point.connected) {
+    point.colour = colours.lightBlue;
+  } else if (!point.intersected && !point.connected) {
+    point.colour = point.originalColour;
+  }
+
+  var targetX = (point.originalPosition.x - point.x) * (0.05 * delta);
+  var targetY = (point.originalPosition.y - point.y) * (0.05 * delta);
+
+  point.x += targetX;
+  point.y += targetY;
+
+  point.opacity -= point.fadeOutSpeed;
+  var c = 'rgba(' + point.colour.x + ',' + point.colour.y + ',' + point.colour.z + ',' + point.opacity + ')';
+  form.fill(c).stroke(false);
+  form.circle(point.circle);
+}
+
+module.exports = drawPoint;
+
+},{"./colours":13,"./globals":17,"./pt":36}],17:[function(require,module,exports){
+'use strict';
+
+var timeAtPreviousFrame;
+var delta = 1;
+var mouse = {
+  x: 0,
+  y: 0
+};
+
+module.exports.setDelta = function (now) {
+  var dt = now - (timeAtPreviousFrame || now);
+  timeAtPreviousFrame = now;
+  delta = dt / 16;
+};
+
+module.exports.getDelta = function () {
+  return delta;
+};
+
+module.exports.setMousePosition = function (x, y) {
+  mouse.x = x;
+  mouse.y = y;
+};
+
+module.exports.getMousePosition = function () {
+  return mouse;
+};
+
+},{}],18:[function(require,module,exports){
+'use strict';
+
+function intersectSpotlightAndPoints(spotLight, points) {
+  var intersectedPoints = [];
+  points.forEach(function (point) {
+    var intersected = spotLight.intersectPoint(point);
+    if (intersected) {
+      point.intersected = true;
+      intersectedPoints.push(point);
+    } else {
+      point.intersected = false;
+    }
+  });
+  return intersectedPoints;
+}
+
+module.exports = intersectSpotlightAndPoints;
+
+},{}],19:[function(require,module,exports){
+'use strict';
+
+var map = function (value, istart, istop, ostart, ostop) {
+  return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
+};
+
+module.exports = map;
+
+},{}],20:[function(require,module,exports){
+'use strict';
+
+var context = require('./context');
+var load = require('./load');
+
+var limiter = context.createDynamicsCompressor();
+var convolver = context.createConvolver();
+convolver.normalize = false;
+var synthGain = context.createGain();
+var leadGain = context.createGain();
+var kickGain = context.createGain();
+var bgGain = context.createGain();
+var guitarGain = context.createGain();
+
+limiter.ratio.value = 20;
+limiter.attack.value = 0.01;
+limiter.release.value = 0.01;
+limiter.threshold.value = -1;
+
+limiter.connect(context.destination);
+convolver.connect(limiter);
+synthGain.connect(convolver);
+leadGain.connect(convolver);
+guitarGain.connect(convolver);
+kickGain.connect(limiter);
+bgGain.connect(limiter);
+
+synthGain.gain.value = 0.13;
+leadGain.gain.value = 0.12;
+kickGain.gain.value = 0.20;
+bgGain.gain.value = 0.07;
+guitarGain.gain.value = 0.03;
+// synthGain.gain.value = 0;
+// leadGain.gain.value = 0;
+// kickGain.gain.value = 0;
+
+load('./assets/audio/ir3.mp3', function (err, buffer) {
+  convolver.buffer = buffer;
+});
+
+module.exports.synthDestination = synthGain;
+module.exports.leadDestination = leadGain;
+module.exports.kickDestination = kickGain;
+module.exports.bgDestination = bgGain;
+module.exports.guitarDestination = guitarGain;
+
+},{"./context":23,"./load":29}],21:[function(require,module,exports){
+'use strict';
+
+var load = require('./load');
+var grain = require('./grain');
+var map = require('../map');
+
+var destination = require('./audio').bgDestination;
+var discoveryMax = require('../../config').discoveryThreshold;
+
+var progress = 0;
+var target = 0;
+var bgBuffer = null;
+var interval = null;
+
+load('./assets/audio/bg-01.mp3', function (err, buffer) {
+  if (err) return console.error(err);
+  bgBuffer = buffer;
+});
+
+module.exports.proceed = function (amount) {
+  target = map(amount, 0, discoveryMax, 0, 1);
+};
+
+module.exports.start = function () {
+  setInterval(function () {
+    progress += (target - progress) * 0.15;
+    grain(bgBuffer, destination, 0.3, 0.5, progress);
+  }, 50);
+};
+
+module.exports.stop = function () {
+  window.clearInterval(interval);
+};
+
+},{"../../config":1,"../map":19,"./audio":20,"./grain":24,"./load":29}],22:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var teoria = require('teoria');
+
+var introKicks = require('./introKicks');
+var background = require('./background');
+var guitar = require('./guitar');
+var leadSynth = require('./leadSynth');
+var secondSection = require('./secondSection');
+var context = require('./context');
+var audio = require('./audio');
+var notes = require('./music').notes;
+
+module.exports.startIntroKicks = function () {
+  introKicks.start();
+};
+
+module.exports.stopFirstSection = function (done) {
+  introKicks.stop();
+  done();
+};
+
+module.exports.startSecondSection = function () {
+  secondSection.start();
+};
+
+module.exports.playLead = function () {
+  var osc = context.createOscillator();
+  var gain = context.createGain();
+  var now = context.currentTime;
+
+  var note = notes[_.random(0, notes.length - 1, false)];
+  var frequency = note.fq() * 6;
+
+  if (_.random(0, 100) > 50) frequency = note.fq() * 8;
+
+  osc.start(now);
+  osc.frequency.value = frequency;
+  osc.connect(gain);
+  gain.gain.value = 0;
+  gain.connect(audio.leadDestination);
+
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.setTargetAtTime(0, now, 0.5);
+  gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
+  gain.gain.linearRampToValueAtTime(0, now + 0.2);
+
+  osc.stop(now + 1.5);
+
+  setTimeout(function () {
+    gain.disconnect();
+  }, 4000);
+};
+
+module.exports.playBass = function () {
+  var osc = context.createOscillator();
+  var gain = context.createGain();
+  var now = context.currentTime;
+
+  var note = notes[_.random(0, notes.length - 1, false)];
+  var midi = note.midi() - 12;
+  var frequency = teoria.note.fromMIDI(midi).fq();
+
+  osc.start(now);
+  osc.frequency.value = frequency;
+  osc.connect(gain);
+  gain.gain.value = 0;
+  gain.connect(audio.leadDestination);
+
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.setTargetAtTime(0, now, 0.5);
+  gain.gain.linearRampToValueAtTime(0.2, now + 3);
+  gain.gain.linearRampToValueAtTime(0, now + 4.5);
+
+  osc.stop(now + 5);
+
+  setTimeout(function () {
+    gain.disconnect();
+  }, 5500);
+};
+
+module.exports.startBackground = function () {
+  background.start();
+};
+
+module.exports.proceed = function (amount) {
+  background.proceed(amount);
+};
+
+module.exports.playLeadGuitar = function (frequency, startTime) {
+  guitar.play(frequency, startTime);
+};
+
+module.exports.playLeadSynth = function (frequency, startTime) {
+  leadSynth.play(frequency, startTime);
+};
+
+},{"./audio":20,"./background":21,"./context":23,"./guitar":25,"./introKicks":26,"./leadSynth":28,"./music":31,"./secondSection":32,"lodash":151,"teoria":205}],23:[function(require,module,exports){
+'use strict';
+
+window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
+module.exports = new window.AudioContext();
+
+},{}],24:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+
+var context = require('./context');
+
+module.exports = function (buffer, destination, attack, release, offset) {
+  if (!buffer) return;
+
+  var source = context.createBufferSource();
+  var gain = context.createGain();
+  source.buffer = buffer;
+
+  source.connect(gain);
+  gain.connect(destination);
+
+  var now = context.currentTime;
+
+  var sampleOffset = offset * buffer.duration;
+  var randomisedOffset = sampleOffset + _.random(-0.15, 0.15);
+
+  if (randomisedOffset > buffer.duration) {
+    randomisedOffset = offset - 0.1;
+  } else if (randomisedOffset < 0) {
+    randomisedOffset = 0;
+  }
+
+  source.start(now, randomisedOffset, now + attack + release);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(1, now + attack);
+  gain.gain.linearRampToValueAtTime(0, now + attack + release);
+  source.stop(now + attack + release);
+
+  setTimeout(function () {
+    gain.disconnect();
+  }, (attack + release + 0.001) * 1000);
+};
+
+},{"./context":23,"lodash":151}],25:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var teoria = require('teoria');
+
+var load = require('./load');
+var mtop = require('./mtop');
+var context = require('./context');
+var destination = require('./audio').guitarDestination;
+
+var guitarBuffer = null;
+
+load('./assets/audio/pluck-c-01.mp3', function (err, buffer) {
+  guitarBuffer = buffer;
+});
+
+module.exports.play = function (frequency, startTime) {
+  if (!guitarBuffer) return;
+
+  var change = _.random(0, 100);
+  if (change > 80) {
+    frequency = frequency / 2;
+  }
+  var note = teoria.note.fromFrequency(frequency);
+  var midi = note.note.midi();
+  var rate = mtop(midi);
+
+  var source = context.createBufferSource();
+  source.playbackRate.value = rate;
+  var gain = context.createGain();
+  source.buffer = guitarBuffer;
+
+  source.connect(gain);
+  gain.connect(destination);
+  source.start(startTime + _.random(0, 0.01));
+  // source.stop(startTime + guitarBuffer.des);
+};
+
+},{"./audio":20,"./context":23,"./load":29,"./mtop":30,"lodash":151,"teoria":205}],26:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+
+var kick = require('./kick');
+
+var interval = null;
+
+function schedule() {
+  var time = _.random(100, 1000);
+  setTimeout(function () {
+    kick.start();
+  }, time);
+}
+
+module.exports.start = function () {
+  interval = setInterval(function () {
+    schedule();
+  }, 10000);
+};
+
+module.exports.stop = function () {
+  window.clearInterval(interval);
+};
+
+},{"./kick":27,"lodash":151}],27:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var teoria = require('teoria');
+
+var context = require('./context');
+var notes = require('./music').notes;
+var audio = require('./audio');
+var load = require('./load');
+var mtop = require('./mtop');
+var kickBuffer = null;
+var shouldUseSample = false;
+
+var destination = audio.kickDestination;
+
+load('./assets/audio/kick-808-01.mp3', function (err, buffer) {
+  if (err) return console.log(err);
+
+  kickBuffer = buffer;
+});
+
+function playKickSample(note, now) {
+  if (!kickBuffer && !shouldUseSample) return;
+  var source = context.createBufferSource();
+  source.buffer = kickBuffer;
+  source.playbackRate.value = mtop(note.midi());
+  source.connect(destination);
+  source.start(now);
+}
+
+function Kick() {
+  this.osc = context.createOscillator();
+  this.osc.frequency.value = 400;
+  this.env = context.createGain();
+  this.env.gain.value = 0;
+  this.osc.connect(this.env);
+  this.env.connect(destination);
+}
+
+Kick.prototype.start = function (startTime, decay, random) {
+  var that = this;
+
+  var randomNote = notes[_.random(0, notes.length - 1, false)];
+  var midi = randomNote.midi() - 24;
+  var frequency = teoria.note.fromMIDI(midi).fq();
+
+  if (frequency > 80 || !frequency || random === false) {
+    frequency = teoria.note.fromMIDI(notes[0].midi() - 24).fq();
+  }
+
+  var now = startTime || context.currentTime;
+  this.osc.frequency.setValueAtTime(400, now);
+  this.osc.frequency.linearRampToValueAtTime(frequency, now + 0.005);
+  this.env.gain.setValueAtTime(that.env.gain.value, now);
+  this.env.gain.linearRampToValueAtTime(1, now + 0.005);
+  this.decayTime = decay ? now + decay : now + _.random(3, 7);
+  this.env.gain.linearRampToValueAtTime(0, that.decayTime);
+
+  this.osc.start(now);
+  this.osc.stop(now + (this.decayTime + 1));
+
+  setTimeout(function () {
+    that.env.disconnect(0);
+  }, (that.decayTime + 2) * 1000);
+
+  // playKickSample(randomNote, now);
+};
+
+module.exports.start = function (startTime, decay, random) {
+  var kick = new Kick();
+  kick.start(startTime, decay, random);
+};
+
+},{"./audio":20,"./context":23,"./load":29,"./mtop":30,"./music":31,"lodash":151,"teoria":205}],28:[function(require,module,exports){
+'use strict';
+
+var context = require('./context');
+var destination = require('./audio').leadDestination;
+
+module.exports.play = function (frequency, startTime) {
+  var osc = context.createOscillator();
+  var gain = context.createGain();
+  osc.start(startTime);
+  osc.frequency.value = frequency * 4;
+  osc.connect(gain);
+  gain.gain.value = 0;
+  gain.connect(destination);
+
+  gain.gain.cancelScheduledValues(startTime);
+  gain.gain.setTargetAtTime(0, startTime, 0.5);
+  gain.gain.linearRampToValueAtTime(0.2, startTime + 0.01);
+  gain.gain.linearRampToValueAtTime(0, startTime + 0.2);
+
+  osc.stop(startTime + 1.5);
+
+  setTimeout(function () {
+    gain.disconnect();
+  }, 4000);
+};
+
+},{"./audio":20,"./context":23}],29:[function(require,module,exports){
+'use strict';
+
+var context = require('./context');
+
+module.exports = function (path, cb) {
+  var request = new XMLHttpRequest();
+  request.open('GET', path, true);
+  request.responseType = 'arraybuffer';
+  request.onload = function () {
+    context.decodeAudioData(request.response, function (buffer) {
+      cb(null, buffer);
+    }, function (err) {
+      cb(err);
+    });
+  };
+
+  request.onerror = function (err) {
+    cb(err);
+  };
+
+  request.send();
+};
+
+},{"./context":23}],30:[function(require,module,exports){
+'use strict';
+
+module.exports = function mtop(midi) {
+  return Math.pow(2, (midi - 60) / 12);
+};
+
+},{}],31:[function(require,module,exports){
+'use strict';
+
+var teoria = require('teoria');
+
+var g3 = teoria.note('g3');
+var scale = g3.scale('minorpentatonic');
+var notes = scale.notes();
+
+module.exports.notes = notes;
+
+},{"teoria":205}],32:[function(require,module,exports){
+'use strict';
+
+var Beet = require('beet.js');
+
+var kick = require('./kick');
+var context = require('./context');
+var notes = require('./music').notes;
+var synthDestination = require('./audio').leadDestination;
+
+var beet = new Beet({
+  context: context,
+  tempo: 100
+});
+
+var pattern = beet.pattern(4, 9);
+
+function on(time) {
+  kick.start(time, 1.0, false);
+}
+
+function off(time, step) {
+  if (step > notes.length) step = 0;
+  var note = notes[step];
+
+  var osc = context.createOscillator();
+  var gain = context.createGain();
+
+  osc.start(time);
+  osc.frequency.value = note.fq() * 2;
+  osc.connect(gain);
+  gain.gain.value = 0;
+  gain.connect(synthDestination);
+
+  gain.gain.cancelScheduledValues(time);
+  gain.gain.setTargetAtTime(0, time, 0.5);
+  gain.gain.linearRampToValueAtTime(0.1, time + 0.001);
+  gain.gain.linearRampToValueAtTime(0, time + 0.05);
+
+  osc.stop(time + 1.5);
+
+  setTimeout(function () {
+    gain.disconnect();
+  }, 4000);
+}
+
+var layer = beet.layer(pattern, on, off);
+beet.add(layer);
+
+module.exports.start = function () {
+  beet.start();
+};
+
+},{"./audio":20,"./context":23,"./kick":27,"./music":31,"beet.js":58}],33:[function(require,module,exports){
+'use strict';
+
+var trash = [];
+var moment = require('moment');
+
+setInterval(function () {
+  trash.forEach(function (voice, index) {
+    if (voice.timestamp.isBefore(moment().subtract(7, 'seconds'))) {
+      trash.splice(index, 1);
+    }
+  });
+  // console.log('trash size', trash.length);
+}, 10000);
+
+module.exports.push = function (item) {
+  trash.push(item);
+};
+
+},{"moment":159}],34:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var Envelope = require('fastidious-envelope-generator');
+
+var context = require('./context');
+var destination = require('./audio').synthDestination;
+
+
+function Voice(id, frequency) {
+  this.id = id;
+
+  var osc = context.createOscillator();
+  osc.frequency.value = frequency;
+  var gain = context.createGain();
+  var panner = context.createStereoPanner();
+  this.env = new Envelope(context, gain.gain);
+  this.env.mode = 'ASR';
+  osc.connect(gain);
+  gain.connect(panner);
+  panner.connect(destination);
+  panner.pan.value = _.random(-0.7, 0.7);
+  gain.gain.value = 0;
+  this.osc = osc;
+  this.gain = gain;
+  this.startTime = 0;
+  this.timeDelta = 0;
+}
+
+Voice.prototype.start = function (opts) {
+  this.osc.start(0);
+  this.peak = opts.peak;
+  this.attack = opts.attack;
+  this.unit = this.peak / this.attack;
+  this.env.attackLevel = opts.peak;
+  this.env.attackRate = opts.attack / 1000;
+  this.env.gateOn(opts.now + 0.001);
+};
+
+Voice.prototype.stop = function (opts) {
+  this.env.releaseRate = opts.release;
+  this.env.gateOff(opts.now + 0.001);
+  this.osc.stop(opts.now + opts.release + 2);
+};
+
+module.exports = Voice;
+
+},{"./audio":20,"./context":23,"fastidious-envelope-generator":137,"lodash":151}],35:[function(require,module,exports){
+'use strict';
+
+var randomFloat = require('random-float');
+
+var context = require('./music/context');
+var changePointColour = require('./changePointColour');
+var ripples = require('./ripples');
+var conductor = require('./music/conductor');
+
+function playLead(point, index) {
+  var now = context.currentTime;
+
+  var startTime = now + (index * 0.5);
+  if (index > 0) {
+    startTime += randomFloat(-0.2, 0.2);
+  }
+
+  conductor.playLeadSynth(point.fq, startTime);
+  conductor.playLeadGuitar(point.fq, startTime);
+
+  setTimeout(function () {
+    changePointColour(point);
+    ripples.addSmallRipple(point);
+  }, (startTime - context.currentTime) * 1000);
+}
+
+module.exports = playLead;
+
+},{"./changePointColour":12,"./music/conductor":22,"./music/context":23,"./ripples":38,"random-float":178}],36:[function(require,module,exports){
+'use strict';
+
+var pt = require('ptjs');
+var config = require('../config');
+var colours = require('./colours');
+var spotLightRatio = config.spotLightSizeRatio;
+
+var background = colours.background.rgb();
+var space = new pt.CanvasSpace('#pt').setup({
+  bgcolor: background,
+  retina: true
+});
+space.autoResize(true);
+var form = new pt.Form(space);
+var spotLight = new pt.Circle(250, 250).setRadius(space.size.x / spotLightRatio);
+
+module.exports.space = space;
+module.exports.form = form;
+module.exports.spotLight = spotLight;
+module.exports.spotLightRatio = spotLightRatio;
+module.exports.lib = pt;
+
+},{"../config":1,"./colours":13,"ptjs":171}],37:[function(require,module,exports){
+'use strict';
+
+var randomFloat = require('random-float');
+
+function randomisePoint(point, rate) {
+  var randomX = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
+  var randomY = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
+  point.set(point.x + (randomX * rate), point.y + (randomY * rate));
+  point.circle.set(point.x, point.y);
+}
+
+module.exports = randomisePoint;
+
+},{"random-float":178}],38:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var randomF = require('random-float');
+var pt = require('./pt');
+var colours = require('./colours');
+var globals = require('./globals');
+var config = require('../config');
+var spotLight = pt.spotLight;
+var form = pt.form;
+var space = pt.space;
+
+var ripples = [];
+var smallRipples = [];
+var white = colours.white;
+var lighterGrey = colours.lighterGrey;
+var collisions = [];
+
+function addrippleCircle() {
+  var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
+  circle.opacity = config.rippleStartOpacity;
+  circle.previousIntersected = [];
+  circle.timestamp = Date.now();
+  ripples.push(circle);
+}
+
+function addSmallRipple(point) {
+  var ripple = new pt.lib.Circle(point).setRadius(point.originalRadius);
+  ripple.opacity = config.rippleStartOpacity;
+  ripple.timestamp = Date.now();
+  smallRipples.push(ripple);
+}
+
+function drawRipple(ripple, sizeRate, opacityRate, colour) {
+  var delta = globals.getDelta();
+
+  ripple.opacity -= opacityRate * delta;
+
+  if (ripple.opacity < 0 || ripple.opacity > 1 || ripple.opacity < 0.01) {
+    ripple.opacity = 0.01;
+  }
+
+  ripple.radius += (sizeRate * (ripple.opacity * 2.0)) * delta;
+
+  form.fill(false);
+  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + ripple.opacity.toFixed(2) + ')';
+  form.stroke(c);
+  form.circle(ripple);
+}
+
+module.exports.add = addrippleCircle;
+module.exports.addSmallRipple = addSmallRipple;
+
+module.exports.draw = function () {
+  _.forEach(ripples, _.partial(drawRipple, _, config.rippleRate, config.rippleRateOpacity, white));
+  _.forEach(smallRipples, _.partial(drawRipple, _, config.smallRippleRate, config.smallRippleRateOpacity, lighterGrey));
+
+  collisions.forEach(function (collision) {
+    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(5, (collision.circle.opacity * 35))));
+    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(5, (collision.circle.opacity * 35))));
+  });
+
+  //clean up collisions
+  collisions = _.filter(collisions, function (collision) {
+    return collision.timestamp > Date.now() - 200;
+  });
+
+  //clean up ripples
+  ripples = _.filter(ripples, function (circle) {
+    return circle.timestamp > Date.now() - 3000;
+  });
+
+  //clean up small ripples
+  smallRipples = _.filter(smallRipples, function (ripple) {
+    return ripple.timestamp > Date.now() - 3000;
+  });
+};
+
+module.exports.detectCollisions = function (points) {
+  ripples.forEach(function (circle) {
+    points.forEach(function (point) {
+      var dx = circle.x - point.circle.x;
+      var dy = circle.y - point.circle.y;
+      var distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < circle.radius + point.circle.radius && distance > (circle.radius - 10) + point.circle.radius) {
+        collisions.push({
+          circle: circle,
+          point: point,
+          dx: (dx / space.size.x) * -1,
+          dy: (dy / space.size.y) * -1,
+          timestamp: Date.now()
+        });
+      }
+    });
+  });
+};
+
+module.exports.clean = function () {
+  ripples = _.reject(ripples, function (ripple) {
+    return ripple.radius > 1400;
+  });
+
+  smallRipples = _.filter(smallRipples, function (ripple) {
+    return ripple.timestamp > Date.now() - 3000;
+  });
+};
+
+},{"../config":1,"./colours":13,"./globals":17,"./pt":36,"lodash":151,"random-float":178}],39:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2880,7 +2881,7 @@ function updateConnections(points, pairs, connections, triangles, specialConnect
 
 module.exports = updateConnections;
 
-},{"./colours":7,"faster-delaunay":136,"lodash":151,"random-int":179}],40:[function(require,module,exports){
+},{"./colours":13,"faster-delaunay":136,"lodash":151,"random-int":179}],40:[function(require,module,exports){
 'use strict';
 
 function updateTemporaryPairs(points, temporaryPairs) {
