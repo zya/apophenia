@@ -26,20 +26,20 @@ var async = require('async');
 
 var stats = new Stats();
 
-var pt = require('./lib/pt');
+var pt = require('./lib/2d/pt');
 var colours = require('./lib/colours');
 var conductor = require('./lib/music/conductor');
 
 var createPoints = require('./lib/createPoints');
-var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
+var updateTemporaryPairs = require('./lib/2d/updateTemporaryPairs');
 var scene3d = require('./lib/3d/scene3D');
-var randomisePoint = require('./lib/randomisePoint');
-var intersect = require('./lib/intersectSpotlightAndPoints');
+var randomisePoint = require('./lib/2d/randomisePoint');
+var intersect = require('./lib/2d/intersectSpotlightAndPoints');
 var change = require('./lib/changeHandler');
 var pointClickEvent = require('./lib/pointClickEvent');
-var drawPoint = require('./lib/drawPoint');
-var connections = require('./lib/connections');
-var ripples = require('./lib/ripples');
+var drawPoint = require('./lib/2d/drawPoint');
+var connections = require('./lib/2d/connections');
+var ripples = require('./lib/2d/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
 
@@ -368,7 +368,516 @@ play.addEventListener('click', function () {
 conductor.startIntroKicks();
 conductor.startBackground();
 
-},{"./config":1,"./lib/3d/scene3D":10,"./lib/changeHandler":11,"./lib/colours":13,"./lib/connections":14,"./lib/createPoints":15,"./lib/drawPoint":16,"./lib/globals":17,"./lib/intersectSpotlightAndPoints":18,"./lib/music/conductor":22,"./lib/pointClickEvent":35,"./lib/pt":36,"./lib/randomisePoint":37,"./lib/ripples":38,"./lib/updateTemporaryPairs":40,"async":56,"dynamics.js":116,"lodash":151,"random-float":178,"stats.js":202}],3:[function(require,module,exports){
+},{"./config":1,"./lib/2d/connections":4,"./lib/2d/drawPoint":5,"./lib/2d/intersectSpotlightAndPoints":6,"./lib/2d/pt":7,"./lib/2d/randomisePoint":8,"./lib/2d/ripples":9,"./lib/2d/updateTemporaryPairs":11,"./lib/3d/scene3D":19,"./lib/changeHandler":20,"./lib/colours":21,"./lib/createPoints":22,"./lib/globals":23,"./lib/music/conductor":27,"./lib/pointClickEvent":40,"async":56,"dynamics.js":116,"lodash":151,"random-float":178,"stats.js":202}],3:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var randomInt = require('random-int');
+
+var colours = require('../colours');
+
+var playingCircleSize = 4.5;
+var connectedPointSize = 2.5;
+
+var orange = colours.orange;
+var red = colours.red;
+var lightBlue = colours.lightBlue;
+
+function changePointColour(point) {
+  if (_.isEqual(point.colour, orange) || _.isEqual(point.colour, red)) {
+    point.colour = lightBlue;
+  } else {
+    point.colour = randomInt(0, 10) > 5 ? orange : red;
+  }
+
+  point.circle.setRadius(playingCircleSize);
+  point.connected = true;
+  setTimeout(function () {
+    point.circle.setRadius(connectedPointSize);
+  }, 200);
+}
+
+module.exports = changePointColour;
+
+},{"../colours":21,"lodash":151,"random-int":179}],4:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var dynamics = require('dynamics.js');
+
+var updateConnections = require('./updateConnections');
+var colours = require('../colours');
+var config = require('../../config');
+var form = require('./pt').form;
+var lib = require('./pt').lib;
+
+var connections = [];
+var pairs = [];
+var connectionsInside = [];
+var triangles = [];
+var trianglesInside = [];
+
+var specialTriangles = [];
+var specialConnections = [];
+var specialPairs = [];
+
+var sines = [];
+var discoveryPercentage = 0.0;
+var shouldReveal = false;
+
+var params = {
+  opacityRate: 1
+};
+
+var revealStartCallback = function () {};
+var revealEndCallback = function () {};
+
+function updateSines() {
+  var now = Date.now();
+  sines[0] = Math.abs(Math.sin(now * 0.0005)) * 0.6;
+  sines[1] = Math.abs(Math.sin(now * 0.00015));
+  sines[2] = Math.abs(Math.sin(now * 0.00039));
+  sines[3] = Math.abs(Math.sin(now * 0.0006)) * 0.9;
+  sines[4] = Math.abs(Math.sin(now * 0.0005));
+  sines[5] = Math.abs(Math.sin(now * 0.0006));
+  sines[6] = Math.abs(Math.sin(now * 0.0007));
+  sines[7] = Math.abs(Math.sin(now * 0.0008));
+  sines[8] = Math.abs(Math.sin(now * 0.0009));
+  sines[9] = Math.abs(Math.sin(now * 0.0007)) * 0.7;
+}
+
+function drawTriangle(triplet) {
+  var tri = new lib.Triangle(triplet[0]);
+  tri.to(triplet[1], triplet[2]);
+
+  form.stroke(false);
+  form.fill(colours.orange);
+  form.triangle(tri);
+}
+
+function drawConnection(connection, colour, opacity, width) {
+  if (connection.revealSpeed) {
+    connection.opacity += connection.revealSpeed;
+    opacity = connection.opacity;
+  }
+
+  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + opacity + ')';
+  var line = new lib.Line(connection.from).to(connection.to);
+  form.stroke(c, width);
+  form.line(line);
+}
+
+module.exports.update = function (points) {
+  updateConnections(points, pairs, connections, triangles, specialPairs);
+
+  var connectionsLength = _.filter(connections, 'special').length;
+  var allSpecialConnectionsLength = specialConnections.length;
+  discoveryPercentage = connectionsLength / allSpecialConnectionsLength;
+};
+
+module.exports.updateInsideConnections = function (points) {
+  connectionsInside = [];
+  trianglesInside = [];
+  updateConnections(points, [], connectionsInside, trianglesInside, specialPairs);
+
+  return _.some(connectionsInside, ['special', true]);
+};
+
+module.exports.createSpecialShape = function (points) {
+  updateConnections(points, specialPairs, specialConnections, specialTriangles);
+};
+
+module.exports.draw = function (pairsInsideSpotlight) {
+  updateSines();
+
+  connections.forEach(function (connection, index) {
+    if (_.includes(pairsInsideSpotlight, connection.id)) return;
+
+    drawConnection(connection, colours.darkGrey, config.connectionsOpacity * params.opacityRate, config.connectionsWidth);
+
+    if (connection.special) {
+      var sin = sines[index % 10];
+      drawConnection(connection, colours.darkerBlue, sin, 1.0);
+    }
+  });
+
+  connectionsInside.forEach(function (connection) {
+    drawConnection(connection, colours.lighterGrey, 1.0, config.connectionsWidth);
+
+    if (connection.special) {
+      drawConnection(connection, colours.orange, 1.0, 1.0);
+    }
+  });
+
+  if (shouldReveal) {
+    exports.drawSpecialShape();
+  }
+};
+
+module.exports.drawTriangles = function () {
+  triangles.forEach(drawTriangle);
+};
+
+module.exports.drawSpecialShape = function () {
+  specialConnections.forEach(_.partial(drawConnection, _, colours.darkerBlue, 0.0, 1.0));
+};
+
+module.exports.getDiscoveryPercentage = function () {
+  return discoveryPercentage;
+};
+
+module.exports.getSpecialTriangles = function () {
+  return specialTriangles;
+};
+
+function revealConnectionInTime(connection, time) {
+  (function (connection) {
+    setTimeout(function () {
+      connection.opacity = 0;
+      connection.revealSpeed = _.random(0.025, 0.05);
+    }, time);
+  })(connection);
+}
+
+module.exports.reveal = function (cb) {
+  setTimeout(revealStartCallback, 1500);
+
+  specialConnections.forEach(function (connection, index) {
+    if (index % 4 === 0) {
+      revealConnectionInTime(connection, _.random(1500, 3000));
+    } else if (index % 3 === 0) {
+      revealConnectionInTime(connection, _.random(3500, 4500));
+    } else {
+      revealConnectionInTime(connection, _.random(4800, 6000));
+    }
+  });
+
+  shouldReveal = true;
+
+  setTimeout(function () {
+    dynamics.animate(params, {
+      opacityRate: 0
+    }, {
+      duration: 6000
+    });
+  }, 2000);
+
+  setTimeout(function () {
+    cb();
+    revealEndCallback();
+  }, 6000);
+};
+
+module.exports.on = function (event, cb) {
+  if (event === 'revealStart') revealStartCallback = cb;
+  if (event === 'revealEnd') revealEndCallback = cb;
+};
+
+},{"../../config":1,"../colours":21,"./pt":7,"./updateConnections":10,"dynamics.js":116,"lodash":151}],5:[function(require,module,exports){
+'use strict';
+
+var form = require('./pt').form;
+var globals = require('../globals');
+var colours = require('../colours');
+
+function drawPoint(point) {
+  var delta = globals.getDelta();
+  var newSize = point.originalRadius + 1.7;
+  newSize = newSize < 2.2 ? newSize = 2.2 : newSize;
+  if (point.intersected) {
+    point.circle.setRadius(newSize);
+  } else if (!point.intersected) {
+    point.circle.setRadius(point.originalRadius);
+    if (point.connected) {
+      point.circle.setRadius(newSize);
+    }
+  }
+
+  if (point.intersected && !point.connected) {
+    point.colour = colours.lightBlue;
+  } else if (!point.intersected && !point.connected) {
+    point.colour = point.originalColour;
+  }
+
+  var targetX = (point.originalPosition.x - point.x) * (0.05 * delta);
+  var targetY = (point.originalPosition.y - point.y) * (0.05 * delta);
+
+  point.x += targetX;
+  point.y += targetY;
+
+  point.opacity -= point.fadeOutSpeed;
+  var c = 'rgba(' + point.colour.x + ',' + point.colour.y + ',' + point.colour.z + ',' + point.opacity + ')';
+  form.fill(c).stroke(false);
+  form.circle(point.circle);
+}
+
+module.exports = drawPoint;
+
+},{"../colours":21,"../globals":23,"./pt":7}],6:[function(require,module,exports){
+'use strict';
+
+function intersectSpotlightAndPoints(spotLight, points) {
+  var intersectedPoints = [];
+  points.forEach(function (point) {
+    var intersected = spotLight.intersectPoint(point);
+    if (intersected) {
+      point.intersected = true;
+      intersectedPoints.push(point);
+    } else {
+      point.intersected = false;
+    }
+  });
+  return intersectedPoints;
+}
+
+module.exports = intersectSpotlightAndPoints;
+
+},{}],7:[function(require,module,exports){
+'use strict';
+
+var pt = require('ptjs');
+var config = require('../../config');
+var colours = require('../colours');
+var spotLightRatio = config.spotLightSizeRatio;
+
+var background = colours.background.rgb();
+var space = new pt.CanvasSpace('#pt').setup({
+  bgcolor: background,
+  retina: true
+});
+space.autoResize(true);
+var form = new pt.Form(space);
+var spotLight = new pt.Circle(250, 250).setRadius(space.size.x / spotLightRatio);
+
+module.exports.space = space;
+module.exports.form = form;
+module.exports.spotLight = spotLight;
+module.exports.spotLightRatio = spotLightRatio;
+module.exports.lib = pt;
+
+},{"../../config":1,"../colours":21,"ptjs":171}],8:[function(require,module,exports){
+'use strict';
+
+var randomFloat = require('random-float');
+
+function randomisePoint(point, rate) {
+  var randomX = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
+  var randomY = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
+  point.set(point.x + (randomX * rate), point.y + (randomY * rate));
+  point.circle.set(point.x, point.y);
+}
+
+module.exports = randomisePoint;
+
+},{"random-float":178}],9:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var randomF = require('random-float');
+var pt = require('./pt');
+var colours = require('../colours');
+var globals = require('../globals');
+var config = require('../../config');
+var spotLight = pt.spotLight;
+var form = pt.form;
+var space = pt.space;
+
+var ripples = [];
+var smallRipples = [];
+var white = colours.white;
+var lighterGrey = colours.lighterGrey;
+var collisions = [];
+
+function addrippleCircle() {
+  var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
+  circle.opacity = config.rippleStartOpacity;
+  circle.previousIntersected = [];
+  circle.timestamp = Date.now();
+  ripples.push(circle);
+}
+
+function addSmallRipple(point) {
+  var ripple = new pt.lib.Circle(point).setRadius(point.originalRadius);
+  ripple.opacity = config.rippleStartOpacity;
+  ripple.timestamp = Date.now();
+  smallRipples.push(ripple);
+}
+
+function drawRipple(ripple, sizeRate, opacityRate, colour) {
+  var delta = globals.getDelta();
+
+  ripple.opacity -= opacityRate * delta;
+
+  if (ripple.opacity < 0 || ripple.opacity > 1 || ripple.opacity < 0.01) {
+    ripple.opacity = 0.01;
+  }
+
+  ripple.radius += (sizeRate * (ripple.opacity * 2.0)) * delta;
+
+  form.fill(false);
+  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + ripple.opacity.toFixed(2) + ')';
+  form.stroke(c);
+  form.circle(ripple);
+}
+
+module.exports.add = addrippleCircle;
+module.exports.addSmallRipple = addSmallRipple;
+
+module.exports.draw = function () {
+  _.forEach(ripples, _.partial(drawRipple, _, config.rippleRate, config.rippleRateOpacity, white));
+  _.forEach(smallRipples, _.partial(drawRipple, _, config.smallRippleRate, config.smallRippleRateOpacity, lighterGrey));
+
+  collisions.forEach(function (collision) {
+    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(5, (collision.circle.opacity * 35))));
+    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(5, (collision.circle.opacity * 35))));
+  });
+
+  //clean up collisions
+  collisions = _.filter(collisions, function (collision) {
+    return collision.timestamp > Date.now() - 200;
+  });
+
+  //clean up ripples
+  ripples = _.filter(ripples, function (circle) {
+    return circle.timestamp > Date.now() - 3000;
+  });
+
+  //clean up small ripples
+  smallRipples = _.filter(smallRipples, function (ripple) {
+    return ripple.timestamp > Date.now() - 3000;
+  });
+};
+
+module.exports.detectCollisions = function (points) {
+  ripples.forEach(function (circle) {
+    points.forEach(function (point) {
+      var dx = circle.x - point.circle.x;
+      var dy = circle.y - point.circle.y;
+      var distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < circle.radius + point.circle.radius && distance > (circle.radius - 10) + point.circle.radius) {
+        collisions.push({
+          circle: circle,
+          point: point,
+          dx: (dx / space.size.x) * -1,
+          dy: (dy / space.size.y) * -1,
+          timestamp: Date.now()
+        });
+      }
+    });
+  });
+};
+
+module.exports.clean = function () {
+  ripples = _.reject(ripples, function (ripple) {
+    return ripple.radius > 1400;
+  });
+
+  smallRipples = _.filter(smallRipples, function (ripple) {
+    return ripple.timestamp > Date.now() - 3000;
+  });
+};
+
+},{"../../config":1,"../colours":21,"../globals":23,"./pt":7,"lodash":151,"random-float":178}],10:[function(require,module,exports){
+'use strict';
+
+var _ = require('lodash');
+var Delaunay = require('faster-delaunay');
+var randomInt = require('random-int');
+
+var colours = require('../colours');
+
+var findingMargin = 2;
+
+function preparePointsForTriangulation(point) {
+  return [point.x, point.y];
+}
+
+function isInRange(point, temporaryTriangles, index) {
+  var isInXRange = point.x > temporaryTriangles[index][0] - findingMargin && point.x < temporaryTriangles[index][0] + findingMargin;
+  var isInYRange = point.y > temporaryTriangles[index][1] - findingMargin && point.y < temporaryTriangles[index][1] + findingMargin;
+  return isInXRange && isInYRange;
+}
+
+function shouldCreateConnection(pairs, idNormal, idReverse) {
+  return !_.includes(pairs, idNormal) || !_.includes(pairs, idReverse);
+}
+
+function createConnection(pairs, connections, point1, point2, specialConnections) {
+  var pairNormal = point1.id + point2.id;
+  var pairReverse = point2.id + point1.id;
+
+  if (shouldCreateConnection(pairs, pairNormal, pairReverse)) {
+    var connection = {
+      id: pairNormal,
+      from: point1,
+      to: point2,
+      special: false
+    };
+
+    if (_.includes(specialConnections, pairNormal) || _.includes(specialConnections, pairReverse)) {
+      connection.special = true;
+      if (randomInt(0, 10) > 8) {
+        connection.colour = colours.orange;
+      } else {
+        connection.colour = colours.darkerBlue;
+      }
+    }
+
+    pairs.push(pairNormal);
+    pairs.push(pairReverse);
+    connections.push(connection);
+  }
+}
+
+function updateConnections(points, pairs, connections, triangles, specialConnections) {
+  if (points.length < 2) return;
+
+  var pointsForTriangulation = points.map(preparePointsForTriangulation);
+  var delaunay = new Delaunay(pointsForTriangulation);
+  var temporaryTriangles = delaunay.triangulate();
+
+  if (temporaryTriangles.length > 0) {
+    for (var i = 0; i < temporaryTriangles.length; i += 3) {
+      var anchorIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i));
+      var firstPointIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i + 1));
+      var secondPointIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i + 2));
+
+      var anchor = points[anchorIndex];
+      var firstPoint = points[firstPointIndex];
+      var secondPoint = points[secondPointIndex];
+
+      triangles.push([anchor, firstPoint, secondPoint]);
+
+      createConnection(pairs, connections, anchor, firstPoint, specialConnections);
+      createConnection(pairs, connections, anchor, secondPoint, specialConnections);
+      createConnection(pairs, connections, firstPoint, secondPoint, specialConnections);
+    }
+  } else {
+    createConnection(pairs, connections, points[0], points[1]);
+  }
+
+}
+
+module.exports = updateConnections;
+
+},{"../colours":21,"faster-delaunay":136,"lodash":151,"random-int":179}],11:[function(require,module,exports){
+'use strict';
+
+function updateTemporaryPairs(points, temporaryPairs) {
+  points.forEach(function(point, index) {
+    points.forEach(function(point2, index2) {
+      if (index === index2) return;
+      var pairN = point.id + point2.id;
+      var pairR = point2.id + point.id;
+      temporaryPairs.push(pairN);
+      temporaryPairs.push(pairR);
+    });
+  });
+}
+
+module.exports = updateTemporaryPairs;
+
+},{}],12:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -407,7 +916,7 @@ require('../../node_modules/three/examples/js/nodes/utils/TimerNode.js');
 require('../../node_modules/three/examples/js/nodes/utils/ColorAdjustmentNode.js');
 require('../../node_modules/three/examples/js/nodes/utils/BlurNode.js');
 
-},{"../../node_modules/three/examples/js/nodes/ConstNode.js":215,"../../node_modules/three/examples/js/nodes/FunctionCallNode.js":216,"../../node_modules/three/examples/js/nodes/FunctionNode.js":217,"../../node_modules/three/examples/js/nodes/GLNode.js":218,"../../node_modules/three/examples/js/nodes/InputNode.js":219,"../../node_modules/three/examples/js/nodes/NodeBuilder.js":220,"../../node_modules/three/examples/js/nodes/NodeLib.js":221,"../../node_modules/three/examples/js/nodes/NodeMaterial.js":222,"../../node_modules/three/examples/js/nodes/RawNode.js":223,"../../node_modules/three/examples/js/nodes/TempNode.js":224,"../../node_modules/three/examples/js/nodes/accessors/ColorsNode.js":225,"../../node_modules/three/examples/js/nodes/accessors/NormalNode.js":226,"../../node_modules/three/examples/js/nodes/accessors/PositionNode.js":227,"../../node_modules/three/examples/js/nodes/accessors/UVNode.js":228,"../../node_modules/three/examples/js/nodes/inputs/ColorNode.js":229,"../../node_modules/three/examples/js/nodes/inputs/CubeTextureNode.js":230,"../../node_modules/three/examples/js/nodes/inputs/FloatNode.js":231,"../../node_modules/three/examples/js/nodes/inputs/IntNode.js":232,"../../node_modules/three/examples/js/nodes/inputs/ScreenNode.js":233,"../../node_modules/three/examples/js/nodes/inputs/TextureNode.js":234,"../../node_modules/three/examples/js/nodes/inputs/Vector2Node.js":235,"../../node_modules/three/examples/js/nodes/inputs/Vector3Node.js":236,"../../node_modules/three/examples/js/nodes/inputs/Vector4Node.js":237,"../../node_modules/three/examples/js/nodes/math/Math1Node.js":238,"../../node_modules/three/examples/js/nodes/math/Math2Node.js":239,"../../node_modules/three/examples/js/nodes/math/Math3Node.js":240,"../../node_modules/three/examples/js/nodes/math/OperatorNode.js":241,"../../node_modules/three/examples/js/nodes/utils/BlurNode.js":243,"../../node_modules/three/examples/js/nodes/utils/ColorAdjustmentNode.js":244,"../../node_modules/three/examples/js/nodes/utils/JoinNode.js":245,"../../node_modules/three/examples/js/nodes/utils/SwitchNode.js":246,"../../node_modules/three/examples/js/nodes/utils/TimerNode.js":247,"three":213}],4:[function(require,module,exports){
+},{"../../node_modules/three/examples/js/nodes/ConstNode.js":215,"../../node_modules/three/examples/js/nodes/FunctionCallNode.js":216,"../../node_modules/three/examples/js/nodes/FunctionNode.js":217,"../../node_modules/three/examples/js/nodes/GLNode.js":218,"../../node_modules/three/examples/js/nodes/InputNode.js":219,"../../node_modules/three/examples/js/nodes/NodeBuilder.js":220,"../../node_modules/three/examples/js/nodes/NodeLib.js":221,"../../node_modules/three/examples/js/nodes/NodeMaterial.js":222,"../../node_modules/three/examples/js/nodes/RawNode.js":223,"../../node_modules/three/examples/js/nodes/TempNode.js":224,"../../node_modules/three/examples/js/nodes/accessors/ColorsNode.js":225,"../../node_modules/three/examples/js/nodes/accessors/NormalNode.js":226,"../../node_modules/three/examples/js/nodes/accessors/PositionNode.js":227,"../../node_modules/three/examples/js/nodes/accessors/UVNode.js":228,"../../node_modules/three/examples/js/nodes/inputs/ColorNode.js":229,"../../node_modules/three/examples/js/nodes/inputs/CubeTextureNode.js":230,"../../node_modules/three/examples/js/nodes/inputs/FloatNode.js":231,"../../node_modules/three/examples/js/nodes/inputs/IntNode.js":232,"../../node_modules/three/examples/js/nodes/inputs/ScreenNode.js":233,"../../node_modules/three/examples/js/nodes/inputs/TextureNode.js":234,"../../node_modules/three/examples/js/nodes/inputs/Vector2Node.js":235,"../../node_modules/three/examples/js/nodes/inputs/Vector3Node.js":236,"../../node_modules/three/examples/js/nodes/inputs/Vector4Node.js":237,"../../node_modules/three/examples/js/nodes/math/Math1Node.js":238,"../../node_modules/three/examples/js/nodes/math/Math2Node.js":239,"../../node_modules/three/examples/js/nodes/math/Math3Node.js":240,"../../node_modules/three/examples/js/nodes/math/OperatorNode.js":241,"../../node_modules/three/examples/js/nodes/utils/BlurNode.js":243,"../../node_modules/three/examples/js/nodes/utils/ColorAdjustmentNode.js":244,"../../node_modules/three/examples/js/nodes/utils/JoinNode.js":245,"../../node_modules/three/examples/js/nodes/utils/SwitchNode.js":246,"../../node_modules/three/examples/js/nodes/utils/TimerNode.js":247,"three":213}],13:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -513,7 +1022,7 @@ module.exports.setSize = function (reference) {
   aura.scale.set(scale, scale, scale);
 };
 
-},{"../colours":13,"dynamics.js":116,"lodash":151,"three":213}],5:[function(require,module,exports){
+},{"../colours":21,"dynamics.js":116,"lodash":151,"three":213}],14:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -521,7 +1030,7 @@ var work = require('webworkify');
 var THREE = require('three');
 
 var worker = work(require('./geometryWorker'));
-var space = require('../pt').space;
+var space = require('../2d/pt').space;
 
 module.exports = function (triangles, cb) {
   worker.addEventListener('message', function (event) {
@@ -576,7 +1085,7 @@ module.exports = function (triangles, cb) {
   worker.postMessage(JSON.stringify(message));
 };
 
-},{"../pt":36,"./geometryWorker":6,"lodash":151,"three":213,"webworkify":267}],6:[function(require,module,exports){
+},{"../2d/pt":7,"./geometryWorker":15,"lodash":151,"three":213,"webworkify":267}],15:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -770,7 +1279,7 @@ module.exports = function (self) {
   };
 };
 
-},{"../map":19,"lodash":151,"three":213}],7:[function(require,module,exports){
+},{"../map":24,"lodash":151,"three":213}],16:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -839,7 +1348,7 @@ module.exports.depth = depth;
 module.exports.wireframe = wireframe;
 module.exports.dotsNormalMap = dotsNormalMap;
 
-},{"../colours":13,"three":213}],8:[function(require,module,exports){
+},{"../colours":21,"three":213}],17:[function(require,module,exports){
 'use strict';
 
 var dynamics = require('dynamics.js');
@@ -971,7 +1480,7 @@ module.exports.hide = function () {
   renderer.domElement.style.visibility = 'hidden';
 };
 
-},{"../../node_modules/three/examples/js/nodes/postprocessing/NodePass":242,"../../node_modules/three/examples/js/postprocessing/BokehPass":248,"../../node_modules/three/examples/js/postprocessing/EffectComposer":249,"../../node_modules/three/examples/js/postprocessing/RenderPass":250,"../../node_modules/three/examples/js/postprocessing/ShaderPass":251,"../../node_modules/three/examples/js/postprocessing/UnrealBloomPass":252,"../../node_modules/three/examples/js/shaders/BokehShader":253,"../../node_modules/three/examples/js/shaders/ConvolutionShader":254,"../../node_modules/three/examples/js/shaders/CopyShader":255,"../../node_modules/three/examples/js/shaders/FXAAShader":256,"../../node_modules/three/examples/js/shaders/LuminosityHighPassShader":257,"../colours":13,"./allTheNodes":3,"dynamics.js":116,"three":213}],9:[function(require,module,exports){
+},{"../../node_modules/three/examples/js/nodes/postprocessing/NodePass":242,"../../node_modules/three/examples/js/postprocessing/BokehPass":248,"../../node_modules/three/examples/js/postprocessing/EffectComposer":249,"../../node_modules/three/examples/js/postprocessing/RenderPass":250,"../../node_modules/three/examples/js/postprocessing/ShaderPass":251,"../../node_modules/three/examples/js/postprocessing/UnrealBloomPass":252,"../../node_modules/three/examples/js/shaders/BokehShader":253,"../../node_modules/three/examples/js/shaders/ConvolutionShader":254,"../../node_modules/three/examples/js/shaders/CopyShader":255,"../../node_modules/three/examples/js/shaders/FXAAShader":256,"../../node_modules/three/examples/js/shaders/LuminosityHighPassShader":257,"../colours":21,"./allTheNodes":12,"dynamics.js":116,"three":213}],18:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -1113,7 +1622,7 @@ module.exports.reveal = function () {
   rose.scale.set(scale, scale, scale);
 };
 
-},{"../../node_modules/three/examples/js/loaders/OBJLoader":214,"dynamics.js":116,"lodash":151,"three":213}],10:[function(require,module,exports){
+},{"../../node_modules/three/examples/js/loaders/OBJLoader":214,"dynamics.js":116,"lodash":151,"three":213}],19:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -1126,7 +1635,7 @@ var generateGeometry = require('./generate3DGeometry');
 var renderer = require('./renderer');
 var globals = require('../globals');
 var colours = require('../colours');
-var space = require('../pt').space;
+var space = require('../2d/pt').space;
 var materials = require('./materials');
 var rose = require('./rose');
 var aura = require('./aura');
@@ -1599,7 +2108,7 @@ module.exports.on = function (event, cb) {
   if (event === 'roseClick') roseClickCallback = cb;
 };
 
-},{"../colours":13,"../globals":17,"../pt":36,"./aura":4,"./generate3DGeometry":5,"./materials":7,"./renderer":8,"./rose":9,"async":56,"dynamics.js":116,"lodash":151,"three":213}],11:[function(require,module,exports){
+},{"../2d/pt":7,"../colours":21,"../globals":23,"./aura":13,"./generate3DGeometry":14,"./materials":16,"./renderer":17,"./rose":18,"async":56,"dynamics.js":116,"lodash":151,"three":213}],20:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1637,38 +2146,7 @@ function change(toAdd, toRemove, currentlyPlaying) {
 
 module.exports = change;
 
-},{"./music/context":23,"./music/trash":33,"./music/voice":34,"lodash":151,"moment":159}],12:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var randomInt = require('random-int');
-
-var colours = require('./colours');
-
-var playingCircleSize = 4.5;
-var connectedPointSize = 2.5;
-
-var orange = colours.orange;
-var red = colours.red;
-var lightBlue = colours.lightBlue;
-
-function changePointColour(point) {
-  if (_.isEqual(point.colour, orange) || _.isEqual(point.colour, red)) {
-    point.colour = lightBlue;
-  } else {
-    point.colour = randomInt(0, 10) > 5 ? orange : red;
-  }
-
-  point.circle.setRadius(playingCircleSize);
-  point.connected = true;
-  setTimeout(function () {
-    point.circle.setRadius(connectedPointSize);
-  }, 200);
-}
-
-module.exports = changePointColour;
-
-},{"./colours":13,"lodash":151,"random-int":179}],13:[function(require,module,exports){
+},{"./music/context":28,"./music/trash":38,"./music/voice":39,"lodash":151,"moment":159}],21:[function(require,module,exports){
 'use strict';
 
 var pt = require('ptjs');
@@ -1688,186 +2166,12 @@ module.exports = {
   background: new color(0.4, 8.6, 15.3)
 };
 
-},{"ptjs":171}],14:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var dynamics = require('dynamics.js');
-
-var updateConnections = require('./updateConnections');
-var colours = require('./colours');
-var config = require('../config');
-var form = require('./pt').form;
-var lib = require('./pt').lib;
-
-var connections = [];
-var pairs = [];
-var connectionsInside = [];
-var triangles = [];
-var trianglesInside = [];
-
-var specialTriangles = [];
-var specialConnections = [];
-var specialPairs = [];
-
-var sines = [];
-var discoveryPercentage = 0.0;
-var shouldReveal = false;
-
-var params = {
-  opacityRate: 1
-};
-
-var revealStartCallback = function () {};
-var revealEndCallback = function () {};
-
-function updateSines() {
-  var now = Date.now();
-  sines[0] = Math.abs(Math.sin(now * 0.0005)) * 0.6;
-  sines[1] = Math.abs(Math.sin(now * 0.00015));
-  sines[2] = Math.abs(Math.sin(now * 0.00039));
-  sines[3] = Math.abs(Math.sin(now * 0.0006)) * 0.9;
-  sines[4] = Math.abs(Math.sin(now * 0.0005));
-  sines[5] = Math.abs(Math.sin(now * 0.0006));
-  sines[6] = Math.abs(Math.sin(now * 0.0007));
-  sines[7] = Math.abs(Math.sin(now * 0.0008));
-  sines[8] = Math.abs(Math.sin(now * 0.0009));
-  sines[9] = Math.abs(Math.sin(now * 0.0007)) * 0.7;
-}
-
-function drawTriangle(triplet) {
-  var tri = new lib.Triangle(triplet[0]);
-  tri.to(triplet[1], triplet[2]);
-
-  form.stroke(false);
-  form.fill(colours.orange);
-  form.triangle(tri);
-}
-
-function drawConnection(connection, colour, opacity, width) {
-  if (connection.revealSpeed) {
-    connection.opacity += connection.revealSpeed;
-    opacity = connection.opacity;
-  }
-
-  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + opacity + ')';
-  var line = new lib.Line(connection.from).to(connection.to);
-  form.stroke(c, width);
-  form.line(line);
-}
-
-module.exports.update = function (points) {
-  updateConnections(points, pairs, connections, triangles, specialPairs);
-
-  var connectionsLength = _.filter(connections, 'special').length;
-  var allSpecialConnectionsLength = specialConnections.length;
-  discoveryPercentage = connectionsLength / allSpecialConnectionsLength;
-};
-
-module.exports.updateInsideConnections = function (points) {
-  connectionsInside = [];
-  trianglesInside = [];
-  updateConnections(points, [], connectionsInside, trianglesInside, specialPairs);
-
-  return _.some(connectionsInside, ['special', true]);
-};
-
-module.exports.createSpecialShape = function (points) {
-  updateConnections(points, specialPairs, specialConnections, specialTriangles);
-};
-
-module.exports.draw = function (pairsInsideSpotlight) {
-  updateSines();
-
-  connections.forEach(function (connection, index) {
-    if (_.includes(pairsInsideSpotlight, connection.id)) return;
-
-    drawConnection(connection, colours.darkGrey, config.connectionsOpacity * params.opacityRate, config.connectionsWidth);
-
-    if (connection.special) {
-      var sin = sines[index % 10];
-      drawConnection(connection, colours.darkerBlue, sin, 1.0);
-    }
-  });
-
-  connectionsInside.forEach(function (connection) {
-    drawConnection(connection, colours.lighterGrey, 1.0, config.connectionsWidth);
-
-    if (connection.special) {
-      drawConnection(connection, colours.orange, 1.0, 1.0);
-    }
-  });
-
-  if (shouldReveal) {
-    exports.drawSpecialShape();
-  }
-};
-
-module.exports.drawTriangles = function () {
-  triangles.forEach(drawTriangle);
-};
-
-module.exports.drawSpecialShape = function () {
-  specialConnections.forEach(_.partial(drawConnection, _, colours.darkerBlue, 0.0, 1.0));
-};
-
-module.exports.getDiscoveryPercentage = function () {
-  return discoveryPercentage;
-};
-
-module.exports.getSpecialTriangles = function () {
-  return specialTriangles;
-};
-
-function revealConnectionInTime(connection, time) {
-  (function (connection) {
-    setTimeout(function () {
-      connection.opacity = 0;
-      connection.revealSpeed = _.random(0.025, 0.05);
-    }, time);
-  })(connection);
-}
-
-module.exports.reveal = function (cb) {
-  setTimeout(revealStartCallback, 1500);
-
-  specialConnections.forEach(function (connection, index) {
-    if (index % 4 === 0) {
-      revealConnectionInTime(connection, _.random(1500, 3000));
-    } else if (index % 3 === 0) {
-      revealConnectionInTime(connection, _.random(3500, 4500));
-    } else {
-      revealConnectionInTime(connection, _.random(4800, 6000));
-    }
-  });
-
-  shouldReveal = true;
-
-  setTimeout(function () {
-    dynamics.animate(params, {
-      opacityRate: 0
-    }, {
-      duration: 6000
-    });
-  }, 2000);
-
-  setTimeout(function () {
-    cb();
-    revealEndCallback();
-  }, 6000);
-};
-
-module.exports.on = function (event, cb) {
-  if (event === 'revealStart') revealStartCallback = cb;
-  if (event === 'revealEnd') revealEndCallback = cb;
-};
-
-},{"../config":1,"./colours":13,"./pt":36,"./updateConnections":39,"dynamics.js":116,"lodash":151}],15:[function(require,module,exports){
+},{"ptjs":171}],22:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
 
-var pt = require('./pt');
+var pt = require('./2d/pt');
 var lib = pt.lib;
 var space = pt.space;
 var colours = require('./colours');
@@ -1973,47 +2277,7 @@ function createPoints(amount) {
 
 module.exports = createPoints;
 
-},{"./colours":13,"./music/music":31,"./pt":36,"lodash":151,"node-uuid":160,"random-float":178,"random-int":179}],16:[function(require,module,exports){
-'use strict';
-
-var form = require('./pt').form;
-var globals = require('./globals');
-var colours = require('./colours');
-
-function drawPoint(point) {
-  var delta = globals.getDelta();
-  var newSize = point.originalRadius + 1.7;
-  newSize = newSize < 2.2 ? newSize = 2.2 : newSize;
-  if (point.intersected) {
-    point.circle.setRadius(newSize);
-  } else if (!point.intersected) {
-    point.circle.setRadius(point.originalRadius);
-    if (point.connected) {
-      point.circle.setRadius(newSize);
-    }
-  }
-
-  if (point.intersected && !point.connected) {
-    point.colour = colours.lightBlue;
-  } else if (!point.intersected && !point.connected) {
-    point.colour = point.originalColour;
-  }
-
-  var targetX = (point.originalPosition.x - point.x) * (0.05 * delta);
-  var targetY = (point.originalPosition.y - point.y) * (0.05 * delta);
-
-  point.x += targetX;
-  point.y += targetY;
-
-  point.opacity -= point.fadeOutSpeed;
-  var c = 'rgba(' + point.colour.x + ',' + point.colour.y + ',' + point.colour.z + ',' + point.opacity + ')';
-  form.fill(c).stroke(false);
-  form.circle(point.circle);
-}
-
-module.exports = drawPoint;
-
-},{"./colours":13,"./globals":17,"./pt":36}],17:[function(require,module,exports){
+},{"./2d/pt":7,"./colours":21,"./music/music":36,"lodash":151,"node-uuid":160,"random-float":178,"random-int":179}],23:[function(require,module,exports){
 'use strict';
 
 var timeAtPreviousFrame;
@@ -2042,26 +2306,7 @@ module.exports.getMousePosition = function () {
   return mouse;
 };
 
-},{}],18:[function(require,module,exports){
-'use strict';
-
-function intersectSpotlightAndPoints(spotLight, points) {
-  var intersectedPoints = [];
-  points.forEach(function (point) {
-    var intersected = spotLight.intersectPoint(point);
-    if (intersected) {
-      point.intersected = true;
-      intersectedPoints.push(point);
-    } else {
-      point.intersected = false;
-    }
-  });
-  return intersectedPoints;
-}
-
-module.exports = intersectSpotlightAndPoints;
-
-},{}],19:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var map = function (value, istart, istop, ostart, ostop) {
@@ -2070,7 +2315,7 @@ var map = function (value, istart, istop, ostart, ostop) {
 
 module.exports = map;
 
-},{}],20:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -2117,7 +2362,7 @@ module.exports.kickDestination = kickGain;
 module.exports.bgDestination = bgGain;
 module.exports.guitarDestination = guitarGain;
 
-},{"./context":23,"./load":29}],21:[function(require,module,exports){
+},{"./context":28,"./load":34}],26:[function(require,module,exports){
 'use strict';
 
 var load = require('./load');
@@ -2152,7 +2397,7 @@ module.exports.stop = function () {
   window.clearInterval(interval);
 };
 
-},{"../../config":1,"../map":19,"./audio":20,"./grain":24,"./load":29}],22:[function(require,module,exports){
+},{"../../config":1,"../map":24,"./audio":25,"./grain":29,"./load":34}],27:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2251,13 +2496,13 @@ module.exports.playLeadSynth = function (frequency, startTime) {
   leadSynth.play(frequency, startTime);
 };
 
-},{"./audio":20,"./background":21,"./context":23,"./guitar":25,"./introKicks":26,"./leadSynth":28,"./music":31,"./secondSection":32,"lodash":151,"teoria":205}],23:[function(require,module,exports){
+},{"./audio":25,"./background":26,"./context":28,"./guitar":30,"./introKicks":31,"./leadSynth":33,"./music":36,"./secondSection":37,"lodash":151,"teoria":205}],28:[function(require,module,exports){
 'use strict';
 
 window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
 module.exports = new window.AudioContext();
 
-},{}],24:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2296,7 +2541,7 @@ module.exports = function (buffer, destination, attack, release, offset) {
   }, (attack + release + 0.001) * 1000);
 };
 
-},{"./context":23,"lodash":151}],25:[function(require,module,exports){
+},{"./context":28,"lodash":151}],30:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2335,7 +2580,7 @@ module.exports.play = function (frequency, startTime) {
   // source.stop(startTime + guitarBuffer.des);
 };
 
-},{"./audio":20,"./context":23,"./load":29,"./mtop":30,"lodash":151,"teoria":205}],26:[function(require,module,exports){
+},{"./audio":25,"./context":28,"./load":34,"./mtop":35,"lodash":151,"teoria":205}],31:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2361,7 +2606,7 @@ module.exports.stop = function () {
   window.clearInterval(interval);
 };
 
-},{"./kick":27,"lodash":151}],27:[function(require,module,exports){
+},{"./kick":32,"lodash":151}],32:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2435,7 +2680,7 @@ module.exports.start = function (startTime, decay, random) {
   kick.start(startTime, decay, random);
 };
 
-},{"./audio":20,"./context":23,"./load":29,"./mtop":30,"./music":31,"lodash":151,"teoria":205}],28:[function(require,module,exports){
+},{"./audio":25,"./context":28,"./load":34,"./mtop":35,"./music":36,"lodash":151,"teoria":205}],33:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -2462,7 +2707,7 @@ module.exports.play = function (frequency, startTime) {
   }, 4000);
 };
 
-},{"./audio":20,"./context":23}],29:[function(require,module,exports){
+},{"./audio":25,"./context":28}],34:[function(require,module,exports){
 'use strict';
 
 var context = require('./context');
@@ -2486,14 +2731,14 @@ module.exports = function (path, cb) {
   request.send();
 };
 
-},{"./context":23}],30:[function(require,module,exports){
+},{"./context":28}],35:[function(require,module,exports){
 'use strict';
 
 module.exports = function mtop(midi) {
   return Math.pow(2, (midi - 60) / 12);
 };
 
-},{}],31:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 'use strict';
 
 var teoria = require('teoria');
@@ -2504,7 +2749,7 @@ var notes = scale.notes();
 
 module.exports.notes = notes;
 
-},{"teoria":205}],32:[function(require,module,exports){
+},{"teoria":205}],37:[function(require,module,exports){
 'use strict';
 
 var Beet = require('beet.js');
@@ -2557,7 +2802,7 @@ module.exports.start = function () {
   beet.start();
 };
 
-},{"./audio":20,"./context":23,"./kick":27,"./music":31,"beet.js":58}],33:[function(require,module,exports){
+},{"./audio":25,"./context":28,"./kick":32,"./music":36,"beet.js":58}],38:[function(require,module,exports){
 'use strict';
 
 var trash = [];
@@ -2576,7 +2821,7 @@ module.exports.push = function (item) {
   trash.push(item);
 };
 
-},{"moment":159}],34:[function(require,module,exports){
+},{"moment":159}],39:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -2624,14 +2869,14 @@ Voice.prototype.stop = function (opts) {
 
 module.exports = Voice;
 
-},{"./audio":20,"./context":23,"fastidious-envelope-generator":137,"lodash":151}],35:[function(require,module,exports){
+},{"./audio":25,"./context":28,"fastidious-envelope-generator":137,"lodash":151}],40:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
 
 var context = require('./music/context');
-var changePointColour = require('./changePointColour');
-var ripples = require('./ripples');
+var changePointColour = require('./2d/changePointColour');
+var ripples = require('./2d/ripples');
 var conductor = require('./music/conductor');
 
 function playLead(point, index) {
@@ -2653,252 +2898,7 @@ function playLead(point, index) {
 
 module.exports = playLead;
 
-},{"./changePointColour":12,"./music/conductor":22,"./music/context":23,"./ripples":38,"random-float":178}],36:[function(require,module,exports){
-'use strict';
-
-var pt = require('ptjs');
-var config = require('../config');
-var colours = require('./colours');
-var spotLightRatio = config.spotLightSizeRatio;
-
-var background = colours.background.rgb();
-var space = new pt.CanvasSpace('#pt').setup({
-  bgcolor: background,
-  retina: true
-});
-space.autoResize(true);
-var form = new pt.Form(space);
-var spotLight = new pt.Circle(250, 250).setRadius(space.size.x / spotLightRatio);
-
-module.exports.space = space;
-module.exports.form = form;
-module.exports.spotLight = spotLight;
-module.exports.spotLightRatio = spotLightRatio;
-module.exports.lib = pt;
-
-},{"../config":1,"./colours":13,"ptjs":171}],37:[function(require,module,exports){
-'use strict';
-
-var randomFloat = require('random-float');
-
-function randomisePoint(point, rate) {
-  var randomX = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
-  var randomY = point.connected ? randomFloat(-0.3, 0.3) : randomFloat(-0.5, 0.5);
-  point.set(point.x + (randomX * rate), point.y + (randomY * rate));
-  point.circle.set(point.x, point.y);
-}
-
-module.exports = randomisePoint;
-
-},{"random-float":178}],38:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var randomF = require('random-float');
-var pt = require('./pt');
-var colours = require('./colours');
-var globals = require('./globals');
-var config = require('../config');
-var spotLight = pt.spotLight;
-var form = pt.form;
-var space = pt.space;
-
-var ripples = [];
-var smallRipples = [];
-var white = colours.white;
-var lighterGrey = colours.lighterGrey;
-var collisions = [];
-
-function addrippleCircle() {
-  var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
-  circle.opacity = config.rippleStartOpacity;
-  circle.previousIntersected = [];
-  circle.timestamp = Date.now();
-  ripples.push(circle);
-}
-
-function addSmallRipple(point) {
-  var ripple = new pt.lib.Circle(point).setRadius(point.originalRadius);
-  ripple.opacity = config.rippleStartOpacity;
-  ripple.timestamp = Date.now();
-  smallRipples.push(ripple);
-}
-
-function drawRipple(ripple, sizeRate, opacityRate, colour) {
-  var delta = globals.getDelta();
-
-  ripple.opacity -= opacityRate * delta;
-
-  if (ripple.opacity < 0 || ripple.opacity > 1 || ripple.opacity < 0.01) {
-    ripple.opacity = 0.01;
-  }
-
-  ripple.radius += (sizeRate * (ripple.opacity * 2.0)) * delta;
-
-  form.fill(false);
-  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + ripple.opacity.toFixed(2) + ')';
-  form.stroke(c);
-  form.circle(ripple);
-}
-
-module.exports.add = addrippleCircle;
-module.exports.addSmallRipple = addSmallRipple;
-
-module.exports.draw = function () {
-  _.forEach(ripples, _.partial(drawRipple, _, config.rippleRate, config.rippleRateOpacity, white));
-  _.forEach(smallRipples, _.partial(drawRipple, _, config.smallRippleRate, config.smallRippleRateOpacity, lighterGrey));
-
-  collisions.forEach(function (collision) {
-    collision.point.x += (collision.circle.opacity * (collision.dx * randomF(5, (collision.circle.opacity * 35))));
-    collision.point.y += (collision.circle.opacity * (collision.dy * randomF(5, (collision.circle.opacity * 35))));
-  });
-
-  //clean up collisions
-  collisions = _.filter(collisions, function (collision) {
-    return collision.timestamp > Date.now() - 200;
-  });
-
-  //clean up ripples
-  ripples = _.filter(ripples, function (circle) {
-    return circle.timestamp > Date.now() - 3000;
-  });
-
-  //clean up small ripples
-  smallRipples = _.filter(smallRipples, function (ripple) {
-    return ripple.timestamp > Date.now() - 3000;
-  });
-};
-
-module.exports.detectCollisions = function (points) {
-  ripples.forEach(function (circle) {
-    points.forEach(function (point) {
-      var dx = circle.x - point.circle.x;
-      var dy = circle.y - point.circle.y;
-      var distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < circle.radius + point.circle.radius && distance > (circle.radius - 10) + point.circle.radius) {
-        collisions.push({
-          circle: circle,
-          point: point,
-          dx: (dx / space.size.x) * -1,
-          dy: (dy / space.size.y) * -1,
-          timestamp: Date.now()
-        });
-      }
-    });
-  });
-};
-
-module.exports.clean = function () {
-  ripples = _.reject(ripples, function (ripple) {
-    return ripple.radius > 1400;
-  });
-
-  smallRipples = _.filter(smallRipples, function (ripple) {
-    return ripple.timestamp > Date.now() - 3000;
-  });
-};
-
-},{"../config":1,"./colours":13,"./globals":17,"./pt":36,"lodash":151,"random-float":178}],39:[function(require,module,exports){
-'use strict';
-
-var _ = require('lodash');
-var Delaunay = require('faster-delaunay');
-var randomInt = require('random-int');
-
-var colours = require('./colours');
-
-var findingMargin = 2;
-
-function preparePointsForTriangulation(point) {
-  return [point.x, point.y];
-}
-
-function isInRange(point, temporaryTriangles, index) {
-  var isInXRange = point.x > temporaryTriangles[index][0] - findingMargin && point.x < temporaryTriangles[index][0] + findingMargin;
-  var isInYRange = point.y > temporaryTriangles[index][1] - findingMargin && point.y < temporaryTriangles[index][1] + findingMargin;
-  return isInXRange && isInYRange;
-}
-
-function shouldCreateConnection(pairs, idNormal, idReverse) {
-  return !_.includes(pairs, idNormal) || !_.includes(pairs, idReverse);
-}
-
-function createConnection(pairs, connections, point1, point2, specialConnections) {
-  var pairNormal = point1.id + point2.id;
-  var pairReverse = point2.id + point1.id;
-
-  if (shouldCreateConnection(pairs, pairNormal, pairReverse)) {
-    var connection = {
-      id: pairNormal,
-      from: point1,
-      to: point2,
-      special: false
-    };
-
-    if (_.includes(specialConnections, pairNormal) || _.includes(specialConnections, pairReverse)) {
-      connection.special = true;
-      if (randomInt(0, 10) > 8) {
-        connection.colour = colours.orange;
-      } else {
-        connection.colour = colours.darkerBlue;
-      }
-    }
-
-    pairs.push(pairNormal);
-    pairs.push(pairReverse);
-    connections.push(connection);
-  }
-}
-
-function updateConnections(points, pairs, connections, triangles, specialConnections) {
-  if (points.length < 2) return;
-
-  var pointsForTriangulation = points.map(preparePointsForTriangulation);
-  var delaunay = new Delaunay(pointsForTriangulation);
-  var temporaryTriangles = delaunay.triangulate();
-
-  if (temporaryTriangles.length > 0) {
-    for (var i = 0; i < temporaryTriangles.length; i += 3) {
-      var anchorIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i));
-      var firstPointIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i + 1));
-      var secondPointIndex = _.findIndex(points, _.partial(isInRange, _, temporaryTriangles, i + 2));
-
-      var anchor = points[anchorIndex];
-      var firstPoint = points[firstPointIndex];
-      var secondPoint = points[secondPointIndex];
-
-      triangles.push([anchor, firstPoint, secondPoint]);
-
-      createConnection(pairs, connections, anchor, firstPoint, specialConnections);
-      createConnection(pairs, connections, anchor, secondPoint, specialConnections);
-      createConnection(pairs, connections, firstPoint, secondPoint, specialConnections);
-    }
-  } else {
-    createConnection(pairs, connections, points[0], points[1]);
-  }
-
-}
-
-module.exports = updateConnections;
-
-},{"./colours":13,"faster-delaunay":136,"lodash":151,"random-int":179}],40:[function(require,module,exports){
-'use strict';
-
-function updateTemporaryPairs(points, temporaryPairs) {
-  points.forEach(function(point, index) {
-    points.forEach(function(point2, index2) {
-      if (index === index2) return;
-      var pairN = point.id + point2.id;
-      var pairR = point2.id + point.id;
-      temporaryPairs.push(pairN);
-      temporaryPairs.push(pairR);
-    });
-  });
-}
-
-module.exports = updateTemporaryPairs;
-
-},{}],41:[function(require,module,exports){
+},{"./2d/changePointColour":3,"./2d/ripples":9,"./music/conductor":27,"./music/context":28,"random-float":178}],41:[function(require,module,exports){
 var accidentalValues = {
   'bb': -2,
   'b': -1,

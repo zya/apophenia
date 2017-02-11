@@ -8,20 +8,20 @@ var async = require('async');
 
 var stats = new Stats();
 
-var pt = require('./lib/pt');
+var pt = require('./lib/2d/pt');
 var colours = require('./lib/colours');
 var conductor = require('./lib/music/conductor');
 
 var createPoints = require('./lib/createPoints');
-var updateTemporaryPairs = require('./lib/updateTemporaryPairs');
+var updateTemporaryPairs = require('./lib/2d/updateTemporaryPairs');
 var scene3d = require('./lib/3d/scene3D');
-var randomisePoint = require('./lib/randomisePoint');
-var intersect = require('./lib/intersectSpotlightAndPoints');
+var randomisePoint = require('./lib/2d/randomisePoint');
+var intersect = require('./lib/2d/intersectSpotlightAndPoints');
 var change = require('./lib/changeHandler');
 var pointClickEvent = require('./lib/pointClickEvent');
-var drawPoint = require('./lib/drawPoint');
-var connections = require('./lib/connections');
-var ripples = require('./lib/ripples');
+var drawPoint = require('./lib/2d/drawPoint');
+var connections = require('./lib/2d/connections');
+var ripples = require('./lib/2d/ripples');
 var globals = require('./lib/globals');
 var config = require('./config');
 
