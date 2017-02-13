@@ -31,6 +31,7 @@ var stats = new Stats();
 
 var hasTransitioned = false;
 var threeD = false;
+var twoD = true;
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
@@ -61,12 +62,12 @@ function transitionTo3D(done) {
   ], done);
 }
 
-setTimeout(function () {
-  async.series([
-    scene2d.transition,
-    transitionTo3D
-  ]);
-}, 500);
+// setTimeout(function () {
+//   async.series([
+//     scene2d.transition,
+//     transitionTo3D
+//   ]);
+// }, 500);
 
 scene3d.on('spinStart', function () {
   console.log('started spinning');
@@ -97,6 +98,19 @@ scene2d.on('revealStart', function () {
 
 scene2d.on('revealEnd', function () {
   console.log('finished revealing');
+});
+
+scene2d.on('stoppedDrawing', function () {
+  twoD = false;
+  console.log('stopped drawing');
+});
+
+scene2d.on('foundSpecial', function () {
+  console.log('founds a special connection');
+});
+
+scene2d.on('revealedSpecial', function () {
+  console.log('revealed a special connection');
 });
 
 window.addEventListener('mousemove', function (evt) {
@@ -136,11 +150,9 @@ function render() {
   var now = new Date().getTime();
   globals.setDelta(now);
 
-  scene2d.render();
+  if (twoD) scene2d.render();
 
-  if (threeD) {
-    scene3d.render();
-  }
+  if (threeD) scene3d.render();
 
   stats.end();
   requestAnimationFrame(render);
@@ -255,6 +267,7 @@ module.exports.update = function (points) {
   var connectionsLength = _.filter(connections, 'special').length;
   var allSpecialConnectionsLength = specialConnections.length;
   discoveryPercentage = connectionsLength / allSpecialConnectionsLength;
+  return connectionsLength > 0;
 };
 
 module.exports.updateInsideConnections = function (points) {
@@ -612,6 +625,10 @@ var pointTransitionParams = {
   randomMovementRate: 1
 };
 
+var stopDrawingCallback = function () {};
+var foundSpecialCallback = function () {};
+var revealedSpecialCallback = function () {};
+
 function parallaxPoints(point, xOffset, yOffset) {
   if (point.originalRadius > 1.9) {
     point.x -= (xOffset * point.originalRadius) * _.random(0.1, 0.3);
@@ -661,8 +678,10 @@ function fadeAllPointsOut(done) {
 module.exports.mousedown = function () {
   spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
   currentPoints.forEach(pointClickEvent);
-  connections.update(currentPoints);
+  var foundSpecial = connections.update(currentPoints);
   ripples.add();
+
+  if (foundSpecial) revealedSpecialCallback();
 
   var discoveryPercentage = connections.getDiscoveryPercentage();
   return discoveryPercentage;
@@ -680,6 +699,7 @@ module.exports.transition = function (cb) {
 
 module.exports.stopDrawingConnections = function (cb) {
   shouldDrawConnections = false;
+  stopDrawingCallback();
   cb();
 };
 
@@ -692,6 +712,9 @@ module.exports.getSpecialTriangles = connections.getSpecialTriangles;
 module.exports.on = function (event, cb) {
   if (event === 'revealStart') connections.on('revealStart', cb);
   if (event === 'revealEnd') connections.on('revealEnd', cb);
+  if (event === 'stoppedDrawing') stopDrawingCallback = cb;
+  if (event === 'foundSpecial') foundSpecialCallback = cb;
+  if (event === 'revealedSpecial') revealedSpecialCallback = cb;
 };
 
 module.exports.render = function () {
@@ -760,7 +783,8 @@ module.exports.render = function () {
 
     if (!alreadyIsSpecial && anySpecials) {
       alreadyIsSpecial = true;
-      console.log('trigger special event');
+      foundSpecialCallback();
+      // console.log('trigger special event');
     }
 
     if (!anySpecials) alreadyIsSpecial = false;

@@ -13,6 +13,7 @@ var stats = new Stats();
 
 var hasTransitioned = false;
 var threeD = false;
+var twoD = true;
 
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
@@ -43,12 +44,12 @@ function transitionTo3D(done) {
   ], done);
 }
 
-setTimeout(function () {
-  async.series([
-    scene2d.transition,
-    transitionTo3D
-  ]);
-}, 500);
+// setTimeout(function () {
+//   async.series([
+//     scene2d.transition,
+//     transitionTo3D
+//   ]);
+// }, 500);
 
 scene3d.on('spinStart', function () {
   console.log('started spinning');
@@ -79,6 +80,19 @@ scene2d.on('revealStart', function () {
 
 scene2d.on('revealEnd', function () {
   console.log('finished revealing');
+});
+
+scene2d.on('stoppedDrawing', function () {
+  twoD = false;
+  console.log('stopped drawing');
+});
+
+scene2d.on('foundSpecial', function () {
+  console.log('founds a special connection');
+});
+
+scene2d.on('revealedSpecial', function () {
+  console.log('revealed a special connection');
 });
 
 window.addEventListener('mousemove', function (evt) {
@@ -118,11 +132,9 @@ function render() {
   var now = new Date().getTime();
   globals.setDelta(now);
 
-  scene2d.render();
+  if (twoD) scene2d.render();
 
-  if (threeD) {
-    scene3d.render();
-  }
+  if (threeD) scene3d.render();
 
   stats.end();
   requestAnimationFrame(render);
