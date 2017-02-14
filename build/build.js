@@ -611,6 +611,7 @@ var shouldDrawConnections = true;
 
 var points = createPoints(config.numberOfRandomPoints);
 var special = _.filter(points, ['special', true]);
+var activePoints = [];
 connections.createSpecialShape(special);
 var currentlyPlaying = [];
 var currentPoints = [];
@@ -624,6 +625,17 @@ var transitionParams = {
 var pointTransitionParams = {
   randomMovementRate: 1
 };
+
+var i = 0;
+var interval = setInterval(function () {
+  var p = points[i];
+  if (!p) {
+    window.clearInterval(interval);
+    return;
+  }
+  activePoints.push(p);
+  i++;
+}, 100);
 
 var stopDrawingCallback = function () {};
 var foundSpecialCallback = function () {};
@@ -664,7 +676,7 @@ function slowDownPointMovement(done) {
 }
 
 function fadeAllPointsOut(done) {
-  points.forEach(function (point) {
+  activePoints.forEach(function (point) {
     point.fadeOutSpeed = _.random(0.003, 0.01);
   });
 
@@ -732,7 +744,7 @@ module.exports.render = function () {
   // draw ripple circles
   ripples.draw();
   // detect collissions
-  ripples.detectCollisions(points);
+  ripples.detectCollisions(activePoints);
 
   //draw connections
   if (shouldDrawConnections) {
@@ -741,20 +753,20 @@ module.exports.render = function () {
 
   //randomise points movements
   if (shouldDrawPoints) {
-    points.forEach(_.partial(randomisePoint, _, pointTransitionParams.randomMovementRate));
+    activePoints.forEach(_.partial(randomisePoint, _, pointTransitionParams.randomMovementRate));
   }
 
   if (!hasTransitioned) {
     var xOffset = (mouse.x / space.size.x) - 0.5;
     var yOffset = (mouse.y / space.size.y) - 0.5;
-    points.forEach(_.partial(parallaxPoints, _, xOffset, yOffset));
+    activePoints.forEach(_.partial(parallaxPoints, _, xOffset, yOffset));
   }
 
   //calculate intersection of spot lights and points
   var pointsInsideCircle = [];
 
   if (shouldIntersect) {
-    pointsInsideCircle = intersect(spotLight, points);
+    pointsInsideCircle = intersect(spotLight, activePoints);
   }
 
   //change cursor
@@ -771,7 +783,7 @@ module.exports.render = function () {
 
   //draw points
   if (shouldDrawPoints) {
-    points.forEach(drawPoint);
+    activePoints.forEach(drawPoint);
   }
 
   //calculate change
@@ -2367,11 +2379,11 @@ leadGain.gain.value = 0.12;
 kickGain.gain.value = 0.20;
 bgGain.gain.value = 0.07;
 guitarGain.gain.value = 0.03;
-synthGain.gain.value = 0;
-leadGain.gain.value = 0;
-kickGain.gain.value = 0;
-guitarGain.gain.value = 0.00;
-bgGain.gain.value = 0.00;
+// synthGain.gain.value = 0;
+// leadGain.gain.value = 0;
+// kickGain.gain.value = 0;
+// guitarGain.gain.value = 0.00;
+// bgGain.gain.value = 0.00;
 
 load('./assets/audio/ir3.mp3', function (err, buffer) {
   convolver.buffer = buffer;
