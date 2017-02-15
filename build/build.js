@@ -326,7 +326,7 @@ module.exports.getSpecialTriangles = function () {
 };
 
 module.exports.getRandomSpecialTriangles = function () {
-  return _(specialTriangles).shuffle().shuffle().slice(0, 5).flatten().value();
+  return _(specialTriangles).shuffle().shuffle().slice(0, 5).flatten().uniqBy('id').value();
 };
 
 module.exports.getConnectionsLength = function () {
@@ -631,6 +631,16 @@ var currentPoints = [];
 var pairsInsideSpotlight = [];
 
 var specialIntroPoints = connections.getRandomSpecialTriangles();
+points = _.differenceBy(points, specialIntroPoints);
+
+var transitionParams = {
+  randomMovementRate: 1,
+  spotLightSize: 1,
+};
+
+var pointTransitionParams = {
+  randomMovementRate: 1
+};
 
 function revealPointInTime(point, time, index) {
   (function (point, time, index) {
@@ -651,15 +661,6 @@ function displayAllThePoints() {
     points.forEach(_.partial(revealPointInTime, _, 200));
   }, 3000);
 }
-
-var transitionParams = {
-  randomMovementRate: 1,
-  spotLightSize: 1,
-};
-
-var pointTransitionParams = {
-  randomMovementRate: 1
-};
 
 var stopDrawingCallback = function () {};
 var foundSpecialCallback = function () {};
