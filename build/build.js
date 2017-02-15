@@ -325,6 +325,18 @@ module.exports.getSpecialTriangles = function () {
   return specialTriangles;
 };
 
+module.exports.getRandomSpecialTriangles = function () {
+  return _(specialTriangles).shuffle().shuffle().slice(0, 5).flatten().value();
+};
+
+module.exports.getConnectionsLength = function () {
+  return connections.length;
+};
+
+module.exports.getSpecialConnectionsLength = function () {
+  return specialConnections.length;
+};
+
 function revealConnectionInTime(connection, time) {
   (function (connection) {
     setTimeout(function () {
@@ -608,14 +620,37 @@ var shouldIntersect = true;
 var shouldDrawConnections = true;
 var alreadyIsSpecial = false;
 var shouldDrawConnections = true;
+var isIntro = true;
 
 var points = createPoints(config.numberOfRandomPoints);
 var special = _.filter(points, ['special', true]);
-var activePoints = [];
+var activePoints = _.filter(points, ['intro', true]);
 connections.createSpecialShape(special);
 var currentlyPlaying = [];
 var currentPoints = [];
 var pairsInsideSpotlight = [];
+
+var specialIntroPoints = connections.getRandomSpecialTriangles();
+
+function revealPointInTime(point, time, index) {
+  (function (point, time, index) {
+    setTimeout(function () {
+      activePoints.push(point);
+    }, time * index);
+  })(point, time, index);
+}
+
+function displaySpecialIntroPoints() {
+  setTimeout(function () {
+    specialIntroPoints.forEach(_.partial(revealPointInTime, _, 400));
+  }, 3000);
+}
+
+function displayAllThePoints() {
+  setTimeout(function () {
+    points.forEach(_.partial(revealPointInTime, _, 200));
+  }, 3000);
+}
 
 var transitionParams = {
   randomMovementRate: 1,
@@ -625,17 +660,6 @@ var transitionParams = {
 var pointTransitionParams = {
   randomMovementRate: 1
 };
-
-var i = 0;
-var interval = setInterval(function () {
-  var p = points[i];
-  if (!p) {
-    window.clearInterval(interval);
-    return;
-  }
-  activePoints.push(p);
-  i++;
-}, 100);
 
 var stopDrawingCallback = function () {};
 var foundSpecialCallback = function () {};
@@ -692,6 +716,14 @@ module.exports.mousedown = function () {
   currentPoints.forEach(pointClickEvent);
   var foundSpecial = connections.update(currentPoints);
   ripples.add();
+
+  var numberOfConnectionsDiscovered = connections.getConnectionsLength();
+  if (numberOfConnectionsDiscovered === 6) {
+    displaySpecialIntroPoints();
+  } else if (numberOfConnectionsDiscovered > 15 && isIntro) {
+    displayAllThePoints();
+    isIntro = false;
+  }
 
   if (foundSpecial) revealedSpecialCallback();
 
@@ -2258,6 +2290,26 @@ function addCircularPoints(number, origin, r) {
   return points;
 }
 
+function createIntroBasicPoints() {
+  var distance = space.size.x / 15;
+  // var centerX = space.size.x / 2;
+  var centerY = space.size.y / 2;
+  var randomOffsetY = 5;
+  var point1 = createPoint(distance + distance, centerY + _.random(-randomOffsetY, randomOffsetY));
+  var point2 = createPoint(distance + (distance * 2), centerY + _.random(-randomOffsetY, randomOffsetY));
+  var point3 = createPoint(distance * 2.5, centerY - (distance / 1.3));
+  point1.intro = true;
+  point2.intro = true;
+  point3.intro = true;
+  var point4 = createPoint(space.size.x - (distance * 2), centerY + _.random(-randomOffsetY, randomOffsetY));
+  var point5 = createPoint(space.size.x - (distance * 3), centerY + _.random(-randomOffsetY, randomOffsetY));
+  var point6 = createPoint(space.size.x - (distance * 2.5), centerY + (distance / 1.3));
+  point4.intro = true;
+  point5.intro = true;
+  point6.intro = true;
+  return [point1, point2, point3, point4, point5, point6];
+}
+
 function between(x, min, max) {
   return x >= min && x <= max;
 }
@@ -2272,7 +2324,8 @@ function isCenter(point) {
 }
 
 function createPoints(amount) {
-  var points = [];
+  var points = createIntroBasicPoints();
+
   for (var i = 0; i < amount; i++) {
     var point = createPoint(Math.random() * space.size.x, Math.random() * space.size.y, lightBlue);
 
