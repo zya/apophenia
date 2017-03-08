@@ -2,3 +2,5 @@ node_modules/
 *.log
 .DS_Store
 assets/.DS_Store
+*.wav
+*.pkf
