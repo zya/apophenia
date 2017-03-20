@@ -158,9 +158,9 @@ function render() {
   requestAnimationFrame(render);
 }
 
-// conductor.startIntroKicks();
+conductor.startIntroKicks();
 conductor.startBackground();
-conductor.startSecondSection();
+// conductor.startSecondSection();
 requestAnimationFrame(render);
 
 },{"./config":1,"./lib/2d/scene2D":10,"./lib/3d/scene3D":20,"./lib/globals":24,"./lib/music/conductor":29,"async":63,"stats.js":212}],3:[function(require,module,exports){
@@ -591,6 +591,7 @@ module.exports.clean = function () {
 var _ = require('lodash');
 var async = require('async');
 var dynamics = require('dynamics.js');
+var moment = require('moment');
 
 var globals = require('../globals');
 var config = require('../../config');
@@ -632,7 +633,9 @@ var currentPoints = [];
 var pairsInsideSpotlight = [];
 
 var specialIntroPoints = connections.getRandomSpecialTriangles();
-points = _.differenceBy(points, specialIntroPoints);
+
+var specialAndActive = _(specialIntroPoints).concat(activePoints).flatten().value();
+points = _.differenceBy(points, specialAndActive, 'id');
 
 var transitionParams = {
   randomMovementRate: 1,
@@ -763,6 +766,12 @@ module.exports.on = function (event, cb) {
   if (event === 'revealedSpecial') revealedSpecialCallback = cb;
 };
 
+// setInterval(function () {
+//   var hanged = _.filter(currentlyPlaying, function (voice) {
+//     return voice.timestamp.isBefore(moment().subtract(10, 'seconds'));
+//   });
+// }, 3000);
+
 module.exports.render = function () {
   space.clear();
   var delta = globals.getDelta();
@@ -822,8 +831,8 @@ module.exports.render = function () {
 
   //calculate change
   if (!_.isEqual(currentPoints, pointsInsideCircle)) {
-    var toRemove = _.difference(currentPoints, pointsInsideCircle);
-    var toAdd = _.difference(pointsInsideCircle, currentPoints);
+    var toRemove = _.differenceBy(currentPoints, pointsInsideCircle, 'id');
+    var toAdd = _.differenceBy(pointsInsideCircle, currentPoints, 'id');
     var anySpecials = connections.updateInsideConnections(pointsInsideCircle);
     var foundSpecial = false;
 
@@ -842,7 +851,7 @@ module.exports.render = function () {
   currentPoints = pointsInsideCircle;
 };
 
-},{"../../config":1,"../changeHandler":21,"../colours":22,"../createPoints":23,"../globals":24,"../pointClickEvent":47,"./connections":4,"./drawPoint":5,"./intersectSpotlightAndPoints":6,"./pt":7,"./randomisePoint":8,"./ripples":9,"./updateTemporaryPairs":12,"async":63,"dynamics.js":123,"lodash":158}],11:[function(require,module,exports){
+},{"../../config":1,"../changeHandler":21,"../colours":22,"../createPoints":23,"../globals":24,"../pointClickEvent":47,"./connections":4,"./drawPoint":5,"./intersectSpotlightAndPoints":6,"./pt":7,"./randomisePoint":8,"./ripples":9,"./updateTemporaryPairs":12,"async":63,"dynamics.js":123,"lodash":158,"moment":169}],11:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1728,11 +1737,11 @@ var spin = {
 
 var loaded = false;
 
-var spinStartCallback = function () {};
-var growStartCallback = function () {};
-var roseHoverOnCallback = function () {};
-var roseHoverOffCallback = function () {};
-var roseClickCallback = function () {};
+var spinStartCallback = _.noop();
+var growStartCallback = _.noop();
+var roseHoverOnCallback = _.noop();
+var roseHoverOffCallback = _.noop();
+var roseClickCallback = _.noop();
 
 rose.load(function (err, mesh, material) {
   loaded = true;
@@ -2019,6 +2028,27 @@ function addSpheres() {
   scene.add(group);
 }
 
+function scaleGroup() {
+  var target = _.random(1.05, 1.12);
+  dynamics.animate(group.scale, {
+    x: target + _.random(-0.03, 0.03),
+    y: target + _.random(-0.03, 0.03),
+    z: target + _.random(-0.03, 0.03)
+  }, {
+    duration: 500
+  });
+
+  setTimeout(function () {
+    dynamics.animate(group.scale, {
+      x: 1,
+      y: 1,
+      z: 1
+    }, {
+      duration: 800
+    });
+  }, 500);
+}
+
 addSpheres();
 
 renderer.addClickListener(function () {
@@ -2026,6 +2056,7 @@ renderer.addClickListener(function () {
     rose.distort();
     aura.distort();
     roseClickCallback();
+    scaleGroup();
   }
 });
 
@@ -2184,9 +2215,11 @@ var trash = require('./music/trash');
 var Voice = require('./music/voice');
 
 function change(toAdd, toRemove, currentlyPlaying) {
-  var intersected = _.intersectionBy(currentlyPlaying, toRemove, 'id');
+  var removed = _.filter(currentlyPlaying, function (point) {
+    return _.find(toRemove, _.matchesProperty('id', point.id)) !== undefined;
+  });
 
-  intersected.forEach(function (voice) {
+  removed.forEach(function (voice) {
     voice.stop({
       now: context.currentTime,
       release: 3
@@ -2473,11 +2506,16 @@ snareGain.gain.value = 0.0;
 bassGain.gain.value = 0.25;
 hihatGain.gain.value = 0.04;
 keysGain.gain.value = 0.65;
+
 // synthGain.gain.value = 0;
 // leadGain.gain.value = 0;
 // kickGain.gain.value = 0;
-// guitarGain.gain.value = 0.00;
-// bgGain.gain.value = 0.00;
+// bgGain.gain.value = 0;
+// guitarGain.gain.value = 0;
+// snareGain.gain.value = 0;
+// bassGain.gain.value = 0;
+// hihatGain.gain.value = 0;
+// keysGain.gain.value = 0;
 
 load('./assets/audio/ir3.mp3', function (err, buffer) {
   convolver.buffer = buffer;
@@ -3117,13 +3155,13 @@ var leadLayer = beet.layer(leadPattern, function (time, step) {
 }, function (time, step) {
   if (bar % 4 === 0 && step === 9) {
     snare.play(time);
-    snare808.play(time);
+    // snare808.play(time);
     bar = 0;
   }
 
   if (step === 7) {
     bar++;
-    snare808.play(time);
+    // snare808.play(time);
     return snare.play(time);
   }
 
@@ -3198,11 +3236,11 @@ module.exports.push = function (item) {
 'use strict';
 
 var _ = require('lodash');
+var moment = require('moment');
 var Envelope = require('fastidious-envelope-generator');
 
 var context = require('./context');
 var destination = require('./audio').synthDestination;
-
 
 function Voice(id, frequency) {
   this.id = id;
@@ -3222,6 +3260,7 @@ function Voice(id, frequency) {
   this.gain = gain;
   this.startTime = 0;
   this.timeDelta = 0;
+  this.timestamp = moment();
 }
 
 Voice.prototype.start = function (opts) {
@@ -3242,7 +3281,7 @@ Voice.prototype.stop = function (opts) {
 
 module.exports = Voice;
 
-},{"./audio":27,"./context":30,"fastidious-envelope-generator":144,"lodash":158}],47:[function(require,module,exports){
+},{"./audio":27,"./context":30,"fastidious-envelope-generator":144,"lodash":158,"moment":169}],47:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
