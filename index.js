@@ -36,6 +36,7 @@ function display3DScene(done) {
 }
 
 function transitionTo3D(done) {
+  warmUp3DRenderInterval = 10;
   async.series([
     initialise3DScene,
     conductor.stopFirstSection,
@@ -50,6 +51,10 @@ function transitionTo3D(done) {
 //     transitionTo3D
 //   ]);
 // }, 500);
+
+// setInterval(function () {
+//   if (!threeD) scene3d.render();
+// }, 150);
 
 scene3d.on('spinStart', function () {
   console.log('started spinning');
@@ -127,15 +132,26 @@ text.style.display = 'none';
 
 play.addEventListener('click', function () {});
 
+var frame = 0;
+var warmUp3DRenderInterval = 120;
+
 function render() {
   stats.begin();
   var now = new Date().getTime();
   globals.setDelta(now);
 
-  if (twoD) scene2d.render();
+  if (twoD) {
+    scene2d.render();
+    if (frame % warmUp3DRenderInterval === 0) {
+      scene3d.render();
+      console.log('warming up');
+      frame = 0;
+    }
+  }
 
   if (threeD) scene3d.render();
 
+  frame++;
   stats.end();
   requestAnimationFrame(render);
 }

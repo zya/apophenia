@@ -54,6 +54,7 @@ function display3DScene(done) {
 }
 
 function transitionTo3D(done) {
+  warmUp3DRenderInterval = 10;
   async.series([
     initialise3DScene,
     conductor.stopFirstSection,
@@ -68,6 +69,10 @@ function transitionTo3D(done) {
 //     transitionTo3D
 //   ]);
 // }, 500);
+
+// setInterval(function () {
+//   if (!threeD) scene3d.render();
+// }, 150);
 
 scene3d.on('spinStart', function () {
   console.log('started spinning');
@@ -145,15 +150,26 @@ text.style.display = 'none';
 
 play.addEventListener('click', function () {});
 
+var frame = 0;
+var warmUp3DRenderInterval = 120;
+
 function render() {
   stats.begin();
   var now = new Date().getTime();
   globals.setDelta(now);
 
-  if (twoD) scene2d.render();
+  if (twoD) {
+    scene2d.render();
+    if (frame % warmUp3DRenderInterval === 0) {
+      scene3d.render();
+      console.log('warming up');
+      frame = 0;
+    }
+  }
 
   if (threeD) scene3d.render();
 
+  frame++;
   stats.end();
   requestAnimationFrame(render);
 }
@@ -591,7 +607,6 @@ module.exports.clean = function () {
 var _ = require('lodash');
 var async = require('async');
 var dynamics = require('dynamics.js');
-var moment = require('moment');
 
 var globals = require('../globals');
 var config = require('../../config');
@@ -766,12 +781,6 @@ module.exports.on = function (event, cb) {
   if (event === 'revealedSpecial') revealedSpecialCallback = cb;
 };
 
-// setInterval(function () {
-//   var hanged = _.filter(currentlyPlaying, function (voice) {
-//     return voice.timestamp.isBefore(moment().subtract(10, 'seconds'));
-//   });
-// }, 3000);
-
 module.exports.render = function () {
   space.clear();
   var delta = globals.getDelta();
@@ -851,7 +860,7 @@ module.exports.render = function () {
   currentPoints = pointsInsideCircle;
 };
 
-},{"../../config":1,"../changeHandler":21,"../colours":22,"../createPoints":23,"../globals":24,"../pointClickEvent":47,"./connections":4,"./drawPoint":5,"./intersectSpotlightAndPoints":6,"./pt":7,"./randomisePoint":8,"./ripples":9,"./updateTemporaryPairs":12,"async":63,"dynamics.js":123,"lodash":158,"moment":169}],11:[function(require,module,exports){
+},{"../../config":1,"../changeHandler":21,"../colours":22,"../createPoints":23,"../globals":24,"../pointClickEvent":47,"./connections":4,"./drawPoint":5,"./intersectSpotlightAndPoints":6,"./pt":7,"./randomisePoint":8,"./ripples":9,"./updateTemporaryPairs":12,"async":63,"dynamics.js":123,"lodash":158}],11:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1526,9 +1535,11 @@ module.exports.init = function (_scene, _camera, done) {
   console.log(Date.now() - start, 'Renderer Init');
 };
 
-module.exports.render = function (scene, camera) {
+module.exports.render = function () {
+  var start = Date.now();
   composer.render();
-  // renderer.render(scene, camera);
+  var delta = Date.now() - start;
+  if (delta > 50) console.log(delta);
 };
 
 module.exports.addClickListener = function (cb) {
@@ -1720,6 +1731,7 @@ var geometry, mesh, wireframe, camera, group, groupMaterial;
 var shouldEmitMouseOnEvent = true;
 var shouldEmitMouseOffEvent = false;
 var shouldSpin = false;
+var shouldUpdate = false;
 var isHover = false;
 // scene and camera
 var scene = new THREE.Scene();
@@ -2075,10 +2087,12 @@ var fov = 2 * Math.atan(spaceHeight / (2 * distance)) * (180 / Math.PI);
 camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.1, 300);
 camera.position.z = distance;
 
+renderer.init(scene, camera, _.noop);
+
 // initialise
 module.exports.init = function (triangles, done) {
   generateGeometry(triangles, function (err, geometries) {
-    var start = Date.now();
+    // var start = Date.now();
     geometry = geometries.main;
 
     mesh = new THREE.Mesh(geometry, material);
@@ -2102,13 +2116,17 @@ module.exports.init = function (triangles, done) {
     wireframe.rotation.copy(mesh.rotation);
 
     scene.add(wireframe);
-    scene.add(mesh);
+    setTimeout(function () {
+      // console.log('adding');
+      scene.add(mesh);
+    }, 1000);
 
     setInterval(raycast, 100);
     setInterval(updateMousePosition, 100);
 
-    console.log(Date.now() - start, 'Scene Start');
-    renderer.init(scene, camera, done);
+    // console.log(Date.now() - start, 'Scene Start');
+    done();
+    shouldUpdate = true;
   });
 };
 
@@ -2145,31 +2163,34 @@ module.exports.render = function () {
     roseMaterial.needsUpdate = true;
   }
 
-  mesh.scale.copy(wireframe.scale);
-  mesh.scale.sub(new THREE.Vector3(0.001, 0.001, 0.001));
-  wireframe.rotation.copy(mesh.rotation);
+  if (shouldUpdate) {
+    mesh.scale.copy(wireframe.scale);
+    mesh.scale.sub(new THREE.Vector3(0.001, 0.001, 0.001));
+    wireframe.rotation.copy(mesh.rotation);
 
-  spotLightForRose.lookAt(roseMesh);
-  dynamicSpotLight.lookAt(roseMesh.position);
+    spotLightForRose.lookAt(roseMesh);
+    dynamicSpotLight.lookAt(roseMesh.position);
 
-  wireframeMaterial.needsUpdate = true;
-  groupMaterial.needsUpdate = true;
+    wireframeMaterial.needsUpdate = true;
+    groupMaterial.needsUpdate = true;
 
-  rose.updateRotation(mouseOffsetX, mouseOffsetY);
-  // console.log(mouseOffsetX, mouseOffsetY, redLight.position.x, redLight.position.y);
+    rose.updateRotation(mouseOffsetX, mouseOffsetY);
+    // console.log(mouseOffsetX, mouseOffsetY, redLight.position.x, redLight.position.y);
 
-  // spotLight.x += (mouseX - spotLight.x) * (easingStrength * delta);
-  // blueLight.position.x += (mouseOffsetX - blueLight.position.x) * 0.1;
-  // redLight.position.x += (mouseOffsetX - redLight.position.x) * 0.1;
-  // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
-  // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
-  dynamicSpotLight.position.x += ((mouseOffsetX * 3) - dynamicSpotLight.position.x) * 0.03;
-  dynamicSpotLight.position.y += ((mouseOffsetY * 2) - dynamicSpotLight.position.y) * 0.03;
-  redLight.position.x += (((mouseOffsetX * 0.5) - redLight.position.x) * 0.1);
-  // redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
+    // spotLight.x += (mouseX - spotLight.x) * (easingStrength * delta);
+    // blueLight.position.x += (mouseOffsetX - blueLight.position.x) * 0.1;
+    // redLight.position.x += (mouseOffsetX - redLight.position.x) * 0.1;
+    // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
+    // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
+    dynamicSpotLight.position.x += ((mouseOffsetX * 3) - dynamicSpotLight.position.x) * 0.03;
+    dynamicSpotLight.position.y += ((mouseOffsetY * 2) - dynamicSpotLight.position.y) * 0.03;
+    redLight.position.x += (((mouseOffsetX * 0.5) - redLight.position.x) * 0.1);
+    // redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
 
-  rose.update();
-  aura.update();
+    rose.update();
+    aura.update();
+  }
+
   renderer.render(scene, camera);
 };
 
@@ -3236,7 +3257,6 @@ module.exports.push = function (item) {
 'use strict';
 
 var _ = require('lodash');
-var moment = require('moment');
 var Envelope = require('fastidious-envelope-generator');
 
 var context = require('./context');
@@ -3260,7 +3280,6 @@ function Voice(id, frequency) {
   this.gain = gain;
   this.startTime = 0;
   this.timeDelta = 0;
-  this.timestamp = moment();
 }
 
 Voice.prototype.start = function (opts) {
@@ -3281,7 +3300,7 @@ Voice.prototype.stop = function (opts) {
 
 module.exports = Voice;
 
-},{"./audio":27,"./context":30,"fastidious-envelope-generator":144,"lodash":158,"moment":169}],47:[function(require,module,exports){
+},{"./audio":27,"./context":30,"fastidious-envelope-generator":144,"lodash":158}],47:[function(require,module,exports){
 'use strict';
 
 var randomFloat = require('random-float');
