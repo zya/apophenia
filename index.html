@@ -75,9 +75,26 @@
       z-index: 1000;
       transition: width 1.5s ease-in;
     }
+
+    #narrative {
+      position: fixed;
+      z-index: 5000;
+      top: 45vh;
+      font-family: 'Merriweather', serif;
+      font-weight: 700;
+      color: white;
+      width: 100%;
+      font-size: 1em;
+      opacity: 0;
+      transition: opacity 3.5s ease-in;
+      /*-webkit-text-stroke-width: 1px;
+      -webkit-text-stroke-color: black;*/
+      text-shadow: 0px 0px 10px grey;
+    }
     </style>
   </head>
   <body>
+    <div id="narrative"></div>
     <div id="text">
       <div id="intro">
         APOPHENIA

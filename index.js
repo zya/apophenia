@@ -8,6 +8,7 @@ var scene2d = require('./lib/2d/scene2D');
 var scene3d = require('./lib/3d/scene3D');
 var globals = require('./lib/globals');
 var config = require('./config');
+var textHandler = require('./lib/text');
 
 var stats = new Stats();
 
@@ -92,12 +93,23 @@ scene2d.on('stoppedDrawing', function () {
   console.log('stopped drawing');
 });
 
+var specialsFound = 0;
 scene2d.on('foundSpecial', function () {
+  if (specialsFound === 0) textHandler.proceed();
+  specialsFound++;
   console.log('founds a special connection');
 });
 
 scene2d.on('revealedSpecial', function () {
   console.log('revealed a special connection');
+});
+
+scene2d.on('foundFirstConnection', function () {
+  textHandler.proceed();
+});
+
+scene2d.on('displayInitialImportantConnections', function () {
+  textHandler.proceed();
 });
 
 window.addEventListener('mousemove', function (evt) {
@@ -161,3 +173,7 @@ conductor.startIntroKicks();
 conductor.startBackground();
 // conductor.startSecondSection();
 requestAnimationFrame(render);
+
+setTimeout(function () {
+  textHandler.proceed();
+}, 2000);
