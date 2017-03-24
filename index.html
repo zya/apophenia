@@ -33,7 +33,7 @@
       padding: 0;
       z-index: 3000;
     }
-    
+
     #text {
       position: fixed;
       top: 50vh;
@@ -64,6 +64,17 @@
       cursor: pointer;
       color: grey;
     }
+
+    .progress-bar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 2px;
+      background-color: red;
+      z-index: 1000;
+      transition: width 1.5s ease-in;
+    }
     </style>
   </head>
   <body>
@@ -79,6 +90,7 @@
       </div>
     </div>
     <div id="pt"></div>
+    <div class="progress-bar" id="progress-bar"></div>
   </body>
   <script src="./build/build.js"></script>
 </html>

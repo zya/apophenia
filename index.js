@@ -110,6 +110,7 @@ window.addEventListener('mousedown', function () {
 
   var discoveryPercentage = scene2d.mousedown();
   conductor.proceed(discoveryPercentage);
+  document.getElementById('progress-bar').style.width = ((discoveryPercentage / config.discoveryThreshold) * 100) + '%';
 
   if (discoveryPercentage > config.discoveryThreshold && !hasTransitioned) {
     hasTransitioned = true;
