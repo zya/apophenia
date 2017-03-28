@@ -136,6 +136,7 @@ window.addEventListener('mousemove', function (evt) {
 });
 
 window.addEventListener('mousedown', function () {
+  scene3d.mousedown();
   if (hasTransitioned) return;
 
   var discoveryPercentage = scene2d.mousedown();
@@ -158,10 +159,11 @@ window.addEventListener('mouseup', function () {
 });
 
 var play = document.getElementById('play-icon');
+var loading = document.getElementById('loading');
 var text = document.getElementById('text');
-text.style.display = 'none';
+// text.style.display = 'none';
 
-play.addEventListener('click', function () {});
+play.addEventListener('click', start);
 
 var frame = 0;
 var warmUp3DRenderInterval = 120;
@@ -187,14 +189,36 @@ function render() {
   requestAnimationFrame(render);
 }
 
-conductor.startIntroKicks();
-conductor.startBackground();
-// conductor.startSecondSection();
-requestAnimationFrame(render);
+function ready() {
+  loading.style.display = 'none';
+  play.style.display = 'inline';
+  var size = play.getBoundingClientRect();
 
-setTimeout(function () {
-  textHandler.proceed();
-}, 2000);
+  scene2d.setInitialSpotlightParams({
+    radius: size.width / 2,
+    x: size.left,
+    y: size.top
+  });
+}
+
+
+setTimeout(ready, 4000);
+
+function start() {
+  text.style.opacity = 0;
+  conductor.startIntroKicks();
+  conductor.startBackground();
+  play.style.display = 'none';
+  scene2d.startFollowingMouse();
+  scene2d.addIntro();
+
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 3000);
+}
+
+requestAnimationFrame(render);
+// conductor.startSecondSection();
 
 },{"./config":1,"./lib/2d/scene2D":10,"./lib/3d/scene3D":20,"./lib/globals":24,"./lib/music/conductor":29,"./lib/text":48,"async":64,"stats.js":213}],3:[function(require,module,exports){
 'use strict';
@@ -489,6 +513,7 @@ var space = new pt.CanvasSpace('#pt').setup({
 space.autoResize(true);
 var form = new pt.Form(space);
 var spotLight = new pt.Circle(250, 250).setRadius(space.size.x / spotLightRatio);
+spotLight.originalRadius = space.size.x / spotLightRatio;
 
 module.exports.space = space;
 module.exports.form = form;
@@ -655,10 +680,15 @@ var shouldDrawConnections = true;
 var alreadyIsSpecial = false;
 var shouldDrawConnections = true;
 var isIntro = true;
+var shouldFollowMouse = false;
+
+var spotLightInitialXPosition = 0;
+var spotLightInitialYPosition = 0;
 
 var points = createPoints(config.numberOfRandomPoints);
 var special = _.filter(points, ['special', true]);
-var activePoints = _.filter(points, ['intro', true]);
+var introPoints = _.filter(points, ['intro', true]);
+var activePoints = [];
 connections.createSpecialShape(special);
 var currentlyPlaying = [];
 var currentPoints = [];
@@ -671,7 +701,7 @@ points = _.differenceBy(points, specialAndActive, 'id');
 
 var transitionParams = {
   randomMovementRate: 1,
-  spotLightSize: 1,
+  spotLightSize: 0,
 };
 
 var pointTransitionParams = {
@@ -725,6 +755,19 @@ function explodeSpotlight(done) {
   }, 500);
 }
 
+function revealSpotlight(done) {
+  var duration = 2000;
+  setTimeout(function () {
+    // shouldIntersect = false;
+    dynamics.animate(transitionParams, {
+      spotLightSize: 1
+    }, {
+      duration: duration
+    });
+    done();
+  }, 500);
+}
+
 function slowDownPointMovement(done) {
   var duration = 2000;
 
@@ -751,11 +794,17 @@ function fadeAllPointsOut(done) {
   setTimeout(done, 2500);
 }
 
+var first = true;
 module.exports.mousedown = function () {
   spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
   currentPoints.forEach(pointClickEvent);
   var foundSpecial = connections.update(currentPoints);
-  ripples.add();
+
+  if (first) {
+    first = false;
+  } else {
+    ripples.add();
+  }
 
   var numberOfConnectionsDiscovered = connections.getConnectionsLength();
 
@@ -792,6 +841,13 @@ module.exports.stopDrawingConnections = function (cb) {
   cb();
 };
 
+module.exports.display = function (cb) {
+  var element = document.getElementById('pt');
+  element.style.opacity = 1;
+  // revealSpotlight(function () {});
+  // cb();
+};
+
 module.exports.mouseup = function () {
   spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
 };
@@ -808,17 +864,46 @@ module.exports.on = function (event, cb) {
   if (event === 'displayInitialImportantConnections') displayIntroSpecialCallback = cb;
 };
 
+module.exports.setInitialSpotlightParams = function (params) {
+  var target = params.radius / spotLight.originalRadius;
+  transitionParams.spotLightSize = target;
+  spotLightInitialXPosition = params.x + params.radius;
+  spotLightInitialYPosition = params.y + params.radius + 9.5;
+};
+
+module.exports.addIntro = function () {
+  introPoints.forEach(function (point, index) {
+    (function (point) {
+      setTimeout(function () {
+        activePoints.push(point);
+      }, 600 * (index + 1));
+    })(point);
+  });
+};
+
+module.exports.startFollowingMouse = function () {
+  shouldFollowMouse = true;
+};
+
 module.exports.render = function () {
   space.clear();
   var delta = globals.getDelta();
 
   var mouse = globals.getMousePosition();
-  spotLight.x += (mouse.x - spotLight.x) * (easingStrength * delta);
-  spotLight.y += (mouse.y - spotLight.y) * (easingStrength * delta);
+
+  if (shouldFollowMouse) {
+    spotLight.x += (mouse.x - spotLight.x) * (easingStrength * delta);
+    spotLight.y += (mouse.y - spotLight.y) * (easingStrength * delta);
+  } else {
+    spotLight.x = spotLightInitialXPosition;
+    spotLight.y = spotLightInitialYPosition;
+  }
   form.fill(white, 0.1).stroke(false);
-  if (spotLight.radius < 0) spotLight.radius = 0;
+  var targetRadius = spotLight.originalRadius * transitionParams.spotLightSize;
+  if (targetRadius < 0) targetRadius = 0;
+
+  spotLight.setRadius(targetRadius);
   form.circle(spotLight);
-  spotLight.setRadius(spotLight.radius * transitionParams.spotLightSize);
 
   // draw ripple circles
   ripples.draw();
@@ -2090,14 +2175,14 @@ function scaleGroup() {
 
 addSpheres();
 
-renderer.addClickListener(function () {
-  if (isHover) {
+module.exports.mousedown = function () {
+  if (isHover && loaded) {
     rose.distort();
     aura.distort();
     roseClickCallback();
     scaleGroup();
   }
-});
+};
 
 var background = new THREE.Color(colours.background.x / 255, colours.background.y / 255, colours.background.z / 255);
 scene.fog = new THREE.Fog(background, 0, 16);
@@ -2239,6 +2324,19 @@ module.exports.startTransition = function (done) {
     // startMovingLights
   ], done);
 };
+
+module.exports.hideCanvas = function () {
+  renderer.hide();
+};
+
+module.exports.on = function (event, cb) {
+  if (event === 'spinStart') spinStartCallback = cb;
+  if (event === 'growStart') growStartCallback = cb;
+  if (event === 'roseHoverOn') roseHoverOnCallback = cb;
+  if (event === 'roseHoverOff') roseHoverOffCallback = cb;
+  if (event === 'roseClick') roseClickCallback = cb;
+};
+// startMovingLights
 
 module.exports.hideCanvas = function () {
   renderer.hide();
@@ -3381,6 +3479,7 @@ var element = document.getElementById('narrative');
 var currentIndex = 0;
 module.exports.proceed = function () {
   var currentState = narrative[currentIndex];
+  if (!currentState) return;
   currentIndex++;
 
   if (currentState.hidden) {

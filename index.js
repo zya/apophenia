@@ -118,6 +118,7 @@ window.addEventListener('mousemove', function (evt) {
 });
 
 window.addEventListener('mousedown', function () {
+  scene3d.mousedown();
   if (hasTransitioned) return;
 
   var discoveryPercentage = scene2d.mousedown();
@@ -140,10 +141,11 @@ window.addEventListener('mouseup', function () {
 });
 
 var play = document.getElementById('play-icon');
+var loading = document.getElementById('loading');
 var text = document.getElementById('text');
-text.style.display = 'none';
+// text.style.display = 'none';
 
-play.addEventListener('click', function () {});
+play.addEventListener('click', start);
 
 var frame = 0;
 var warmUp3DRenderInterval = 120;
@@ -169,11 +171,33 @@ function render() {
   requestAnimationFrame(render);
 }
 
-conductor.startIntroKicks();
-conductor.startBackground();
-// conductor.startSecondSection();
-requestAnimationFrame(render);
+function ready() {
+  loading.style.display = 'none';
+  play.style.display = 'inline';
+  var size = play.getBoundingClientRect();
 
-setTimeout(function () {
-  textHandler.proceed();
-}, 2000);
+  scene2d.setInitialSpotlightParams({
+    radius: size.width / 2,
+    x: size.left,
+    y: size.top
+  });
+}
+
+
+setTimeout(ready, 4000);
+
+function start() {
+  text.style.opacity = 0;
+  conductor.startIntroKicks();
+  conductor.startBackground();
+  play.style.display = 'none';
+  scene2d.startFollowingMouse();
+  scene2d.addIntro();
+
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 3000);
+}
+
+requestAnimationFrame(render);
+// conductor.startSecondSection();
