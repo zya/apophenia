@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <title>Apophenia: You'll only see if you are looking</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Merriweather:400,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:400,900,100|Dosis:300" rel="stylesheet">
     <style>
     html, body {
       width: 100vw;
@@ -40,7 +40,7 @@
 
     #text {
       position: fixed;
-      top: 50vh;
+      top: 40vh;
       font-family: 'Merriweather', serif;
       font-weight: 900;
       color: white;
@@ -60,7 +60,6 @@
     }
 
     #play {
-      margin-top: 0.3em;
       font-size: 10vmax;
       color: white;
     }
@@ -75,12 +74,17 @@
       color: white;
     }
 
+    #loading {
+      font-size: 5vmax;
+      color: grey;
+    }
+
     .progress-bar {
       position: fixed;
       left: 0;
       top: 0;
       width: 0;
-      height: 2px;
+      height: 3px;
       background-color: red;
       z-index: 1000;
       transition: width 1.5s ease-in;
@@ -101,6 +105,22 @@
       -webkit-text-stroke-color: black;*/
       text-shadow: 0px 0px 10px grey;
     }
+
+    .information {
+      position: fixed;
+      bottom: 4vmax;
+      width: 100vw;
+    }
+
+    .information-text {
+      font-family: 'Dosis', sans-serif;
+      font-size: 1vmax;
+      font-weight: 300;
+    }
+
+    .information-icon {
+      font-size: 2.5vmax;
+    }
     </style>
   </head>
   <body>
@@ -115,6 +135,10 @@
       <div id="play">
         <i class="fa fa-cog fa-spin" id="loading" aria-hidden="true"></i>
         <i class="fa fa-circle" id="play-icon" aria-hidden="true"></i>
+      </div>
+      <div class="information">
+        <i class="fa fa-headphones information-icon" aria-hidden="true"></i><br>
+        <div class="information-text">use headphones</div>
       </div>
     </div>
     <div id="pt"></div>

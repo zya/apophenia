@@ -755,19 +755,6 @@ function explodeSpotlight(done) {
   }, 500);
 }
 
-function revealSpotlight(done) {
-  var duration = 2000;
-  setTimeout(function () {
-    // shouldIntersect = false;
-    dynamics.animate(transitionParams, {
-      spotLightSize: 1
-    }, {
-      duration: duration
-    });
-    done();
-  }, 500);
-}
-
 function slowDownPointMovement(done) {
   var duration = 2000;
 
@@ -841,7 +828,7 @@ module.exports.stopDrawingConnections = function (cb) {
   cb();
 };
 
-module.exports.display = function (cb) {
+module.exports.display = function () {
   var element = document.getElementById('pt');
   element.style.opacity = 1;
   // revealSpotlight(function () {});
