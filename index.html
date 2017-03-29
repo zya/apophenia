@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <title>Apophenia: You'll only see if you are looking</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Merriweather:400,900,100|Dosis:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:100,300,500,700,900|Lato:400,900" rel="stylesheet">
     <style>
     html, body {
       width: 100vw;
@@ -41,13 +41,18 @@
     #text {
       position: fixed;
       top: 40vh;
-      font-family: 'Merriweather', serif;
+      font-family: 'Lato', sans-serif;
       font-weight: 900;
       color: white;
       z-index: 100;
       width: 100vw;
       text-align: center;
       transition: opacity 3s ease-in;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -o-user-select: none;
+      user-select: none;
     }
 
     #intro {
@@ -55,8 +60,9 @@
     }
 
     #description {
+      font-family: 'Source Code Pro', monospace;
       font-size: 1em;
-      font-weight: 400;
+      font-weight: 500;
     }
 
     #play {
@@ -95,16 +101,22 @@
       position: fixed;
       z-index: 5000;
       top: 45vh;
-      font-family: 'Merriweather', serif;
-      font-weight: 700;
+      /*font-family: 'Merriweather', serif;*/
+      font-family: 'Source Code Pro', monospace;
+      font-size: 1em;
+      font-weight: 500;
       color: white;
       width: 100%;
-      font-size: 1em;
       opacity: 0;
       transition: opacity 3.5s ease-in;
       /*-webkit-text-stroke-width: 1px;
       -webkit-text-stroke-color: black;*/
       text-shadow: 0px 0px 10px grey;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -o-user-select: none;
+      user-select: none;
     }
 
     .information {
@@ -114,32 +126,32 @@
     }
 
     .information-text {
-      font-family: 'Dosis', sans-serif;
-      font-size: 1vmax;
-      font-weight: 300;
+      /*font-family: 'Dosis', sans-serif;*/
+      font-family: 'Source Code Pro', monospace;
+      font-size: 0.7vmax;
+      font-weight: 100;
     }
 
     .information-icon {
-      font-size: 2.5vmax;
+      font-size: 2.2vmax;
+      margin-bottom: 0.6vmax;
     }
     </style>
   </head>
   <body>
     <div id="narrative"></div>
     <div id="text">
-      <div id="intro">
-        APOPHENIA
-      </div>
-      <div id="description">
-        You'll only see when you are looking
-      </div>
+      <div id="intro">APOPHENIA</div>
+      <!-- <div id="description">
+        YOU'LL ONLY SEE WHEN YOU ARE LOOKING
+      </div> -->
       <div id="play">
         <i class="fa fa-cog fa-spin" id="loading" aria-hidden="true"></i>
         <i class="fa fa-circle" id="play-icon" aria-hidden="true"></i>
       </div>
       <div class="information">
-        <i class="fa fa-headphones information-icon" aria-hidden="true"></i><br>
-        <div class="information-text">use headphones</div>
+        <i class="fa fa-headphones information-icon" aria-hidden="true"></i>
+        <div class="information-text">FOR BEST EXPERIENCE<br>USE HEADPHONES</div>
       </div>
     </div>
     <div id="pt"></div>

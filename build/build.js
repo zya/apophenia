@@ -210,11 +210,11 @@ function start() {
   conductor.startBackground();
   play.style.display = 'none';
   scene2d.startFollowingMouse();
-  scene2d.addIntro();
+  setTimeout(scene2d.addIntro, 2000);
 
   setTimeout(function () {
     textHandler.proceed();
-  }, 3000);
+  }, 4000);
 }
 
 requestAnimationFrame(render);
