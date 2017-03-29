@@ -670,6 +670,7 @@ var spotLight = pt.spotLight;
 var easingStrength = config.easingStrength;
 var sizeChangeOnClick = config.sizeChangeOnClick;
 var white = colours.white.hex();
+var grey = colours.grey.hex();
 var space = pt.space;
 var form = pt.form;
 
@@ -680,6 +681,7 @@ var shouldDrawConnections = true;
 var alreadyIsSpecial = false;
 var shouldDrawConnections = true;
 var isIntro = true;
+var started = false;
 var shouldFollowMouse = false;
 
 var spotLightInitialXPosition = 0;
@@ -870,6 +872,7 @@ module.exports.addIntro = function () {
 
 module.exports.startFollowingMouse = function () {
   shouldFollowMouse = true;
+  started = true;
 };
 
 module.exports.render = function () {
@@ -885,10 +888,13 @@ module.exports.render = function () {
     spotLight.x = spotLightInitialXPosition;
     spotLight.y = spotLightInitialYPosition;
   }
-  form.fill(white, 0.1).stroke(false);
   var targetRadius = spotLight.originalRadius * transitionParams.spotLightSize;
   if (targetRadius < 0) targetRadius = 0;
 
+  var spotLightColor = white;
+
+  if (!started) spotLightColor = grey;
+  form.fill(spotLightColor, 0.1).stroke(false);
   spotLight.setRadius(targetRadius);
   form.circle(spotLight);
 
@@ -3464,22 +3470,33 @@ var narrative = [
 var element = document.getElementById('narrative');
 
 var currentIndex = 0;
+var lastAnimationStarted = 0;
 module.exports.proceed = function () {
   var currentState = narrative[currentIndex];
   if (!currentState) return;
   currentIndex++;
 
+  var delta = Date.now() - lastAnimationStarted;
+  var time = 1000;
+
   if (currentState.hidden) {
     setTimeout(function () {
+      lastAnimationStarted = Date.now();
       element.style.opacity = 0;
-    }, 1000);
+    }, time);
     return;
   }
 
+  if (delta < 3000) {
+    time = 3000;
+  }
+
   setTimeout(function () {
+    element.innerHTML = currentState.text;
+    lastAnimationStarted = Date.now();
     element.style.opacity = 1;
-  }, 1000);
-  element.innerHTML = currentState.text;
+  }, time);
+
 };
 
 },{}],49:[function(require,module,exports){
