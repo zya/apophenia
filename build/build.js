@@ -785,9 +785,15 @@ function fadeAllPointsOut(done) {
 
 var first = true;
 module.exports.mousedown = function () {
-  spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
+  // spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
   currentPoints.forEach(pointClickEvent);
   var foundSpecial = connections.update(currentPoints);
+  if (currentPoints.length > 0) {
+    spotLight.originalRadius -= sizeChangeOnClick;
+    setTimeout(function () {
+      spotLight.originalRadius += sizeChangeOnClick;
+    }, 100);
+  }
 
   if (first) {
     first = false;
@@ -838,7 +844,9 @@ module.exports.display = function () {
 };
 
 module.exports.mouseup = function () {
-  spotLight.setRadius(spotLight.radius + sizeChangeOnClick);
+  // if (currentPoints.length > 0) {
+  //   spotLight.originalRadius += sizeChangeOnClick;
+  // }
 };
 
 module.exports.getSpecialTriangles = connections.getSpecialTriangles;
