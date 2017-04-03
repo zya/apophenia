@@ -17,6 +17,8 @@ var threeD = false;
 var twoD = true;
 
 stats.showPanel(0);
+stats.dom.style.top = '';
+stats.dom.style.bottom = '0px';
 document.body.appendChild(stats.dom);
 
 function initialise3DScene(done) {
@@ -106,6 +108,7 @@ scene2d.on('revealedSpecial', function () {
 
 scene2d.on('foundFirstConnection', function () {
   textHandler.proceed();
+  conductor.startIntroKicks();
 });
 
 scene2d.on('displayInitialImportantConnections', function () {
@@ -188,7 +191,6 @@ setTimeout(ready, 4000);
 
 function start() {
   text.style.opacity = 0;
-  conductor.startIntroKicks();
   conductor.startBackground();
   play.style.display = 'none';
   scene2d.startFollowingMouse();
