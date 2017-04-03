@@ -2662,7 +2662,7 @@ keysGain.connect(limiter);
 
 synthGain.gain.value = 0.13;
 leadGain.gain.value = 0.12;
-kickGain.gain.value = 0.60;
+kickGain.gain.value = 0.45;
 bgGain.gain.value = 0.07;
 guitarGain.gain.value = 0.015;
 snareGain.gain.value = 0.0;
