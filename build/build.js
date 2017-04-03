@@ -3025,7 +3025,7 @@ function schedule() {
 module.exports.start = function () {
   interval = setInterval(function () {
     schedule();
-  }, 5000);
+  }, 10000);
 };
 
 module.exports.stop = function () {
