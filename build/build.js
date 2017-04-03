@@ -791,7 +791,7 @@ module.exports.mousedown = function () {
 
   if (first) {
     first = false;
-  } else {
+  } else if (currentPoints.length > 0) {
     ripples.add();
   }
 
