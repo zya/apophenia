@@ -108,10 +108,10 @@ scene2d.on('revealedSpecial', function () {
 
 scene2d.on('foundFirstConnection', function () {
   textHandler.proceed();
-  conductor.startIntroKicks();
 });
 
 scene2d.on('displayInitialImportantConnections', function () {
+  conductor.startIntroKicks();
   textHandler.proceed();
 });
 
@@ -187,7 +187,7 @@ function ready() {
 }
 
 
-setTimeout(ready, 4000);
+setTimeout(ready, 0);
 
 function start() {
   text.style.opacity = 0;

@@ -126,10 +126,10 @@ scene2d.on('revealedSpecial', function () {
 
 scene2d.on('foundFirstConnection', function () {
   textHandler.proceed();
-  conductor.startIntroKicks();
 });
 
 scene2d.on('displayInitialImportantConnections', function () {
+  conductor.startIntroKicks();
   textHandler.proceed();
 });
 
@@ -205,7 +205,7 @@ function ready() {
 }
 
 
-setTimeout(ready, 4000);
+setTimeout(ready, 0);
 
 function start() {
   text.style.opacity = 0;
@@ -324,10 +324,12 @@ function drawConnection(connection, colour, opacity, width) {
 module.exports.update = function (points) {
   updateConnections(points, pairs, connections, triangles, specialPairs);
 
+  var insideConnectionsLength = _.filter(connectionsInside, 'special').length;
   var connectionsLength = _.filter(connections, 'special').length;
   var allSpecialConnectionsLength = specialConnections.length;
   discoveryPercentage = connectionsLength / allSpecialConnectionsLength;
-  return connectionsLength > 0;
+
+  return insideConnectionsLength > 0;
 };
 
 module.exports.updateInsideConnections = function (points) {
@@ -556,11 +558,14 @@ var white = colours.white;
 var lighterGrey = colours.lighterGrey;
 var collisions = [];
 
-function addrippleCircle() {
+function addrippleCircle(c) {
   var circle = new pt.lib.Circle(spotLight.x, spotLight.y).setRadius(spotLight.radius);
   circle.opacity = config.rippleStartOpacity;
   circle.previousIntersected = [];
   circle.timestamp = Date.now();
+  var colour = c ? c : white;
+  if (c) circle.special = true;
+  circle.colour = colour;
   ripples.push(circle);
 }
 
@@ -568,10 +573,11 @@ function addSmallRipple(point) {
   var ripple = new pt.lib.Circle(point).setRadius(point.originalRadius);
   ripple.opacity = config.rippleStartOpacity;
   ripple.timestamp = Date.now();
+  ripple.colour = lighterGrey;
   smallRipples.push(ripple);
 }
 
-function drawRipple(ripple, sizeRate, opacityRate, colour) {
+function drawRipple(ripple, sizeRate, opacityRate) {
   var delta = globals.getDelta();
 
   ripple.opacity -= opacityRate * delta;
@@ -583,8 +589,13 @@ function drawRipple(ripple, sizeRate, opacityRate, colour) {
   ripple.radius += (sizeRate * (ripple.opacity * 2.0)) * delta;
 
   form.fill(false);
-  var c = 'rgba(' + colour.x + ',' + colour.y + ',' + colour.z + ',' + ripple.opacity.toFixed(2) + ')';
-  form.stroke(c);
+  var c = 'rgba(' + ripple.colour.x + ',' + ripple.colour.y + ',' + ripple.colour.z + ',' + ripple.opacity.toFixed(2) + ')';
+
+  if (ripple.special) {
+    form.stroke(c, 2);
+  } else {
+    form.stroke(c);
+  }
   form.circle(ripple);
 }
 
@@ -800,7 +811,9 @@ module.exports.mousedown = function () {
   if (first) {
     first = false;
   } else if (currentPoints.length > 0) {
-    ripples.add();
+    var specialColour = _.random(0, 100) > 50 ? colours.lightBlue : colours.orange;
+    var colour = foundSpecial ? specialColour : null;
+    ripples.add(colour);
   }
 
   var numberOfConnectionsDiscovered = connections.getConnectionsLength();
@@ -963,7 +976,6 @@ module.exports.render = function () {
     if (!alreadyIsSpecial && anySpecials) {
       alreadyIsSpecial = true;
       foundSpecialCallback();
-      // console.log('trigger special event');
     }
 
     if (!anySpecials) alreadyIsSpecial = false;
@@ -2730,8 +2742,13 @@ var context = require('./context');
 var audio = require('./audio');
 var notes = require('./music').notes;
 
+var introStarted = false;
+
 module.exports.startIntroKicks = function () {
-  introKicks.start();
+  if (!introStarted) {
+    introKicks.start();
+    introStarted = true;
+  }
 };
 
 module.exports.stopFirstSection = function (done) {
