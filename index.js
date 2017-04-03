@@ -187,13 +187,14 @@ function ready() {
 }
 
 
-setTimeout(ready, 0);
+setTimeout(ready, 4000);
 
 function start() {
   text.style.opacity = 0;
   conductor.startBackground();
   play.style.display = 'none';
   scene2d.startFollowingMouse();
+  conductor.playIntro();
   setTimeout(scene2d.addIntro, 2000);
 
   setTimeout(function () {
