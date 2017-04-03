@@ -810,7 +810,6 @@ module.exports.mousedown = function () {
 
   if (first) {
     first = false;
-    ripples.add();
   } else if (currentPoints.length > 0) {
     var specialColour = _.random(0, 100) > 50 ? colours.lightBlue : colours.orange;
     var colour = foundSpecial ? specialColour : null;
@@ -897,6 +896,7 @@ module.exports.addIntro = function () {
 module.exports.startFollowingMouse = function () {
   shouldFollowMouse = true;
   started = true;
+  ripples.add();
 };
 
 module.exports.render = function () {
