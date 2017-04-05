@@ -187,15 +187,16 @@ function ready() {
 }
 
 
-setTimeout(ready, 4000);
+setTimeout(ready, 0);
 
 function start() {
   text.style.opacity = 0;
   conductor.startBackground();
+  setTimeout(conductor.startBackgroundMelody, 3000);
   play.style.display = 'none';
   scene2d.startFollowingMouse();
   conductor.playIntro();
-  setTimeout(scene2d.addIntro, 2000);
+  setTimeout(scene2d.addIntro, 3500);
 
   setTimeout(function () {
     textHandler.proceed();
