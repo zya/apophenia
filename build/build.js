@@ -148,7 +148,7 @@ window.addEventListener('mousedown', function () {
 
   if (discoveryPercentage > config.discoveryThreshold && !hasTransitioned) {
     hasTransitioned = true;
-
+    conductor.playLastFound();
     async.series([
       scene2d.transition,
       transitionTo3D
@@ -2711,6 +2711,7 @@ var discoveryMax = require('../../config').discoveryThreshold;
 
 var progress = 0;
 var target = 0;
+var speed = 1;
 var bgBuffer = null;
 var interval = null;
 
@@ -2723,10 +2724,18 @@ module.exports.proceed = function (amount) {
   target = map(amount, 0, discoveryMax, 0, 1);
 };
 
+module.exports.proceedRaw = function (amount) {
+  target = amount;
+};
+
+module.exports.setSpeed = function (value) {
+  speed = value;
+};
+
 module.exports.start = function () {
   setInterval(function () {
     progress += (target - progress) * 0.15;
-    grain(bgBuffer, destination, 0.3, 0.5, progress);
+    grain(bgBuffer, destination, 0.3, 0.5, progress, speed);
   }, 50);
 };
 
@@ -2747,6 +2756,7 @@ var guitar = require('./guitar');
 var leadSynth = require('./leadSynth');
 var sweetPads = require('./sweetPads');
 var secondSection = require('./secondSection');
+var kick = require('./kick');
 var context = require('./context');
 var audio = require('./audio');
 var notes = require('./music').notes;
@@ -2881,7 +2891,15 @@ module.exports.startBackgroundMelody = function () {
   backGroundMelodyInterval = setInterval(playBackMelody, 17000);
 };
 
-},{"./audio":27,"./background":28,"./context":30,"./guitar":33,"./introKicks":35,"./leadSynth":37,"./mtof":41,"./music":43,"./secondSection":44,"./sweetPads":46,"lodash":161,"teoria":218}],30:[function(require,module,exports){
+module.exports.playLastFound = function () {
+  // kick.start();
+  // setTimeout(function () {
+  //   background.proceedRaw(0.5);
+  //   background.setSpeed(0.5);
+  // }, 1000);
+};
+
+},{"./audio":27,"./background":28,"./context":30,"./guitar":33,"./introKicks":35,"./kick":36,"./leadSynth":37,"./mtof":41,"./music":43,"./secondSection":44,"./sweetPads":46,"lodash":161,"teoria":218}],30:[function(require,module,exports){
 'use strict';
 
 window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
@@ -2931,7 +2949,7 @@ var _ = require('lodash');
 
 var context = require('./context');
 
-module.exports = function (buffer, destination, attack, release, offset) {
+module.exports = function (buffer, destination, attack, release, offset, speed) {
   if (!buffer) return;
 
   var source = context.createBufferSource();
@@ -2951,7 +2969,7 @@ module.exports = function (buffer, destination, attack, release, offset) {
   } else if (randomisedOffset < 0) {
     randomisedOffset = 0;
   }
-
+  source.playbackRate.value = speed ? speed : 1;
   source.start(now, randomisedOffset, now + attack + release);
   gain.gain.setValueAtTime(0, now);
   gain.gain.linearRampToValueAtTime(1, now + attack);

@@ -130,7 +130,7 @@ window.addEventListener('mousedown', function () {
 
   if (discoveryPercentage > config.discoveryThreshold && !hasTransitioned) {
     hasTransitioned = true;
-
+    conductor.playLastFound();
     async.series([
       scene2d.transition,
       transitionTo3D
