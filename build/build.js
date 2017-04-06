@@ -2751,7 +2751,7 @@ var context = require('./context');
 var audio = require('./audio');
 var notes = require('./music').notes;
 
-var backGroundMelody = [notes[0], notes[2], notes[3]];
+var backGroundMelody = [notes[0], notes[2]];
 
 function playBackMelody() {
   var now = context.currentTime;
