@@ -130,6 +130,7 @@ window.addEventListener('mousedown', function () {
 
   if (discoveryPercentage > config.discoveryThreshold && !hasTransitioned) {
     hasTransitioned = true;
+    globals.setTransitioned = true;
     conductor.playLastFound();
     async.series([
       scene2d.transition,

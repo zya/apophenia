@@ -148,6 +148,7 @@ window.addEventListener('mousedown', function () {
 
   if (discoveryPercentage > config.discoveryThreshold && !hasTransitioned) {
     hasTransitioned = true;
+    globals.setTransitioned = true;
     conductor.playLastFound();
     async.series([
       scene2d.transition,
@@ -2572,6 +2573,8 @@ var mouse = {
   y: 0
 };
 
+var hasTransitioned = false;
+
 module.exports.setDelta = function (now) {
   var dt = now - (timeAtPreviousFrame || now);
   timeAtPreviousFrame = now;
@@ -2589,6 +2592,14 @@ module.exports.setMousePosition = function (x, y) {
 
 module.exports.getMousePosition = function () {
   return mouse;
+};
+
+module.exports.setTransitioned = function (transitioned) {
+  hasTransitioned = transitioned;
+};
+
+module.exports.hasTransitioned = function () {
+  return hasTransitioned;
 };
 
 },{}],25:[function(require,module,exports){
@@ -2752,13 +2763,14 @@ var _ = require('lodash');
 var teoria = require('teoria');
 
 var mtof = require('./mtof');
+var globals = require('../globals');
 var introKicks = require('./introKicks');
 var background = require('./background');
 var guitar = require('./guitar');
 var leadSynth = require('./leadSynth');
 var sweetPads = require('./sweetPads');
 var secondSection = require('./secondSection');
-var kick = require('./kick');
+// var kick = require('./kick');
 var context = require('./context');
 var audio = require('./audio');
 var notes = require('./music').notes;
@@ -2766,6 +2778,7 @@ var notes = require('./music').notes;
 var backGroundMelody = [notes[0], notes[2]];
 
 function playBackMelody() {
+  if (globals.hasTransitioned()) return;
   var now = context.currentTime;
   backGroundMelody.forEach(function (note, index) {
     sweetPads.play(note, now + (index * _.random(1.9, 2.7)));
@@ -2901,7 +2914,7 @@ module.exports.playLastFound = function () {
   // }, 1000);
 };
 
-},{"./audio":27,"./background":28,"./context":30,"./guitar":33,"./introKicks":35,"./kick":36,"./leadSynth":37,"./mtof":41,"./music":43,"./secondSection":44,"./sweetPads":46,"lodash":161,"teoria":218}],30:[function(require,module,exports){
+},{"../globals":24,"./audio":27,"./background":28,"./context":30,"./guitar":33,"./introKicks":35,"./leadSynth":37,"./mtof":41,"./music":43,"./secondSection":44,"./sweetPads":46,"lodash":161,"teoria":218}],30:[function(require,module,exports){
 'use strict';
 
 window.AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext);
@@ -3055,10 +3068,12 @@ module.exports.play = function (startTime) {
 var _ = require('lodash');
 
 var kick = require('./kick');
+var globals = require('../globals');
 
 var interval = null;
 
 function schedule() {
+  if (globals.hasTransitioned()) return;
   var time = _.random(100, 1000);
   setTimeout(function () {
     kick.start();
@@ -3075,7 +3090,7 @@ module.exports.stop = function () {
   window.clearInterval(interval);
 };
 
-},{"./kick":36,"lodash":161}],36:[function(require,module,exports){
+},{"../globals":24,"./kick":36,"lodash":161}],36:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
