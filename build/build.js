@@ -358,7 +358,7 @@ module.exports.draw = function (pairsInsideSpotlight) {
 
     if (connection.special) {
       var sin = sines[index % 10];
-      drawConnection(connection, colours.darkerBlue, sin, 1.0);
+      drawConnection(connection, colours.darkerBlue, sin, 2.3);
     }
   });
 
@@ -366,7 +366,7 @@ module.exports.draw = function (pairsInsideSpotlight) {
     drawConnection(connection, colours.lighterGrey, 1.0, config.connectionsWidth);
 
     if (connection.special) {
-      drawConnection(connection, colours.orange, 1.0, 1.0);
+      drawConnection(connection, colours.orange, 1.0, 2.3);
     }
   });
 
