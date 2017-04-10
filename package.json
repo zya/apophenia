@@ -9,6 +9,7 @@
     "dynamics.js": "^1.1.5",
     "faster-delaunay": "^1.0.0",
     "fastidious-envelope-generator": "^1.0.2",
+    "lerp": "^1.0.3",
     "lodash": "^4.7.0",
     "markovian": "^1.1.1",
     "moment": "^2.12.0",
