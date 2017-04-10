@@ -19,7 +19,7 @@ var twoD = true;
 stats.showPanel(0);
 stats.dom.style.top = '';
 stats.dom.style.bottom = '0px';
-document.body.appendChild(stats.dom);
+// document.body.appendChild(stats.dom);
 
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
@@ -84,6 +84,7 @@ scene3d.on('roseClick', function () {
 
 scene2d.on('revealStart', function () {
   console.log('started revealing');
+  conductor.playReveal();
 });
 
 scene2d.on('revealEnd', function () {
