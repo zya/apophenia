@@ -66,6 +66,7 @@ scene3d.on('spinStart', function () {
 
 scene3d.on('growStart', function () {
   console.log('started growing');
+  conductor.playDimensionSounds();
 });
 
 scene3d.on('roseHoverOn', function () {
@@ -78,7 +79,8 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-  conductor.playLead();
+  // conductor.playLead();
+  conductor.playLeadMelody();
   console.log('rose click');
 });
 
