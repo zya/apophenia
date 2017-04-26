@@ -66,12 +66,12 @@ function transitionTo3D(done) {
   ], done);
 }
 
-setTimeout(function () {
-  async.series([
-    scene2d.transition,
-    transitionTo3D
-  ]);
-}, 500);
+// setTimeout(function () {
+//   async.series([
+//     scene2d.transition,
+//     transitionTo3D
+//   ]);
+// }, 500);
 
 // setInterval(function () {
 //   if (!threeD) scene3d.render();
