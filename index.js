@@ -61,11 +61,17 @@ function transitionTo3D(done) {
 
 scene3d.on('spinStart', function () {
   console.log('started spinning');
-  conductor.startSecondSection();
+  conductor.addDrumsToSecondSection();
 });
 
 scene3d.on('growStart', function () {
   console.log('started growing');
+  conductor.playDimensionSounds();
+  conductor.startSecondSection();
+});
+
+scene3d.on('growFinish', function () {
+  console.log('finished growing');
   conductor.playDimensionSounds();
 });
 
