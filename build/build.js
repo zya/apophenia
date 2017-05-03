@@ -115,6 +115,10 @@ scene2d.on('revealStart', function () {
 
 scene2d.on('revealEnd', function () {
   console.log('finished revealing');
+  textHandler.proceed();
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 5000);
 });
 
 scene2d.on('stoppedDrawing', function () {
@@ -135,6 +139,13 @@ scene2d.on('revealedSpecial', function () {
 
 scene2d.on('foundFirstConnection', function () {
   textHandler.proceed();
+});
+
+scene2d.on('middleOfDiscovery', function () {
+  textHandler.proceed();
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 6000);
 });
 
 scene2d.on('displayInitialImportantConnections', function () {
@@ -709,6 +720,7 @@ var shouldDrawConnections = true;
 var isIntro = true;
 var started = false;
 var shouldFollowMouse = false;
+var hasFiredMiddleEvent = false;
 
 var spotLightInitialXPosition = 0;
 var spotLightInitialYPosition = 0;
@@ -767,6 +779,7 @@ var foundSpecialCallback = function () {};
 var revealedSpecialCallback = function () {};
 var foundFirstConnectionCallback = function () {};
 var displayIntroSpecialCallback = function () {};
+var middleDiscoveryCallback = function () {};
 
 function parallaxPoints(point, xOffset, yOffset) {
   if (point.originalRadius > 1.9) {
@@ -863,6 +876,10 @@ module.exports.mousedown = function () {
   if (foundSpecial) revealedSpecialCallback();
 
   var discoveryPercentage = connections.getDiscoveryPercentage();
+  if (discoveryPercentage > 0.15 && !hasFiredMiddleEvent) {
+    middleDiscoveryCallback();
+    hasFiredMiddleEvent = true;
+  }
   return discoveryPercentage;
 };
 
@@ -905,6 +922,7 @@ module.exports.on = function (event, cb) {
   if (event === 'revealedSpecial') revealedSpecialCallback = cb;
   if (event === 'foundFirstConnection') foundFirstConnectionCallback = cb;
   if (event === 'displayInitialImportantConnections') displayIntroSpecialCallback = cb;
+  if (event === 'middleOfDiscovery') middleDiscoveryCallback = cb;
 };
 
 module.exports.setInitialSpotlightParams = function (params) {
@@ -2866,7 +2884,7 @@ module.exports.startSecondSection = function () {
   secondSection.start();
 };
 
-module.exports.stopFirstSection = function () {
+module.exports.stopSecondSection = function () {
   window.clearInterval(backGroundMelodySecondInterval);
   window.clearInterval(backReversesSecondInterval);
 };
@@ -3988,6 +4006,20 @@ var narrative = [
   },
   {
     hidden: true
+  },
+  {
+    hidden: false,
+    text: 'WITHIN THE CONNECTIONS<br>YOU\'LL START TO SEE SHAPES'
+  },
+  {
+    hidden: true
+  },
+  {
+    hidden: false,
+    text: 'AND WITHIN THOSE SHAPES<br>YOU\'LL FIND NEW DIMENSIONS'
+  },
+  {
+    hidden: true
   }
 ];
 var element = document.getElementById('narrative');
@@ -4019,7 +4051,6 @@ module.exports.proceed = function () {
     lastAnimationStarted = Date.now();
     element.style.opacity = 1;
   }, time);
-
 };
 
 },{}],56:[function(require,module,exports){

@@ -97,6 +97,10 @@ scene2d.on('revealStart', function () {
 
 scene2d.on('revealEnd', function () {
   console.log('finished revealing');
+  textHandler.proceed();
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 5000);
 });
 
 scene2d.on('stoppedDrawing', function () {
@@ -117,6 +121,13 @@ scene2d.on('revealedSpecial', function () {
 
 scene2d.on('foundFirstConnection', function () {
   textHandler.proceed();
+});
+
+scene2d.on('middleOfDiscovery', function () {
+  textHandler.proceed();
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 6000);
 });
 
 scene2d.on('displayInitialImportantConnections', function () {
