@@ -212,7 +212,6 @@ setTimeout(ready, 0);
 
 function start() {
   text.style.opacity = 0;
-  conductor.startBackground();
   setTimeout(conductor.startBackgroundMelody, 3000);
   play.style.display = 'none';
   scene2d.startFollowingMouse();
@@ -224,5 +223,6 @@ function start() {
   }, 4000);
 }
 
+conductor.startBackground();
 requestAnimationFrame(render);
 // conductor.startSecondSection();

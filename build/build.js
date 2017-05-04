@@ -230,7 +230,6 @@ setTimeout(ready, 0);
 
 function start() {
   text.style.opacity = 0;
-  conductor.startBackground();
   setTimeout(conductor.startBackgroundMelody, 3000);
   play.style.display = 'none';
   scene2d.startFollowingMouse();
@@ -242,6 +241,7 @@ function start() {
   }, 4000);
 }
 
+conductor.startBackground();
 requestAnimationFrame(render);
 // conductor.startSecondSection();
 
@@ -2729,7 +2729,7 @@ synthGain.gain.value = 0.10;
 leadGain.gain.value = 0.10;
 kickGain.gain.value = 0.44;
 kickDrumGain.gain.value = 0.82;
-bgGain.gain.value = 0.08;
+bgGain.gain.value = 0.09;
 guitarGain.gain.value = 0.013;
 snareGain.gain.value = 0.10;
 bassGain.gain.value = 0.0;
@@ -2813,8 +2813,13 @@ module.exports.setSpeed = function (value) {
   speed = value;
 };
 
+module.exports.reset = function () {
+  progress = 0;
+};
+
 module.exports.start = function () {
   setInterval(function () {
+    if (!bgBuffer) return;
     progress += (target - progress) * 0.15;
     grain(bgBuffer, destination, 0.3, 0.5, progress, speed);
   }, 50);
@@ -2882,6 +2887,8 @@ module.exports.stopFirstSection = function (done) {
 
 module.exports.startSecondSection = function () {
   secondSection.start();
+  background.reset();
+  background.setSpeed(2);
 };
 
 module.exports.stopSecondSection = function () {
@@ -3710,6 +3717,7 @@ var tom = require('./tom');
 var context = require('./context');
 var notes = require('./music').notes;
 var synthDestination = require('./audio').leadDestination;
+var background = require('./background');
 
 var shouldAddDrums = false;
 var shouldPlayBackMelody = false;
@@ -3812,8 +3820,14 @@ var kicksLayer = beet.layer(kicksAndHihatsPattern, function (time, step) {
 
 beet.add(kicksLayer);
 
+var progress = 0.0;
 module.exports.start = function () {
   beet.start();
+  setInterval(function () {
+    background.proceedRaw(progress);
+    if (progress > 1) return;
+    progress += 0.0006;
+  }, 70);
 };
 
 module.exports.addDrums = function () {
@@ -3821,7 +3835,7 @@ module.exports.addDrums = function () {
   shouldPlayBackMelody = true;
 };
 
-},{"./audio":26,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./guitar":35,"./kick":37,"./kickDrum":38,"./moogKeys":41,"./music":45,"./tom":51,"beet.js":73,"lodash":167,"markovian":168,"teoria":224}],50:[function(require,module,exports){
+},{"./audio":26,"./background":27,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./guitar":35,"./kick":37,"./kickDrum":38,"./moogKeys":41,"./music":45,"./tom":51,"beet.js":73,"lodash":167,"markovian":168,"teoria":224}],50:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
