@@ -13,6 +13,7 @@ var textHandler = require('./lib/text');
 var stats = new Stats();
 
 var hasTransitioned = false;
+var secondSectionHasFinished = false;
 var threeD = false;
 var twoD = true;
 
@@ -85,9 +86,9 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-  // conductor.playLead();
-  conductor.playLeadMelody();
   console.log('rose click');
+  // if (secondSectionHasFinished) return conductor.playEndMelody();
+  conductor.playLeadMelody();
 });
 
 scene2d.on('revealStart', function () {
@@ -133,6 +134,11 @@ scene2d.on('middleOfDiscovery', function () {
 scene2d.on('displayInitialImportantConnections', function () {
   conductor.startIntroKicks();
   textHandler.proceed();
+});
+
+conductor.on('finish', function () {
+  console.log('second section finished');
+  secondSectionHasFinished = true;
 });
 
 window.addEventListener('mousemove', function (evt) {
