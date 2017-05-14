@@ -16,6 +16,7 @@ var hasTransitioned = false;
 var secondSectionHasFinished = false;
 var threeD = false;
 var twoD = true;
+var DEBUG = false;
 
 stats.showPanel(0);
 stats.dom.style.top = '';
@@ -49,16 +50,14 @@ function transitionTo3D(done) {
   ], done);
 }
 
-// setTimeout(function () {
-//   async.series([
-//     scene2d.transition,
-//     transitionTo3D
-//   ]);
-// }, 500);
-
-// setInterval(function () {
-//   if (!threeD) scene3d.render();
-// }, 150);
+if (DEBUG) {
+  setTimeout(function () {
+    async.series([
+      scene2d.transition,
+      transitionTo3D
+    ]);
+  }, 500);
+}
 
 scene3d.on('spinStart', function () {
   console.log('started spinning');
@@ -90,7 +89,7 @@ scene3d.on('roseClick', function () {
   if (secondSectionHasFinished) {
     conductor.playEndMelody();
     scene3d.explode();
-    return;
+    // return;
   }
   conductor.playLeadMelody();
 });
@@ -146,7 +145,7 @@ conductor.on('finish', function () {
 });
 
 conductor.on('secondPartProgress', function (progress) {
-  console.log(progress);
+  scene3d.zoom(progress);
 });
 
 window.addEventListener('mousemove', function (evt) {
