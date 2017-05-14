@@ -3918,9 +3918,9 @@ module.exports.start = function () {
       return window.clearInterval(interval);
     }
     background.proceedRaw(progress);
-    // progress += 0.0006;
-    progress += 0.01;
-    console.log(progress);
+    progress += 0.0006;
+    // progress += 0.01;
+    // console.log(progress);
   }, 70);
 };
 
