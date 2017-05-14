@@ -163,6 +163,10 @@ conductor.on('finish', function () {
   secondSectionHasFinished = true;
 });
 
+conductor.on('secondPartProgress', function (progress) {
+  console.log(progress);
+});
+
 window.addEventListener('mousemove', function (evt) {
   if (evt.target.id !== 'pt') {}
   globals.setMousePosition(evt.clientX, evt.clientY);
@@ -3058,6 +3062,7 @@ module.exports.playDimensionSounds = function () {
 
 module.exports.on = function (type, cb) {
   if (type === 'finish') secondSection.on('finish', cb);
+  if (type === 'secondPartProgress') secondSection.on('secondPartProgress', cb);
 };
 
 },{"../globals":24,"./audio":26,"./background":27,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./epicRev":33,"./guitar":35,"./introKicks":36,"./leadSynth":39,"./mtof":43,"./music":45,"./roseLeadMelody":48,"./secondSection":49,"./sweetPads":51,"lodash":168,"teoria":225}],29:[function(require,module,exports){
@@ -3747,6 +3752,7 @@ var background = require('./background');
 var SHOULD_ADD_DRUMS = false;
 var SHOULD_PLAY_BACK_MELODY = false;
 var finishListener = _.noop;
+var secondPartProgressListener = _.noop;
 
 var beet = new Beet({
   context: context,
@@ -3921,6 +3927,7 @@ module.exports.start = function () {
     progress += 0.0006;
     // progress += 0.01;
     // console.log(progress);
+    secondPartProgressListener(progress);
   }, 70);
 };
 
@@ -3931,6 +3938,7 @@ module.exports.addDrums = function () {
 
 module.exports.on = function (type, cb) {
   if (type === 'finish') finishListener = cb;
+  if (type === 'secondPartProgress') secondPartProgressListener = cb;
 };
 
 },{"./audio":26,"./background":27,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./guitar":35,"./kick":37,"./kickDrum":38,"./moogKeys":41,"./music":45,"./snare":50,"./tom":52,"beet.js":74,"lodash":168,"markovian":169,"teoria":225}],50:[function(require,module,exports){

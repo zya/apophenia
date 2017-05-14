@@ -145,6 +145,10 @@ conductor.on('finish', function () {
   secondSectionHasFinished = true;
 });
 
+conductor.on('secondPartProgress', function (progress) {
+  console.log(progress);
+});
+
 window.addEventListener('mousemove', function (evt) {
   if (evt.target.id !== 'pt') {}
   globals.setMousePosition(evt.clientX, evt.clientY);
