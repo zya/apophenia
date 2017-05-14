@@ -105,7 +105,11 @@ scene3d.on('roseHoverOff', function () {
 
 scene3d.on('roseClick', function () {
   console.log('rose click');
-  // if (secondSectionHasFinished) return conductor.playEndMelody();
+  if (secondSectionHasFinished) {
+    conductor.playEndMelody();
+    scene3d.explode();
+    return;
+  }
   conductor.playLeadMelody();
 });
 
@@ -2429,10 +2433,13 @@ module.exports.on = function (event, cb) {
   if (event === 'roseHoverOff') roseHoverOffCallback = cb;
   if (event === 'roseClick') roseClickCallback = cb;
 };
-// startMovingLights
 
 module.exports.hideCanvas = function () {
   renderer.hide();
+};
+
+module.exports.explode = function () {
+  console.log('exploding the 3D objects');
 };
 
 },{"../2d/pt":7,"../colours":22,"../globals":24,"./aura":14,"./generate3DGeometry":15,"./materials":17,"./renderer":18,"./rose":19,"async":72,"dynamics.js":132,"lodash":168,"three":233}],21:[function(require,module,exports){
@@ -3911,7 +3918,9 @@ module.exports.start = function () {
       return window.clearInterval(interval);
     }
     background.proceedRaw(progress);
-    progress += 0.0006;
+    // progress += 0.0006;
+    progress += 0.01;
+    console.log(progress);
   }, 70);
 };
 

@@ -87,7 +87,11 @@ scene3d.on('roseHoverOff', function () {
 
 scene3d.on('roseClick', function () {
   console.log('rose click');
-  // if (secondSectionHasFinished) return conductor.playEndMelody();
+  if (secondSectionHasFinished) {
+    conductor.playEndMelody();
+    scene3d.explode();
+    return;
+  }
   conductor.playLeadMelody();
 });
 
