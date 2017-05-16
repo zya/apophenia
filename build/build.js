@@ -2448,7 +2448,7 @@ module.exports.explode = function () {
 module.exports.zoom = function (progress) {
   var maxZ = geometry.boundingBox.max.z;
   var distance = Math.abs(maxZ - camera.position.z);
-  if (progress > 0.1 && distance > maxZ * 3.5) {
+  if (progress > 0.1 && distance > maxZ * 4) {
     camera.position.z -= (progress - 0.1) * 0.02;
   }
 };
