@@ -35,11 +35,12 @@ var secondSectionHasFinished = false;
 var threeD = false;
 var twoD = true;
 var DEBUG = false;
+var SHOULD_FINISH = false;
 
 stats.showPanel(0);
 stats.dom.style.top = '';
 stats.dom.style.bottom = '0px';
-// document.body.appendChild(stats.dom);
+document.body.appendChild(stats.dom);
 
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
@@ -104,10 +105,10 @@ scene3d.on('roseHoverOff', function () {
 
 scene3d.on('roseClick', function () {
   console.log('rose click');
-  if (secondSectionHasFinished) {
-    conductor.playEndMelody();
+  if (secondSectionHasFinished && SHOULD_FINISH) {
+    conductor.endSecondSection();
     scene3d.explode();
-    // return;
+    return;
   }
   conductor.playLeadMelody();
 });
@@ -3057,8 +3058,11 @@ module.exports.playLeadMelody = function () {
   roseLeadMelody.play();
 };
 
-module.exports.playEndMelody = function () {
-  console.log('playing end melody');
+module.exports.endSecondSection = function () {
+  secondSection.stop();
+  roseLeadMelody.playEnd(function (progress) {
+    console.log(progress);
+  });
 };
 
 module.exports.playDimensionSounds = function () {
@@ -3734,6 +3738,32 @@ module.exports.play = function () {
   }
 };
 
+var endNotes = [notes[3], notes[2], notes[1], notes[2], notes[0]];
+var endTimes = [0, 0.80, 0.75, 0.70, 0.85];
+
+module.exports.playEnd = function (cb) {
+  var now = context.currentTime;
+
+  endNotes.forEach(function (note, index) {
+    if (!note) return;
+    var offset = (index * endTimes[index]);
+    piano.play(note, now + offset);
+    newGuitar.play(note, now + offset);
+    dream.play(note, now + offset);
+
+    if (index >= 3) {
+      var n = teoria.note('c3');
+      piano.play(n, now + offset);
+      newGuitar.play(n, now + offset);
+      dream.play(n, now + offset);
+    }
+
+    setTimeout(function () {
+      cb(index / (endNotes.length - 1));
+    }, offset * 1000);
+  });
+};
+
 },{"./context":29,"./dream":30,"./epicPerc":31,"./epicPerc2":32,"./ms20Bass":42,"./music":45,"./newGuitar":46,"./piano":47,"lodash":168,"markovian":169,"teoria":225}],49:[function(require,module,exports){
 'use strict';
 
@@ -3758,6 +3788,7 @@ var background = require('./background');
 
 var SHOULD_ADD_DRUMS = false;
 var SHOULD_PLAY_BACK_MELODY = false;
+var SHOULD_PLAY_SYNTH = true;
 var finishListener = _.noop;
 var secondPartProgressListener = _.noop;
 
@@ -3858,7 +3889,7 @@ function calculateKeysNoteOffset(bar, dividant) {
 
 var keysMelodyPattern = [notes[0], notes[1], notes[0], notes[0], notes[2], null, notes[4], notes[0]];
 var keysLayer = beet.layer(keysPattern, function (time, step, realTime) {
-
+  if (!SHOULD_PLAY_SYNTH) return;
   if (step === 1 && SHOULD_ADD_DRUMS) {
     setTimeout(function () {
       var dividant = keysNoteOffset === 0 ? 9 : 5;
@@ -3867,6 +3898,7 @@ var keysLayer = beet.layer(keysPattern, function (time, step, realTime) {
   }
   moogKeys.start(keysMelodyPattern[step - 1], time, keysNoteOffset);
 }, function (time) {
+  if (!SHOULD_PLAY_SYNTH) return;
   moogKeys.start(notes[2], time, keysNoteOffset);
 });
 
@@ -3946,6 +3978,12 @@ module.exports.addDrums = function () {
 module.exports.on = function (type, cb) {
   if (type === 'finish') finishListener = cb;
   if (type === 'secondPartProgress') secondPartProgressListener = cb;
+};
+
+module.exports.stop = function () {
+  SHOULD_ADD_DRUMS = false;
+  SHOULD_PLAY_BACK_MELODY = false;
+  SHOULD_PLAY_SYNTH = false;
 };
 
 },{"./audio":26,"./background":27,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./guitar":35,"./kick":37,"./kickDrum":38,"./moogKeys":41,"./music":45,"./snare":50,"./tom":52,"beet.js":74,"lodash":168,"markovian":169,"teoria":225}],50:[function(require,module,exports){

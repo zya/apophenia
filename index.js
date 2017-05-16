@@ -17,11 +17,12 @@ var secondSectionHasFinished = false;
 var threeD = false;
 var twoD = true;
 var DEBUG = false;
+var SHOULD_FINISH = false;
 
 stats.showPanel(0);
 stats.dom.style.top = '';
 stats.dom.style.bottom = '0px';
-// document.body.appendChild(stats.dom);
+document.body.appendChild(stats.dom);
 
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
@@ -86,10 +87,10 @@ scene3d.on('roseHoverOff', function () {
 
 scene3d.on('roseClick', function () {
   console.log('rose click');
-  if (secondSectionHasFinished) {
-    conductor.playEndMelody();
+  if (secondSectionHasFinished && SHOULD_FINISH) {
+    conductor.endSecondSection();
     scene3d.explode();
-    // return;
+    return;
   }
   conductor.playLeadMelody();
 });
