@@ -30,10 +30,10 @@ var textHandler = require('./lib/text');
 
 var stats = new Stats();
 
-var hasTransitioned = false;
-var secondSectionHasFinished = false;
-var threeD = false;
-var twoD = true;
+var HAS_TRANSITIONED = false;
+var SECOND_SECTION_HAS_FINISHED = false;
+var SHOUD_RENDER_3D = false;
+var SHOULD_RENDER_2D = true;
 var DEBUG = false;
 var SHOULD_FINISH = false;
 
@@ -46,7 +46,7 @@ function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
   scene3d.init(triangles, function () {
     setTimeout(function () {
-      threeD = true;
+      SHOUD_RENDER_3D = true;
       done();
     }, 300);
   });
@@ -105,7 +105,7 @@ scene3d.on('roseHoverOff', function () {
 
 scene3d.on('roseClick', function () {
   console.log('rose click');
-  if (secondSectionHasFinished && SHOULD_FINISH) {
+  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH) {
     conductor.endSecondSection(function () {
       scene3d.reactToAudio();
     });
@@ -129,7 +129,7 @@ scene2d.on('revealEnd', function () {
 });
 
 scene2d.on('stoppedDrawing', function () {
-  twoD = false;
+  SHOULD_RENDER_2D = false;
   console.log('stopped drawing');
 });
 
@@ -162,7 +162,7 @@ scene2d.on('displayInitialImportantConnections', function () {
 
 conductor.on('finish', function () {
   console.log('second section finished');
-  secondSectionHasFinished = true;
+  SECOND_SECTION_HAS_FINISHED = true;
 });
 
 conductor.on('secondPartProgress', function (progress) {
@@ -176,14 +176,14 @@ window.addEventListener('mousemove', function (evt) {
 
 window.addEventListener('mousedown', function () {
   scene3d.mousedown();
-  if (hasTransitioned) return;
+  if (HAS_TRANSITIONED) return;
 
   var discoveryPercentage = scene2d.mousedown();
   conductor.proceed(discoveryPercentage);
   document.getElementById('progress-bar').style.width = ((discoveryPercentage / config.discoveryThreshold) * 100) + '%';
 
-  if (discoveryPercentage > config.discoveryThreshold && !hasTransitioned) {
-    hasTransitioned = true;
+  if (discoveryPercentage > config.discoveryThreshold && !HAS_TRANSITIONED) {
+    HAS_TRANSITIONED = true;
     globals.setTransitioned = true;
     conductor.playLastFound();
     async.series([
@@ -194,7 +194,7 @@ window.addEventListener('mousedown', function () {
 });
 
 window.addEventListener('mouseup', function () {
-  if (hasTransitioned) return;
+  if (HAS_TRANSITIONED) return;
   scene2d.mouseup();
 });
 
@@ -213,7 +213,7 @@ function render() {
   var now = new Date().getTime();
   globals.setDelta(now);
 
-  if (twoD) {
+  if (SHOULD_RENDER_2D) {
     scene2d.render();
     if (frame % warmUp3DRenderInterval === 0) {
       scene3d.render();
@@ -222,7 +222,7 @@ function render() {
     }
   }
 
-  if (threeD) scene3d.render();
+  if (SHOUD_RENDER_3D) scene3d.render();
 
   frame++;
   stats.end();
