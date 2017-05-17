@@ -37,10 +37,10 @@ var twoD = true;
 var DEBUG = false;
 var SHOULD_FINISH = false;
 
-stats.showPanel(0);
+// stats.showPanel(0);
 stats.dom.style.top = '';
 stats.dom.style.bottom = '0px';
-document.body.appendChild(stats.dom);
+// document.body.appendChild(stats.dom);
 
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
@@ -106,11 +106,13 @@ scene3d.on('roseHoverOff', function () {
 scene3d.on('roseClick', function () {
   console.log('rose click');
   if (secondSectionHasFinished && SHOULD_FINISH) {
-    conductor.endSecondSection();
-    scene3d.explode();
+    conductor.endSecondSection(function () {
+      scene3d.reactToAudio();
+    });
+    scene3d.stopMovement();
     return;
   }
-  conductor.playLeadMelody();
+  conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
 scene2d.on('revealStart', function () {
@@ -1935,11 +1937,14 @@ var auraMesh = aura.mesh;
 
 var geometry, mesh, wireframe, camera, group, groupMaterial;
 // var controls;
-var shouldEmitMouseOnEvent = true;
-var shouldEmitMouseOffEvent = false;
-var shouldSpin = false;
-var shouldUpdate = false;
-var isHover = false;
+var SHOUD_EMIT_MOUSE_ON_EVENT = true;
+var SHOUD_EMIT_MOUSE_OFF_EVENT = false;
+var SHOULD_SPIN = false;
+var MESH_SHOULD_SPIN = true;
+var SHOUD_UPDATE = false;
+var IS_HOVER = false;
+var LOADED = false;
+
 // scene and camera
 var scene = new THREE.Scene();
 
@@ -1954,8 +1959,6 @@ var spin = {
   speed: 0
 };
 
-var loaded = false;
-
 var spinStartCallback = _.noop();
 var growStartCallback = _.noop();
 var growFinishCallback = _.noop();
@@ -1964,7 +1967,7 @@ var roseHoverOffCallback = _.noop();
 var roseClickCallback = _.noop();
 
 rose.load(function (err, mesh, material) {
-  loaded = true;
+  LOADED = true;
   roseMesh = mesh;
   // roseMesh.visible = false;
   auraMesh.visible = false;
@@ -2073,7 +2076,7 @@ function scaleUpTo3D(done) {
 
 function startSpinning(done) {
   setTimeout(function () {
-    shouldSpin = true;
+    SHOULD_SPIN = true;
     spinStartCallback();
     dynamics.animate(spin, {
       speed: 0.007
@@ -2087,9 +2090,9 @@ function startSpinning(done) {
 }
 
 function mouseOn() {
-  shouldEmitMouseOnEvent = false;
-  shouldEmitMouseOffEvent = true;
-  isHover = true;
+  SHOUD_EMIT_MOUSE_ON_EVENT = false;
+  SHOUD_EMIT_MOUSE_OFF_EVENT = true;
+  IS_HOVER = true;
 
   dynamics.animate(redLight, {
     intensity: redLightIntensityInitial + 0.3
@@ -2115,7 +2118,7 @@ function mouseOn() {
     duration: 1000
   });
 
-  if (loaded) {
+  if (LOADED) {
     dynamics.animate(roseMaterial, {
       emissiveIntensity: roseMaterial.userData.emissiveIntensityInitial + 0.80
     }, {
@@ -2139,7 +2142,7 @@ function mouseOn() {
     roseHoverOnCallback();
   }
 
-  if (shouldSpin) {
+  if (SHOULD_SPIN) {
     dynamics.animate(spin, {
       speed: 0.007 / 3
     }, {
@@ -2153,9 +2156,9 @@ function mouseOn() {
 }
 
 function mouseOff() {
-  shouldEmitMouseOnEvent = true;
-  shouldEmitMouseOffEvent = false;
-  isHover = false;
+  SHOUD_EMIT_MOUSE_ON_EVENT = true;
+  SHOUD_EMIT_MOUSE_OFF_EVENT = false;
+  IS_HOVER = false;
 
   dynamics.animate(redLight, {
     intensity: redLightIntensityInitial
@@ -2196,7 +2199,7 @@ function mouseOff() {
     duration: 2000
   });
 
-  if (shouldSpin) {
+  if (SHOULD_SPIN) {
     dynamics.animate(spin, {
       speed: 0.007
     }, {
@@ -2211,17 +2214,17 @@ function mouseOff() {
 }
 
 function raycast() {
-  if (!shouldSpin) return;
+  if (!SHOULD_SPIN) return;
   raycaster.setFromCamera(new THREE.Vector2(mouseOffsetX, mouseOffsetY), camera);
   var intersects = raycaster.intersectObjects([mesh, roseMesh]);
   if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
     document.body.style.cursor = 'pointer';
-    if (shouldEmitMouseOnEvent) {
+    if (SHOUD_EMIT_MOUSE_ON_EVENT) {
       mouseOn();
     }
   } else {
     document.body.style.cursor = 'auto';
-    if (shouldEmitMouseOffEvent) {
+    if (SHOUD_EMIT_MOUSE_OFF_EVENT) {
       mouseOff();
     }
   }
@@ -2276,7 +2279,7 @@ function scaleGroup() {
 addSpheres();
 
 module.exports.mousedown = function () {
-  if (isHover && loaded) {
+  if (IS_HOVER && LOADED) {
     rose.distort();
     aura.distort();
     roseClickCallback();
@@ -2338,7 +2341,7 @@ module.exports.init = function (triangles, done) {
 
     // console.log(Date.now() - start, 'Scene Start');
     done();
-    shouldUpdate = true;
+    SHOUD_UPDATE = true;
   });
 };
 
@@ -2363,19 +2366,19 @@ function addInsideMeshes(done) {
 }
 
 module.exports.render = function () {
-  if (shouldSpin) {
-    mesh.rotation.y += spin.speed;
-    // sphere.rotation.y -= 0.006;
+  if (SHOULD_SPIN) {
+    if (MESH_SHOULD_SPIN) mesh.rotation.y += spin.speed;
+
     auraMesh.rotation.y -= 0.006;
     group.rotation.y -= 0.003;
     group.rotation.x -= 0.001;
   }
 
-  if (loaded) {
+  if (LOADED) {
     roseMaterial.needsUpdate = true;
   }
 
-  if (shouldUpdate) {
+  if (SHOUD_UPDATE) {
     mesh.scale.copy(wireframe.scale);
     mesh.scale.sub(new THREE.Vector3(0.001, 0.001, 0.001));
     wireframe.rotation.copy(mesh.rotation);
@@ -2446,12 +2449,30 @@ module.exports.explode = function () {
   console.log('exploding the 3D objects');
 };
 
+module.exports.stopMovement = function () {
+  dynamics.animate(spin, {
+    speed: 0
+  }, {
+    duration: 2000,
+    type: dynamics.easeIn,
+    friction: 35
+  });
+
+  setTimeout(function () {
+    MESH_SHOULD_SPIN = false;
+  }, 2100);
+};
+
 module.exports.zoom = function (progress) {
   var maxZ = geometry.boundingBox.max.z;
   var distance = Math.abs(maxZ - camera.position.z);
   if (progress > 0.1 && distance > maxZ * 4) {
     camera.position.z -= (progress - 0.1) * 0.02;
   }
+};
+
+module.exports.reactToAudio = function () {
+  aura.distort();
 };
 
 },{"../2d/pt":7,"../colours":22,"../globals":24,"./aura":14,"./generate3DGeometry":15,"./materials":17,"./renderer":18,"./rose":19,"async":72,"dynamics.js":132,"lodash":168,"three":233}],21:[function(require,module,exports){
@@ -3054,15 +3075,13 @@ module.exports.playLastFound = function () {
   epicPerc.play(teoria.note('c3'), now + 1.6);
 };
 
-module.exports.playLeadMelody = function () {
-  roseLeadMelody.play();
+module.exports.playLeadMelody = function (cb) {
+  roseLeadMelody.play(cb);
 };
 
-module.exports.endSecondSection = function () {
+module.exports.endSecondSection = function (cb) {
   secondSection.stop();
-  roseLeadMelody.playEnd(function (progress) {
-    console.log(progress);
-  });
+  roseLeadMelody.playEnd(cb);
 };
 
 module.exports.playDimensionSounds = function () {
@@ -3715,7 +3734,7 @@ var countModel = markovian.create([
   }
 ]);
 
-module.exports.play = function () {
+module.exports.play = function (cb) {
   var note1 = melodyChain.tick();
   var count = countModel.tick();
   var note2 = count === 2 || count === 3 ? melodyChain.tick() : null;
@@ -3728,6 +3747,10 @@ module.exports.play = function () {
     piano.play(note, now + offset);
     newGuitar.play(note, now + offset);
     dream.play(note, now + offset);
+
+    setTimeout(function () {
+      cb(index / (endNotes.length - 1));
+    }, offset * 1000);
   });
 
   if (count === 1) {

@@ -19,10 +19,10 @@ var twoD = true;
 var DEBUG = false;
 var SHOULD_FINISH = false;
 
-stats.showPanel(0);
+// stats.showPanel(0);
 stats.dom.style.top = '';
 stats.dom.style.bottom = '0px';
-document.body.appendChild(stats.dom);
+// document.body.appendChild(stats.dom);
 
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
@@ -88,11 +88,13 @@ scene3d.on('roseHoverOff', function () {
 scene3d.on('roseClick', function () {
   console.log('rose click');
   if (secondSectionHasFinished && SHOULD_FINISH) {
-    conductor.endSecondSection();
-    scene3d.explode();
+    conductor.endSecondSection(function () {
+      scene3d.reactToAudio();
+    });
+    scene3d.stopMovement();
     return;
   }
-  conductor.playLeadMelody();
+  conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
 scene2d.on('revealStart', function () {
