@@ -107,8 +107,14 @@ scene3d.on('roseHoverOff', function () {
 scene3d.on('roseClick', function () {
   console.log('rose click');
   if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH) {
-    conductor.endSecondSection(function () {
+    conductor.endSecondSection(function (p) {
       scene3d.reactToAudio();
+
+      if (p === 1) {
+        scene3d.explodeTheMesh();
+        scene3d.removeHoverAnimations();
+        setTimeout(scene3d.explodeTheWireFrame, 2000);
+      }
     });
     scene3d.stopMovement();
     return;
@@ -2449,6 +2455,38 @@ module.exports.explode = function () {
   console.log('exploding the 3D objects');
 };
 
+module.exports.explodeTheMesh = function () {
+  var duration = 3000;
+
+  dynamics.animate(material, {
+    opacity: 0
+  }, {
+    duration: duration
+  });
+
+  setTimeout(function () {
+    scene.remove(mesh);
+  }, duration + 100);
+};
+
+module.exports.explodeTheWireFrame = function () {
+  var duration = 3000;
+
+  dynamics.animate(wireframeMaterial, {
+    opacity: 0
+  }, {
+    duration: duration
+  });
+
+  setTimeout(function () {
+    scene.remove(wireframe);
+  }, duration + 100);
+};
+
+module.exports.removeHoverAnimations = function () {
+
+};
+
 module.exports.stopMovement = function () {
   dynamics.animate(spin, {
     speed: 0
@@ -3990,11 +4028,11 @@ module.exports.start = function () {
       return window.clearInterval(interval);
     }
     background.proceedRaw(progress);
-    progress += 0.0006;
+    progress += 0.0008;
     // progress += 0.01;
     // console.log(progress);
     secondPartProgressListener(progress);
-  }, 70);
+  }, 100);
 };
 
 module.exports.addDrums = function () {

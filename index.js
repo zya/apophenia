@@ -89,8 +89,14 @@ scene3d.on('roseHoverOff', function () {
 scene3d.on('roseClick', function () {
   console.log('rose click');
   if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH) {
-    conductor.endSecondSection(function () {
+    conductor.endSecondSection(function (p) {
       scene3d.reactToAudio();
+
+      if (p === 1) {
+        scene3d.explodeTheMesh();
+        scene3d.removeHoverAnimations();
+        setTimeout(scene3d.explodeTheWireFrame, 2000);
+      }
     });
     scene3d.stopMovement();
     return;
