@@ -18,6 +18,7 @@ var SHOUD_RENDER_3D = false;
 var SHOULD_RENDER_2D = true;
 var DEBUG = false;
 var SHOULD_FINISH = false;
+var DELAY_TIME_TO_START = 5000;
 
 // stats.showPanel(0);
 stats.dom.style.top = '';
@@ -223,8 +224,7 @@ function ready() {
   });
 }
 
-
-setTimeout(ready, 0);
+setTimeout(ready, DEBUG ? 0 : DELAY_TIME_TO_START);
 
 function start() {
   text.style.opacity = 0;
