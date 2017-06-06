@@ -13,11 +13,12 @@ var textHandler = require('./lib/text');
 var stats = new Stats();
 
 var HAS_TRANSITIONED = false;
+var IS_LIMBO = false;
 var SECOND_SECTION_HAS_FINISHED = false;
 var SHOUD_RENDER_3D = false;
 var SHOULD_RENDER_2D = true;
 var DEBUG = false;
-var SHOULD_FINISH = false;
+var SHOULD_FINISH = true;
 var DELAY_TIME_TO_START = 5000;
 
 // stats.showPanel(0);
@@ -88,19 +89,24 @@ scene3d.on('roseHoverOff', function () {
 
 scene3d.on('roseClick', function () {
   console.log('rose click');
-  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH) {
+  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
     conductor.endSecondSection(function (p) {
       scene3d.reactToAudio();
 
       if (p === 1) {
         scene3d.explodeTheMesh();
         scene3d.removeHoverAnimations();
-        setTimeout(scene3d.explodeTheWireFrame, 2000);
+        setTimeout(function () {
+          scene3d.explodeTheWireFrame();
+          IS_LIMBO = true;
+        }, 2000);
       }
     });
     scene3d.stopMovement();
     return;
   }
+
+  if (IS_LIMBO) return conductor.playLimboMelody(scene3d.reactToAudio);
   conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
@@ -152,6 +158,10 @@ scene2d.on('displayInitialImportantConnections', function () {
 conductor.on('finish', function () {
   console.log('second section finished');
   SECOND_SECTION_HAS_FINISHED = true;
+});
+
+conductor.on('lastNotesPlayed', function (p) {
+  console.log('finito', p);
 });
 
 conductor.on('secondPartProgress', function (progress) {
