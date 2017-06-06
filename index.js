@@ -97,7 +97,7 @@ scene3d.on('roseClick', function () {
         scene3d.explodeTheMesh();
         scene3d.removeHoverAnimations();
         setTimeout(function () {
-          scene3d.explodeTheWireFrame();
+          scene3d.explodeTheWireFrame(scene3d.toggleIntersect);
           IS_LIMBO = true;
         }, 2000);
       }

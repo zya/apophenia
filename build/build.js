@@ -115,7 +115,7 @@ scene3d.on('roseClick', function () {
         scene3d.explodeTheMesh();
         scene3d.removeHoverAnimations();
         setTimeout(function () {
-          scene3d.explodeTheWireFrame();
+          scene3d.explodeTheWireFrame(scene3d.toggleIntersect);
           IS_LIMBO = true;
         }, 2000);
       }
@@ -1960,6 +1960,7 @@ var MESH_SHOULD_SPIN = true;
 var SHOUD_UPDATE = false;
 var IS_HOVER = false;
 var LOADED = false;
+var INTERSECT_TOGGLED = false;
 
 // scene and camera
 var scene = new THREE.Scene();
@@ -2232,7 +2233,8 @@ function mouseOff() {
 function raycast() {
   if (!SHOULD_SPIN) return;
   raycaster.setFromCamera(new THREE.Vector2(mouseOffsetX, mouseOffsetY), camera);
-  var intersects = raycaster.intersectObjects([mesh, roseMesh]);
+  var objects = INTERSECT_TOGGLED ? [roseMesh] : [mesh, roseMesh];
+  var intersects = raycaster.intersectObjects(objects);
   if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
     document.body.style.cursor = 'pointer';
     if (SHOUD_EMIT_MOUSE_ON_EVENT) {
@@ -2479,7 +2481,7 @@ module.exports.explodeTheMesh = function () {
   }, duration + 100);
 };
 
-module.exports.explodeTheWireFrame = function () {
+module.exports.explodeTheWireFrame = function (cb) {
   var duration = 3000;
 
   dynamics.animate(wireframeMaterial, {
@@ -2490,6 +2492,7 @@ module.exports.explodeTheWireFrame = function () {
 
   setTimeout(function () {
     scene.remove(wireframe);
+    cb();
   }, duration + 100);
 };
 
@@ -2521,6 +2524,10 @@ module.exports.zoom = function (progress) {
 
 module.exports.reactToAudio = function () {
   aura.distort();
+};
+
+module.exports.toggleIntersect = function () {
+  INTERSECT_TOGGLED = true;
 };
 
 },{"../2d/pt":7,"../colours":22,"../globals":24,"./aura":14,"./generate3DGeometry":15,"./materials":17,"./renderer":18,"./rose":19,"async":71,"dynamics.js":131,"lodash":167,"three":232}],21:[function(require,module,exports){
