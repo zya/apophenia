@@ -179,6 +179,14 @@ conductor.on('finish', function () {
 });
 
 conductor.on('lastNotesPlayed', function (p) {
+  if (p < 0.30) {
+    conductor.playFinalPercs();
+  } else if (p >= 1) {
+    scene3d.finish(function () {
+      conductor.cleanUpSecondSection();
+    });
+  }
+
   console.log('finito', p);
 });
 
@@ -275,7 +283,6 @@ function start() {
 
 conductor.startBackground();
 requestAnimationFrame(render);
-// conductor.startSecondSection();
 
 },{"./config":1,"./lib/2d/scene2D":10,"./lib/3d/scene3D":20,"./lib/globals":24,"./lib/music/conductor":28,"./lib/text":55,"async":71,"stats.js":221}],3:[function(require,module,exports){
 'use strict';
@@ -1267,7 +1274,9 @@ var material = new THREE.MeshPhongMaterial({
   color: colours.darkGrey.hex(),
   emissive: colours.darkGrey.hex(),
   emissiveIntensity: 1.0,
-  morphTargets: true
+  morphTargets: true,
+  transparent: true,
+  opacity: 1
 });
 
 var aura = new THREE.Mesh(geometry, material);
@@ -1328,6 +1337,20 @@ module.exports.distort = function () {
 module.exports.setSize = function (reference) {
   scale = reference / (geometry.boundingBox.max.y * 1.55);
   aura.scale.set(scale, scale, scale);
+};
+
+module.exports.fadeOut = function (cb) {
+  var duration = 3000;
+  dynamics.animate(material, {
+    opacity: 0
+  }, {
+    duration: duration
+  });
+
+  setTimeout(function () {
+    material.visible = false;
+    cb();
+  }, duration);
 };
 
 },{"../colours":22,"dynamics.js":131,"lodash":167,"three":232}],15:[function(require,module,exports){
@@ -1932,6 +1955,30 @@ module.exports.reveal = function () {
   rose.scale.set(scale, scale, scale);
 };
 
+module.exports.fadeOut = function (cb) {
+  var duration = 4000;
+  material.transparent = true;
+  material.needsUpdate = true;
+  dynamics.animate(material, {
+    opacity: 0
+  }, {
+    duration: 4000
+  });
+
+  // dynamics.animate(animatables, {
+  //   morph: 10
+  // }, {
+  //   type: dynamics.easeOut,
+  //   friction: 1,
+  //   duration: duration * 2
+  // });
+
+  setTimeout(function () {
+    material.visible = false;
+    cb();
+  }, duration);
+};
+
 },{"../../node_modules/three/examples/js/loaders/OBJLoader":233,"dynamics.js":131,"lodash":167,"three":232}],20:[function(require,module,exports){
 'use strict';
 
@@ -1961,6 +2008,7 @@ var SHOUD_UPDATE = false;
 var IS_HOVER = false;
 var LOADED = false;
 var INTERSECT_TOGGLED = false;
+var SHOULD_INTERSECT = true;
 
 // scene and camera
 var scene = new THREE.Scene();
@@ -2231,7 +2279,7 @@ function mouseOff() {
 }
 
 function raycast() {
-  if (!SHOULD_SPIN) return;
+  if (!SHOULD_SPIN || !SHOULD_INTERSECT) return;
   raycaster.setFromCamera(new THREE.Vector2(mouseOffsetX, mouseOffsetY), camera);
   var objects = INTERSECT_TOGGLED ? [roseMesh] : [mesh, roseMesh];
   var intersects = raycaster.intersectObjects(objects);
@@ -2364,6 +2412,7 @@ module.exports.init = function (triangles, done) {
 };
 
 function updateMousePosition() {
+  if (!SHOULD_INTERSECT) return;
   var mouse = globals.getMousePosition();
   var mouseVertex = new THREE.Vector2(((mouse.x / space.size.x) - 0.5) * 2, (((mouse.y / space.size.y) - 0.5) * 2) * -1);
   mouseOffsetX = mouseVertex.x;
@@ -2381,6 +2430,17 @@ function addInsideMeshes(done) {
   material.side = THREE.DoubleSide;
 
   done();
+}
+
+function fadeGroupOut(done) {
+  var duration = 2000;
+  dynamics.animate(groupMaterial, {
+    opacity: 0
+  }, {
+    duration: duration
+  });
+
+  setTimeout(done, duration);
 }
 
 module.exports.render = function () {
@@ -2528,6 +2588,19 @@ module.exports.reactToAudio = function () {
 
 module.exports.toggleIntersect = function () {
   INTERSECT_TOGGLED = true;
+};
+
+module.exports.finish = function (cb) {
+  SHOULD_INTERSECT = false;
+  document.body.style.cursor = 'auto';
+
+  async.series([
+    aura.fadeOut,
+    rose.fadeOut
+  ], function () {
+    mouseOff();
+    cb();
+  });
 };
 
 },{"../2d/pt":7,"../colours":22,"../globals":24,"./aura":14,"./generate3DGeometry":15,"./materials":17,"./renderer":18,"./rose":19,"async":71,"dynamics.js":131,"lodash":167,"three":232}],21:[function(require,module,exports){
@@ -3113,6 +3186,15 @@ module.exports.playReveal = function () {
   });
 };
 
+module.exports.playFinalPercs = function () {
+  var now = context.currentTime;
+  epicPerc2.play(teoria.note('c2'), now);
+  epicPerc2.play(teoria.note('c3'), now);
+  epicPerc.play(teoria.note('c3'), now);
+  epicRev.play(notes[0].midi() - 12, now);
+  epicRev.play(notes[3].midi() - 12);
+};
+
 module.exports.playLeadSynth = function (frequency, startTime) {
   leadSynth.play(frequency, startTime);
 };
@@ -3149,6 +3231,10 @@ module.exports.playDimensionSounds = function () {
   var now = context.currentTime;
   epicPerc2.play(teoria.note('c3'), now);
   epicPerc.play(teoria.note('c3'), now);
+};
+
+module.exports.cleanUpSecondSection = function () {
+  exports.stopSecondSection();
 };
 
 module.exports.on = function (type, cb) {
@@ -3751,6 +3837,7 @@ var epicPerc = require('./epicPerc');
 var ms20Bass = require('./ms20Bass');
 
 var lastNotesPlayedListener = function () {};
+var NUMBER_OF_FINAL_CLICKS = 4;
 
 var melodyChain = markovian.create([
   {
@@ -3838,7 +3925,7 @@ module.exports.playEnd = function (cb, opts) {
   if (opts.shuffle) {
     shuffledClickCounts++;
 
-    if (shuffledClickCounts < 5) {
+    if (shuffledClickCounts < NUMBER_OF_FINAL_CLICKS) {
       notesToPlay = _.shuffle(endNotes);
     }
   }
@@ -3864,7 +3951,7 @@ module.exports.playEnd = function (cb, opts) {
     setTimeout(function () {
       var progress = index / (notesToPlay.length - 1);
       cb(progress);
-      if (shuffledClickCounts >= 5) lastNotesPlayedListener(progress);
+      if (shuffledClickCounts >= NUMBER_OF_FINAL_CLICKS) lastNotesPlayedListener(progress);
     }, offset * 1000);
   });
 };
@@ -3885,8 +3972,6 @@ var kick = require('./kick');
 var kickDrum = require('./kickDrum');
 var moogKeys = require('./moogKeys');
 var guitar = require('./guitar');
-// var snare = require('./snare');
-// var hihat = require('./hihat');
 var epicPerc = require('./epicPerc');
 var epicPerc2 = require('./epicPerc2');
 var tom = require('./tom');
@@ -3898,6 +3983,7 @@ var background = require('./background');
 var SHOULD_ADD_DRUMS = false;
 var SHOULD_PLAY_BACK_MELODY = false;
 var SHOULD_PLAY_SYNTH = true;
+var PROGRESS_SPEED = 0.0015;
 var finishListener = _.noop;
 var secondPartProgressListener = _.noop;
 
@@ -3910,8 +3996,6 @@ var STEP_LENGTH = ((60.0 / 95) * 4) / 9;
 var HALF_STEP_LENGTH = STEP_LENGTH / 2;
 
 function finish() {
-  // SHOULD_ADD_DRUMS = false;
-  // SHOULD_PLAY_BACK_MELODY = false;
   setTimeout(finishListener, 1000);
 }
 
@@ -4024,11 +4108,6 @@ var kicksLayer = beet.layer(kicksAndHihatsPattern, function (time, step) {
     kickDrum.play(time);
   }
 
-  // if (bar > 12) {
-  //   hihat.play(time);
-  //   if (_.random(0, 100) > 80) hihat.play(time + HALF_STEP_LENGTH);
-  // }
-
   if (bar > 12 && _.random(0, 100) > 80) {
     kick.start(time + HALF_STEP_LENGTH, 1.5);
     kickDrum.play(time + HALF_STEP_LENGTH);
@@ -4045,14 +4124,6 @@ var kicksLayer = beet.layer(kicksAndHihatsPattern, function (time, step) {
   if (bar > 2 && step === 4) tom.play(teoria.note('c4'), time);
 
   if (bar === 12 && step == 6) tom.play(teoria.note('c4'), time);
-
-  // if (bar > 18 && (step === 4 || step === 6)) snare.play(time);
-  // if (bar > 22 && step === 6 && _.random(0, 100) > 80) snare.play(time + HALF_STEP_LENGTH);
-
-  // if (bar > 12) {
-  //   hihat.play(time);
-  //   if (step === 9) hihat.play(time + HALF_STEP_LENGTH);
-  // }
 
   if (bar >= 6 && step === 4 && bar % 4 === 0) {
     epicPerc2.play(teoria.note('c3'), time);
@@ -4072,7 +4143,7 @@ module.exports.start = function () {
       return window.clearInterval(interval);
     }
     background.proceedRaw(progress);
-    progress += 0.0015;
+    progress += PROGRESS_SPEED;
     // progress += 0.01;
     // console.log(progress);
     secondPartProgressListener(progress);

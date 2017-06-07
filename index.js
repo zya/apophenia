@@ -161,6 +161,14 @@ conductor.on('finish', function () {
 });
 
 conductor.on('lastNotesPlayed', function (p) {
+  if (p < 0.30) {
+    conductor.playFinalPercs();
+  } else if (p >= 1) {
+    scene3d.finish(function () {
+      conductor.cleanUpSecondSection();
+    });
+  }
+
   console.log('finito', p);
 });
 
@@ -257,4 +265,3 @@ function start() {
 
 conductor.startBackground();
 requestAnimationFrame(render);
-// conductor.startSecondSection();
