@@ -20,6 +20,7 @@ var SHOULD_RENDER_2D = true;
 var DEBUG = false;
 var SHOULD_FINISH = true;
 var DELAY_TIME_TO_START = 5000;
+var ALREADY_FINISHED = false;
 
 // stats.showPanel(0);
 stats.dom.style.top = '';
@@ -29,7 +30,9 @@ stats.dom.style.bottom = '0px';
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
   scene3d.init(triangles, function () {
+    console.log('calling done after initializing 😏');
     setTimeout(function () {
+      console.log('timeout shit 🙏🏿');
       SHOUD_RENDER_3D = true;
       done();
     }, 300);
@@ -88,7 +91,6 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-  console.log('rose click');
   if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
     conductor.endSecondSection(function (p) {
       scene3d.reactToAudio();
@@ -106,7 +108,11 @@ scene3d.on('roseClick', function () {
     return;
   }
 
-  if (IS_LIMBO) return conductor.playLimboMelody(scene3d.reactToAudio);
+  if (IS_LIMBO) {
+    var isLastClick = conductor.playLimboMelody(scene3d.reactToAudio);
+    if (isLastClick) scene3d.stopFiringClickEvents();
+    return;
+  }
   conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
@@ -165,11 +171,34 @@ conductor.on('lastNotesPlayed', function (p) {
     conductor.playFinalPercs();
   } else if (p >= 1) {
     scene3d.finish(function () {
+      if (ALREADY_FINISHED) return;
+      ALREADY_FINISHED = true;
       conductor.cleanUpSecondSection();
+      console.log('finished 🍎');
+      setTimeout(function () {
+        console.log('start showing the last text');
+      }, 3000);
+
+      setTimeout(function () {
+        console.log('start fading the last text');
+      }, 10000);
+
+      setTimeout(function () {
+        scene3d.hideCanvas();
+        scene2d.init(function () {
+          play.style.display = 'inline';
+        });
+        textHandler.reset();
+        HAS_TRANSITIONED = false;
+        IS_LIMBO = false;
+        SECOND_SECTION_HAS_FINISHED = false;
+        SHOUD_RENDER_3D = false;
+        SHOULD_RENDER_2D = true;
+        ALREADY_FINISHED = false;
+        warmUp3DRenderInterval = 120;
+      }, 100);
     });
   }
-
-  console.log('finito', p);
 });
 
 conductor.on('secondPartProgress', function (progress) {

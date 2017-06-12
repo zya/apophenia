@@ -38,6 +38,7 @@ var SHOULD_RENDER_2D = true;
 var DEBUG = false;
 var SHOULD_FINISH = true;
 var DELAY_TIME_TO_START = 5000;
+var ALREADY_FINISHED = false;
 
 // stats.showPanel(0);
 stats.dom.style.top = '';
@@ -47,7 +48,9 @@ stats.dom.style.bottom = '0px';
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
   scene3d.init(triangles, function () {
+    console.log('calling done after initializing 😏');
     setTimeout(function () {
+      console.log('timeout shit 🙏🏿');
       SHOUD_RENDER_3D = true;
       done();
     }, 300);
@@ -106,7 +109,6 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-  console.log('rose click');
   if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
     conductor.endSecondSection(function (p) {
       scene3d.reactToAudio();
@@ -124,7 +126,11 @@ scene3d.on('roseClick', function () {
     return;
   }
 
-  if (IS_LIMBO) return conductor.playLimboMelody(scene3d.reactToAudio);
+  if (IS_LIMBO) {
+    var isLastClick = conductor.playLimboMelody(scene3d.reactToAudio);
+    if (isLastClick) scene3d.stopFiringClickEvents();
+    return;
+  }
   conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
@@ -183,11 +189,34 @@ conductor.on('lastNotesPlayed', function (p) {
     conductor.playFinalPercs();
   } else if (p >= 1) {
     scene3d.finish(function () {
+      if (ALREADY_FINISHED) return;
+      ALREADY_FINISHED = true;
       conductor.cleanUpSecondSection();
+      console.log('finished 🍎');
+      setTimeout(function () {
+        console.log('start showing the last text');
+      }, 3000);
+
+      setTimeout(function () {
+        console.log('start fading the last text');
+      }, 10000);
+
+      setTimeout(function () {
+        scene3d.hideCanvas();
+        scene2d.init(function () {
+          play.style.display = 'inline';
+        });
+        textHandler.reset();
+        HAS_TRANSITIONED = false;
+        IS_LIMBO = false;
+        SECOND_SECTION_HAS_FINISHED = false;
+        SHOUD_RENDER_3D = false;
+        SHOULD_RENDER_2D = true;
+        ALREADY_FINISHED = false;
+        warmUp3DRenderInterval = 120;
+      }, 100);
     });
   }
-
-  console.log('finito', p);
 });
 
 conductor.on('secondPartProgress', function (progress) {
@@ -459,6 +488,18 @@ module.exports.getConnectionsLength = function () {
 
 module.exports.getSpecialConnectionsLength = function () {
   return specialConnections.length;
+};
+
+module.exports.reset = function () {
+  connections = [];
+  pairs = [];
+  connectionsInside = [];
+  triangles = [];
+  trianglesInside = [];
+  specialTriangles = [];
+  specialConnections = [];
+  specialPairs = [];
+  params.opacityRate = 1;
 };
 
 function revealConnectionInTime(connection, time) {
@@ -750,16 +791,16 @@ var grey = colours.grey;
 var space = pt.space;
 var form = pt.form;
 
-var hasTransitioned = false;
-var shouldDrawPoints = true;
-var shouldIntersect = true;
-var shouldDrawConnections = true;
-var alreadyIsSpecial = false;
-var shouldDrawConnections = true;
-var isIntro = true;
-var started = false;
-var shouldFollowMouse = false;
-var hasFiredMiddleEvent = false;
+var HAS_TRANSITIONED = false;
+var SHOUD_DRAW_POINTS = true;
+var SHOULD_INTERSECT = true;
+var SHOULD_DRAW_CONNECTIONS = true;
+var ALREADY_SPECIAL = false;
+var SHOULD_DRAW_CONNECTIONS = true;
+var IS_INTRO = true;
+var STARTED = false;
+var SHOUD_FOLLOW_MOUSE = false;
+var HAS_FIRED_MIDDLE_EVENT = false;
 
 var spotLightInitialXPosition = 0;
 var spotLightInitialYPosition = 0;
@@ -829,13 +870,24 @@ function parallaxPoints(point, xOffset, yOffset) {
 
 function explodeSpotlight(done) {
   var duration = 2500;
-  shouldIntersect = false;
+  SHOULD_INTERSECT = false;
   dynamics.animate(transitionParams, {
     opacity: 0
   }, {
     duration: duration
   });
   ripples.add();
+  setTimeout(done, duration);
+}
+
+function revealSpotlight(done) {
+  var duration = 4000;
+  SHOULD_INTERSECT = true;
+  dynamics.animate(transitionParams, {
+    opacity: 1
+  }, {
+    duration: duration
+  });
   setTimeout(done, duration);
 }
 
@@ -859,7 +911,7 @@ function fadeAllPointsOut(done) {
   });
 
   setTimeout(function () {
-    shouldDrawPoints = false;
+    SHOUD_DRAW_POINTS = false;
   }, 9000);
 
   setTimeout(done, 2500);
@@ -879,7 +931,7 @@ function wait(duration, cb) {
   setTimeout(cb, duration);
 }
 
-var first = true;
+var FIRST = true;
 module.exports.mousedown = function () {
   // spotLight.setRadius(spotLight.radius - sizeChangeOnClick);
   currentPoints.forEach(pointClickEvent);
@@ -891,8 +943,8 @@ module.exports.mousedown = function () {
     }, 100);
   }
 
-  if (first) {
-    first = false;
+  if (FIRST) {
+    FIRST = false;
   } else if (currentPoints.length > 0) {
     var specialColour = _.random(0, 100) > 50 ? colours.lightBlue : colours.orange;
     var colour = foundSpecial ? specialColour : null;
@@ -907,23 +959,23 @@ module.exports.mousedown = function () {
 
   if (numberOfConnectionsDiscovered === 6) {
     displaySpecialIntroPoints();
-  } else if (numberOfConnectionsDiscovered > 15 && isIntro) {
+  } else if (numberOfConnectionsDiscovered > 15 && IS_INTRO) {
     displayAllThePoints();
-    isIntro = false;
+    IS_INTRO = false;
   }
 
   if (foundSpecial) revealedSpecialCallback();
 
   var discoveryPercentage = connections.getDiscoveryPercentage();
-  if (discoveryPercentage > 0.15 && !hasFiredMiddleEvent) {
+  if (discoveryPercentage > 0.15 && !HAS_FIRED_MIDDLE_EVENT) {
     middleDiscoveryCallback();
-    hasFiredMiddleEvent = true;
+    HAS_FIRED_MIDDLE_EVENT = true;
   }
   return discoveryPercentage;
 };
 
 module.exports.transition = function (cb) {
-  hasTransitioned = true;
+  HAS_TRANSITIONED = true;
   async.series([
     explodeSpotlight,
     slowDownPointMovement,
@@ -933,7 +985,7 @@ module.exports.transition = function (cb) {
 };
 
 module.exports.stopDrawingConnections = function (cb) {
-  shouldDrawConnections = false;
+  SHOULD_DRAW_CONNECTIONS = false;
   stopDrawingCallback();
   cb();
 };
@@ -982,8 +1034,8 @@ module.exports.addIntro = function () {
 };
 
 module.exports.startFollowingMouse = function () {
-  shouldFollowMouse = true;
-  started = true;
+  SHOUD_FOLLOW_MOUSE = true;
+  STARTED = true;
   ripples.add();
 
   async.series([
@@ -999,7 +1051,7 @@ module.exports.render = function () {
 
   var mouse = globals.getMousePosition();
 
-  if (shouldFollowMouse) {
+  if (SHOUD_FOLLOW_MOUSE) {
     spotLight.x += (mouse.x - spotLight.x) * (easingStrength * delta);
     spotLight.y += (mouse.y - spotLight.y) * (easingStrength * delta);
   } else {
@@ -1010,7 +1062,7 @@ module.exports.render = function () {
   if (targetRadius < 0) targetRadius = 0;
 
   var spotLightColor = white;
-  if (!started) spotLightColor = grey;
+  if (!STARTED) spotLightColor = grey;
 
   var opacity = transitionParams.opacity;
   var r = lerp(grey.x, white.x, spotLighColourParams.t);
@@ -1028,16 +1080,16 @@ module.exports.render = function () {
   ripples.detectCollisions(activePoints);
 
   //draw connections
-  if (shouldDrawConnections) {
+  if (SHOULD_DRAW_CONNECTIONS) {
     connections.draw(pairsInsideSpotlight);
   }
 
   //randomise points movements
-  if (shouldDrawPoints) {
+  if (SHOUD_DRAW_POINTS) {
     activePoints.forEach(_.partial(randomisePoint, _, pointTransitionParams.randomMovementRate));
   }
 
-  if (!hasTransitioned) {
+  if (!HAS_TRANSITIONED) {
     var xOffset = (mouse.x / space.size.x) - 0.5;
     var yOffset = (mouse.y / space.size.y) - 0.5;
     activePoints.forEach(_.partial(parallaxPoints, _, xOffset, yOffset));
@@ -1046,7 +1098,7 @@ module.exports.render = function () {
   //calculate intersection of spot lights and points
   var pointsInsideCircle = [];
 
-  if (shouldIntersect) {
+  if (SHOULD_INTERSECT) {
     pointsInsideCircle = intersect(spotLight, activePoints);
   }
 
@@ -1063,7 +1115,7 @@ module.exports.render = function () {
   pairsInsideSpotlight = temporaryPairsInsideCircle;
 
   //draw points
-  if (shouldDrawPoints) {
+  if (SHOUD_DRAW_POINTS) {
     activePoints.forEach(drawPoint);
   }
 
@@ -1074,12 +1126,12 @@ module.exports.render = function () {
     var anySpecials = connections.updateInsideConnections(pointsInsideCircle);
     var foundSpecial = false;
 
-    if (!alreadyIsSpecial && anySpecials) {
-      alreadyIsSpecial = true;
+    if (!ALREADY_SPECIAL && anySpecials) {
+      ALREADY_SPECIAL = true;
       foundSpecialCallback();
     }
 
-    if (!anySpecials) alreadyIsSpecial = false;
+    if (!anySpecials) ALREADY_SPECIAL = false;
     if (pointsInsideCircle.length > 0) {
       changeSpotLightColour(1, 300, _.noop());
     } else {
@@ -1090,6 +1142,31 @@ module.exports.render = function () {
 
   //update the current points
   currentPoints = pointsInsideCircle;
+};
+
+module.exports.init = function (cb) {
+  points = createPoints(config.numberOfRandomPoints);
+  special = _.filter(points, ['special', true]);
+  introPoints = _.filter(points, ['intro', true]);
+  activePoints = [];
+  connections.reset();
+  connections.createSpecialShape(special);
+  specialIntroPoints = connections.getRandomSpecialTriangles();
+  specialAndActive = _(specialIntroPoints).concat(activePoints).flatten().value();
+  points = _.differenceBy(points, specialAndActive, 'id');
+  HAS_TRANSITIONED = false;
+  SHOUD_DRAW_POINTS = true;
+  SHOULD_INTERSECT = true;
+  SHOULD_DRAW_CONNECTIONS = true;
+  ALREADY_SPECIAL = false;
+  SHOULD_DRAW_CONNECTIONS = true;
+  IS_INTRO = true;
+  STARTED = false;
+  SHOUD_FOLLOW_MOUSE = false;
+  HAS_FIRED_MIDDLE_EVENT = false;
+  FIRST = true;
+  pointTransitionParams.randomMovementRate = 1;
+  revealSpotlight(cb);
 };
 
 },{"../../config":1,"../changeHandler":21,"../colours":22,"../createPoints":23,"../globals":24,"../pointClickEvent":54,"./connections":4,"./drawPoint":5,"./intersectSpotlightAndPoints":6,"./pt":7,"./randomisePoint":8,"./ripples":9,"./updateTemporaryPairs":12,"async":71,"dynamics.js":131,"lerp":166,"lodash":167}],11:[function(require,module,exports){
@@ -2009,6 +2086,7 @@ var IS_HOVER = false;
 var LOADED = false;
 var INTERSECT_TOGGLED = false;
 var SHOULD_INTERSECT = true;
+var SHOULD_FIRE_CLICK_EVENTS = true;
 
 // scene and camera
 var scene = new THREE.Scene();
@@ -2345,7 +2423,7 @@ function scaleGroup() {
 addSpheres();
 
 module.exports.mousedown = function () {
-  if (IS_HOVER && LOADED) {
+  if (IS_HOVER && LOADED && SHOULD_FIRE_CLICK_EVENTS) {
     rose.distort();
     aura.distort();
     roseClickCallback();
@@ -2432,17 +2510,6 @@ function addInsideMeshes(done) {
   done();
 }
 
-function fadeGroupOut(done) {
-  var duration = 2000;
-  dynamics.animate(groupMaterial, {
-    opacity: 0
-  }, {
-    duration: duration
-  });
-
-  setTimeout(done, duration);
-}
-
 module.exports.render = function () {
   if (SHOULD_SPIN) {
     if (MESH_SHOULD_SPIN) mesh.rotation.y += spin.speed;
@@ -2519,10 +2586,6 @@ module.exports.on = function (event, cb) {
   if (event === 'roseClick') roseClickCallback = cb;
 };
 
-module.exports.hideCanvas = function () {
-  renderer.hide();
-};
-
 module.exports.explode = function () {
   console.log('exploding the 3D objects');
 };
@@ -2588,6 +2651,10 @@ module.exports.reactToAudio = function () {
 
 module.exports.toggleIntersect = function () {
   INTERSECT_TOGGLED = true;
+};
+
+module.exports.stopFiringClickEvents = function () {
+  SHOULD_FIRE_CLICK_EVENTS = false;
 };
 
 module.exports.finish = function (cb) {
@@ -3222,7 +3289,7 @@ module.exports.endSecondSection = function (cb) {
 };
 
 module.exports.playLimboMelody = function (cb) {
-  roseLeadMelody.playEnd(cb, {
+  return roseLeadMelody.playEnd(cb, {
     shuffle: true
   });
 };
@@ -3235,6 +3302,7 @@ module.exports.playDimensionSounds = function () {
 
 module.exports.cleanUpSecondSection = function () {
   exports.stopSecondSection();
+  background.setSpeed(1);
 };
 
 module.exports.on = function (type, cb) {
@@ -3954,6 +4022,8 @@ module.exports.playEnd = function (cb, opts) {
       if (shuffledClickCounts >= NUMBER_OF_FINAL_CLICKS) lastNotesPlayedListener(progress);
     }, offset * 1000);
   });
+
+  return shuffledClickCounts >= NUMBER_OF_FINAL_CLICKS;
 };
 
 module.exports.on = function (type, cb) {
@@ -4371,6 +4441,7 @@ var element = document.getElementById('narrative');
 
 var currentIndex = 0;
 var lastAnimationStarted = 0;
+
 module.exports.proceed = function () {
   var currentState = narrative[currentIndex];
   if (!currentState) return;
@@ -4396,6 +4467,11 @@ module.exports.proceed = function () {
     lastAnimationStarted = Date.now();
     element.style.opacity = 1;
   }, time);
+};
+
+module.exports.reset = function () {
+  currentIndex = 0;
+  lastAnimationStarted = 0;
 };
 
 },{}],56:[function(require,module,exports){
