@@ -39,6 +39,9 @@ var DEBUG = false;
 var SHOULD_FINISH = true;
 var DELAY_TIME_TO_START = 5000;
 var ALREADY_FINISHED = false;
+var SPECIALS_FOUND = 0;
+var FRAME = 0;
+var WARMUP_3D_INTERVAL = 120;
 
 // stats.showPanel(0);
 stats.dom.style.top = '';
@@ -48,9 +51,7 @@ stats.dom.style.bottom = '0px';
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
   scene3d.init(triangles, function () {
-    console.log('calling done after initializing 😏');
     setTimeout(function () {
-      console.log('timeout shit 🙏🏿');
       SHOUD_RENDER_3D = true;
       done();
     }, 300);
@@ -65,7 +66,7 @@ function display3DScene(done) {
 }
 
 function transitionTo3D(done) {
-  warmUp3DRenderInterval = 10;
+  WARMUP_3D_INTERVAL = 10;
   async.series([
     initialise3DScene,
     conductor.stopFirstSection,
@@ -152,10 +153,9 @@ scene2d.on('stoppedDrawing', function () {
   console.log('stopped drawing');
 });
 
-var specialsFound = 0;
 scene2d.on('foundSpecial', function () {
-  if (specialsFound === 0) textHandler.proceed();
-  specialsFound++;
+  if (SPECIALS_FOUND === 0) textHandler.proceed();
+  SPECIALS_FOUND++;
   console.log('founds a special connection');
 });
 
@@ -213,8 +213,9 @@ conductor.on('lastNotesPlayed', function (p) {
         SHOUD_RENDER_3D = false;
         SHOULD_RENDER_2D = true;
         ALREADY_FINISHED = false;
-        warmUp3DRenderInterval = 120;
-      }, 100);
+        SPECIALS_FOUND = 0;
+        WARMUP_3D_INTERVAL = 120;
+      }, 13000);
     });
   }
 });
@@ -259,9 +260,6 @@ var text = document.getElementById('text');
 
 play.addEventListener('click', start);
 
-var frame = 0;
-var warmUp3DRenderInterval = 120;
-
 function render() {
   stats.begin();
   var now = new Date().getTime();
@@ -269,16 +267,16 @@ function render() {
 
   if (SHOULD_RENDER_2D) {
     scene2d.render();
-    if (frame % warmUp3DRenderInterval === 0) {
+    if (FRAME % WARMUP_3D_INTERVAL === 0) {
       scene3d.render();
       console.log('warming up');
-      frame = 0;
+      FRAME = 0;
     }
   }
 
   if (SHOUD_RENDER_3D) scene3d.render();
 
-  frame++;
+  FRAME++;
   stats.end();
   requestAnimationFrame(render);
 }
@@ -1430,6 +1428,12 @@ module.exports.fadeOut = function (cb) {
   }, duration);
 };
 
+module.exports.reset = function () {
+  material.needsUpdate = true;
+  material.visible = true;
+  material.opacity = 1;
+};
+
 },{"../colours":22,"dynamics.js":131,"lodash":167,"three":232}],15:[function(require,module,exports){
 'use strict';
 
@@ -1437,10 +1441,11 @@ var _ = require('lodash');
 var work = require('webworkify');
 var THREE = require('three');
 
-var worker = work(require('./geometryWorker'));
 var space = require('../2d/pt').space;
 
 module.exports = function (triangles, cb) {
+  var worker = work(require('./geometryWorker'));
+
   worker.addEventListener('message', function (event) {
     var data = JSON.parse(event.data);
     var targets = [];
@@ -1478,6 +1483,8 @@ module.exports = function (triangles, cb) {
     geometry.computeVertexNormals();
     geometry.computeMorphNormals();
     geometry.computeBoundingBox();
+
+    worker.terminate();
 
     cb(null, {
       main: geometry,
@@ -1887,7 +1894,13 @@ module.exports.display = function (done) {
 };
 
 module.exports.hide = function () {
+  var duration = 5000;
   renderer.domElement.style.visibility = 'hidden';
+  dynamics.animate(renderer.domElement, {
+    opacity: 0
+  }, {
+    duration: duration
+  });
 };
 
 },{"../../node_modules/three/examples/js/nodes/postprocessing/NodePass":261,"../../node_modules/three/examples/js/postprocessing/BokehPass":267,"../../node_modules/three/examples/js/postprocessing/EffectComposer":268,"../../node_modules/three/examples/js/postprocessing/RenderPass":269,"../../node_modules/three/examples/js/postprocessing/ShaderPass":270,"../../node_modules/three/examples/js/postprocessing/UnrealBloomPass":271,"../../node_modules/three/examples/js/shaders/BokehShader":272,"../../node_modules/three/examples/js/shaders/ConvolutionShader":273,"../../node_modules/three/examples/js/shaders/CopyShader":274,"../../node_modules/three/examples/js/shaders/FXAAShader":275,"../../node_modules/three/examples/js/shaders/LuminosityHighPassShader":276,"../colours":22,"./allTheNodes":13,"dynamics.js":131,"three":232}],19:[function(require,module,exports){
@@ -2042,18 +2055,17 @@ module.exports.fadeOut = function (cb) {
     duration: 4000
   });
 
-  // dynamics.animate(animatables, {
-  //   morph: 10
-  // }, {
-  //   type: dynamics.easeOut,
-  //   friction: 1,
-  //   duration: duration * 2
-  // });
-
   setTimeout(function () {
     material.visible = false;
     cb();
   }, duration);
+};
+
+module.exports.reset = function () {
+  material.needsUpdate = true;
+  material.visible = true;
+  material.opacity = 1;
+  rose.scale.set(scale, scale, scale);
 };
 
 },{"../../node_modules/three/examples/js/loaders/OBJLoader":233,"dynamics.js":131,"lodash":167,"three":232}],20:[function(require,module,exports){
@@ -2087,6 +2099,27 @@ var LOADED = false;
 var INTERSECT_TOGGLED = false;
 var SHOULD_INTERSECT = true;
 var SHOULD_FIRE_CLICK_EVENTS = true;
+
+function restartGlobalVariables() {
+  SHOUD_EMIT_MOUSE_ON_EVENT = true;
+  SHOUD_EMIT_MOUSE_OFF_EVENT = false;
+  SHOULD_SPIN = false;
+  MESH_SHOULD_SPIN = true;
+  SHOUD_UPDATE = false;
+  IS_HOVER = false;
+  INTERSECT_TOGGLED = false;
+  SHOULD_INTERSECT = true;
+  SHOULD_FIRE_CLICK_EVENTS = true;
+  rose.reset();
+  aura.reset();
+  auraMesh.visible = false;
+  camera.position.z = distance;
+  material.side = THREE.FrontSide;
+  material.needsUpdate = true;
+  spotLightForRose.intensity = 0;
+  redLight.intensity = 0;
+  blueLight.intensity = 0;
+}
 
 // scene and camera
 var scene = new THREE.Scene();
@@ -2450,6 +2483,7 @@ renderer.init(scene, camera, _.noop);
 
 // initialise
 module.exports.init = function (triangles, done) {
+  restartGlobalVariables();
   generateGeometry(triangles, function (err, geometries) {
     // var start = Date.now();
     geometry = geometries.main;
@@ -2473,19 +2507,18 @@ module.exports.init = function (triangles, done) {
     mesh.morphTargetBase = 0.00001;
 
     wireframe.rotation.copy(mesh.rotation);
+    wireframeMaterial.opacity = 1;
 
     scene.add(wireframe);
     setTimeout(function () {
-      // console.log('adding');
       scene.add(mesh);
     }, 1000);
 
     setInterval(raycast, 100);
     setInterval(updateMousePosition, 100);
 
-    // console.log(Date.now() - start, 'Scene Start');
-    done();
     SHOUD_UPDATE = true;
+    done();
   });
 };
 
@@ -3303,6 +3336,9 @@ module.exports.playDimensionSounds = function () {
 module.exports.cleanUpSecondSection = function () {
   exports.stopSecondSection();
   background.setSpeed(1);
+  background.reset();
+  roseLeadMelody.reset();
+  secondSection.reset();
 };
 
 module.exports.on = function (type, cb) {
@@ -4030,6 +4066,10 @@ module.exports.on = function (type, cb) {
   if (type === 'lastNotesPlayed') lastNotesPlayedListener = cb;
 };
 
+module.exports.reset = function () {
+  shuffledClickCounts = 0;
+};
+
 },{"./context":29,"./dream":30,"./epicPerc":31,"./epicPerc2":32,"./ms20Bass":42,"./music":45,"./newGuitar":46,"./piano":47,"lodash":167,"markovian":168,"teoria":224}],49:[function(require,module,exports){
 'use strict';
 
@@ -4143,8 +4183,8 @@ var keysOffsetChain = markovian.create([
   }
 ]);
 
-function calculateKeysNoteOffset(bar, dividant) {
-  if (bar % dividant === 0) {
+function calculateKeysNoteOffset(BAR, dividant) {
+  if (BAR % dividant === 0) {
     return keysOffsetChain.tick();
   }
   return 0;
@@ -4156,7 +4196,7 @@ var keysLayer = beet.layer(keysPattern, function (time, step, realTime) {
   if (step === 1 && SHOULD_ADD_DRUMS) {
     setTimeout(function () {
       var dividant = keysNoteOffset === 0 ? 9 : 5;
-      keysNoteOffset = calculateKeysNoteOffset(bar, dividant);
+      keysNoteOffset = calculateKeysNoteOffset(BAR, dividant);
     }, realTime - 500);
   }
   moogKeys.start(keysMelodyPattern[step - 1], time, keysNoteOffset);
@@ -4167,35 +4207,35 @@ var keysLayer = beet.layer(keysPattern, function (time, step, realTime) {
 
 beet.add(keysLayer);
 
-var bar = 0;
+var BAR = 0;
 var kicksLayer = beet.layer(kicksAndHihatsPattern, function (time, step) {
   if (!SHOULD_ADD_DRUMS) return;
   if (step !== 5) {
     kick.start(time, 1.75);
     kickDrum.play(time);
-  } else if (_.random(0, 100) > 80 && bar > 4) {
+  } else if (_.random(0, 100) > 80 && BAR > 4) {
     kick.start(time, 1.5);
     kickDrum.play(time);
   }
 
-  if (bar > 12 && _.random(0, 100) > 80) {
+  if (BAR > 12 && _.random(0, 100) > 80) {
     kick.start(time + HALF_STEP_LENGTH, 1.5);
     kickDrum.play(time + HALF_STEP_LENGTH);
   }
 
-  if (bar === 13 && step == -1) {
+  if (BAR === 13 && step == -1) {
     epicPerc2.play(teoria.note('c3'), time);
     epicPerc.play(teoria.note('c3'), time);
   }
 
-  if (step === 1) bar++;
+  if (step === 1) BAR++;
 }, function (time, step) {
   if (!SHOULD_ADD_DRUMS) return;
-  if (bar > 2 && step === 4) tom.play(teoria.note('c4'), time);
+  if (BAR > 2 && step === 4) tom.play(teoria.note('c4'), time);
 
-  if (bar === 12 && step == 6) tom.play(teoria.note('c4'), time);
+  if (BAR === 12 && step == 6) tom.play(teoria.note('c4'), time);
 
-  if (bar >= 6 && step === 4 && bar % 4 === 0) {
+  if (BAR >= 6 && step === 4 && BAR % 4 === 0) {
     epicPerc2.play(teoria.note('c3'), time);
     epicPerc.play(teoria.note('c3'), time);
   }
@@ -4234,6 +4274,17 @@ module.exports.stop = function () {
   SHOULD_ADD_DRUMS = false;
   SHOULD_PLAY_BACK_MELODY = false;
   SHOULD_PLAY_SYNTH = false;
+  beet.stop();
+};
+
+module.exports.reset = function () {
+  progress = 0;
+  interval = null;
+  BAR = 0;
+
+  SHOULD_ADD_DRUMS = false;
+  SHOULD_PLAY_BACK_MELODY = false;
+  SHOULD_PLAY_SYNTH = true;
 };
 
 },{"./audio":26,"./background":27,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./guitar":35,"./kick":37,"./kickDrum":38,"./moogKeys":41,"./music":45,"./tom":51,"beet.js":73,"lodash":167,"markovian":168,"teoria":224}],50:[function(require,module,exports){
@@ -4437,6 +4488,7 @@ var narrative = [
     hidden: true
   }
 ];
+
 var element = document.getElementById('narrative');
 
 var currentIndex = 0;
@@ -4471,7 +4523,6 @@ module.exports.proceed = function () {
 
 module.exports.reset = function () {
   currentIndex = 0;
-  lastAnimationStarted = 0;
 };
 
 },{}],56:[function(require,module,exports){

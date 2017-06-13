@@ -21,6 +21,9 @@ var DEBUG = false;
 var SHOULD_FINISH = true;
 var DELAY_TIME_TO_START = 5000;
 var ALREADY_FINISHED = false;
+var SPECIALS_FOUND = 0;
+var FRAME = 0;
+var WARMUP_3D_INTERVAL = 120;
 
 // stats.showPanel(0);
 stats.dom.style.top = '';
@@ -30,9 +33,7 @@ stats.dom.style.bottom = '0px';
 function initialise3DScene(done) {
   var triangles = scene2d.getSpecialTriangles();
   scene3d.init(triangles, function () {
-    console.log('calling done after initializing 😏');
     setTimeout(function () {
-      console.log('timeout shit 🙏🏿');
       SHOUD_RENDER_3D = true;
       done();
     }, 300);
@@ -47,7 +48,7 @@ function display3DScene(done) {
 }
 
 function transitionTo3D(done) {
-  warmUp3DRenderInterval = 10;
+  WARMUP_3D_INTERVAL = 10;
   async.series([
     initialise3DScene,
     conductor.stopFirstSection,
@@ -134,10 +135,9 @@ scene2d.on('stoppedDrawing', function () {
   console.log('stopped drawing');
 });
 
-var specialsFound = 0;
 scene2d.on('foundSpecial', function () {
-  if (specialsFound === 0) textHandler.proceed();
-  specialsFound++;
+  if (SPECIALS_FOUND === 0) textHandler.proceed();
+  SPECIALS_FOUND++;
   console.log('founds a special connection');
 });
 
@@ -195,8 +195,9 @@ conductor.on('lastNotesPlayed', function (p) {
         SHOUD_RENDER_3D = false;
         SHOULD_RENDER_2D = true;
         ALREADY_FINISHED = false;
-        warmUp3DRenderInterval = 120;
-      }, 100);
+        SPECIALS_FOUND = 0;
+        WARMUP_3D_INTERVAL = 120;
+      }, 13000);
     });
   }
 });
@@ -241,9 +242,6 @@ var text = document.getElementById('text');
 
 play.addEventListener('click', start);
 
-var frame = 0;
-var warmUp3DRenderInterval = 120;
-
 function render() {
   stats.begin();
   var now = new Date().getTime();
@@ -251,16 +249,16 @@ function render() {
 
   if (SHOULD_RENDER_2D) {
     scene2d.render();
-    if (frame % warmUp3DRenderInterval === 0) {
+    if (FRAME % WARMUP_3D_INTERVAL === 0) {
       scene3d.render();
       console.log('warming up');
-      frame = 0;
+      FRAME = 0;
     }
   }
 
   if (SHOUD_RENDER_3D) scene3d.render();
 
-  frame++;
+  FRAME++;
   stats.end();
   requestAnimationFrame(render);
 }
