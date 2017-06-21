@@ -4,3 +4,4 @@ node_modules/
 assets/.DS_Store
 *.wav
 *.pkf
+package-lock.json

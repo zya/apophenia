@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var Stats = require('stats.js');
 var async = require('async');
 
@@ -92,29 +93,29 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
-    conductor.endSecondSection(function (p) {
-      scene3d.reactToAudio();
+    if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
+      conductor.endSecondSection(function (p) {
+        scene3d.reactToAudio();
 
-      if (p === 1) {
-        scene3d.explodeTheMesh();
-        scene3d.removeHoverAnimations();
-        setTimeout(function () {
-          scene3d.explodeTheWireFrame(scene3d.toggleIntersect);
-          IS_LIMBO = true;
-        }, 2000);
-      }
-    });
-    scene3d.stopMovement();
-    return;
-  }
+        if (p === 1) {
+          scene3d.explodeTheMesh();
+          scene3d.removeHoverAnimations();
+          setTimeout(function () {
+            scene3d.explodeTheWireFrame(scene3d.toggleIntersect);
+            IS_LIMBO = true;
+          }, 2000);
+        }
+      });
+      scene3d.stopMovement();
+      return;
+    }
 
-  if (IS_LIMBO) {
-    var isLastClick = conductor.playLimboMelody(scene3d.reactToAudio);
-    if (isLastClick) scene3d.stopFiringClickEvents();
-    return;
-  }
-  conductor.playLeadMelody(scene3d.reactToAudio);
+    if (IS_LIMBO) {
+      var isLastClick = conductor.playLimboMelody(scene3d.reactToAudio);
+      if (isLastClick) scene3d.stopFiringClickEvents();
+      return;
+    }
+    conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
 scene2d.on('revealStart', function () {
@@ -211,10 +212,11 @@ window.addEventListener('mousemove', function (evt) {
   globals.setMousePosition(evt.clientX, evt.clientY);
 });
 
-window.addEventListener('mousedown', function () {
-  scene3d.mousedown();
-  if (HAS_TRANSITIONED) return;
+var throttled3DMouseDown = _.throttle(scene3d.mousedown, 500, {
+  trailing: false
+});
 
+var throttled2DMouseDown = _.throttle(function(){
   var discoveryPercentage = scene2d.mousedown();
   conductor.proceed(discoveryPercentage);
   document.getElementById('progress-bar').style.width = ((discoveryPercentage / config.discoveryThreshold) * 100) + '%';
@@ -228,12 +230,17 @@ window.addEventListener('mousedown', function () {
       transitionTo3D
     ]);
   }
+}, 200, {
+  trailing: false
 });
 
-window.addEventListener('mouseup', function () {
+function mouseDown() {
+  throttled3DMouseDown();
   if (HAS_TRANSITIONED) return;
-  scene2d.mouseup();
-});
+  throttled2DMouseDown();
+}
+
+window.addEventListener('mousedown', mouseDown);
 
 var play = document.getElementById('play-icon');
 var loading = document.getElementById('loading');
