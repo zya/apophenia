@@ -155,6 +155,7 @@ scene2d.on('stoppedDrawing', function () {
 });
 
 scene2d.on('foundSpecial', function () {
+  console.log('specials found', SPECIALS_FOUND);
   if (SPECIALS_FOUND === 0) textHandler.proceed();
   SPECIALS_FOUND++;
   console.log('founds a special connection');
@@ -165,6 +166,7 @@ scene2d.on('revealedSpecial', function () {
 });
 
 scene2d.on('foundFirstConnection', function () {
+  console.log('found first connection');
   textHandler.proceed();
 });
 
@@ -175,8 +177,16 @@ scene2d.on('middleOfDiscovery', function () {
   }, 6000);
 });
 
+scene2d.on('middleOfDiscovery2', function () {
+  textHandler.proceed();
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 6000);
+});
+
 scene2d.on('displayInitialImportantConnections', function () {
   conductor.startIntroKicks();
+  console.log('displaying initial');
   textHandler.proceed();
 });
 
@@ -196,10 +206,12 @@ conductor.on('lastNotesPlayed', function (p) {
       console.log('finished 🍎');
       setTimeout(function () {
         console.log('start showing the last text');
+        textHandler.proceed();
       }, 3000);
 
       setTimeout(function () {
         console.log('start fading the last text');
+        textHandler.proceed();
       }, 10000);
 
       setTimeout(function () {
@@ -216,7 +228,7 @@ conductor.on('lastNotesPlayed', function (p) {
         ALREADY_FINISHED = false;
         SPECIALS_FOUND = 0;
         WARMUP_3D_INTERVAL = 120;
-      }, 13000);
+      }, 15000);
     });
   }
 });
@@ -806,8 +818,10 @@ var IS_INTRO = true;
 var STARTED = false;
 var SHOUD_FOLLOW_MOUSE = false;
 var HAS_FIRED_MIDDLE_EVENT = false;
+var HAS_FIRED_MIDDE_2_EVENT = false;
 var FIRST = true;
 var HAS_PROGRESSED_AT_LEAST_ONCE = false;
+var HAS_DISCOVERED_INITIAL_POINTS = false;
 
 var spotLightInitialXPosition = 0;
 var spotLightInitialYPosition = 0;
@@ -861,12 +875,13 @@ function displayAllThePoints() {
   }, 3000);
 }
 
-var stopDrawingCallback = function () {};
-var foundSpecialCallback = function () {};
-var revealedSpecialCallback = function () {};
-var foundFirstConnectionCallback = function () {};
-var displayIntroSpecialCallback = function () {};
-var middleDiscoveryCallback = function () {};
+var stopDrawingCallback = _.noop;
+var foundSpecialCallback = _.noop;
+var revealedSpecialCallback = _.noop;
+var foundFirstConnectionCallback = _.noop;
+var displayIntroSpecialCallback = _.noop;
+var middleDiscoveryCallback = _.noop;
+var middleDiscovery2Callback = _.noop;
 
 function parallaxPoints(point, xOffset, yOffset) {
   if (point.originalRadius > 1.9) {
@@ -960,12 +975,14 @@ module.exports.mousedown = function () {
   var numberOfConnectionsDiscovered = connections.getConnectionsLength();
 
   if (numberOfConnectionsDiscovered >= 3 && numberOfConnectionsDiscovered < 6 && !HAS_PROGRESSED_AT_LEAST_ONCE) {
+    console.log('test');
     foundFirstConnectionCallback();
     HAS_PROGRESSED_AT_LEAST_ONCE = true;
   }
 
-  if (numberOfConnectionsDiscovered === 6) {
+  if (numberOfConnectionsDiscovered === 6 && !HAS_DISCOVERED_INITIAL_POINTS) {
     displaySpecialIntroPoints();
+    HAS_DISCOVERED_INITIAL_POINTS = true;
   } else if (numberOfConnectionsDiscovered > 15 && IS_INTRO) {
     displayAllThePoints();
     IS_INTRO = false;
@@ -975,9 +992,17 @@ module.exports.mousedown = function () {
 
   var discoveryPercentage = connections.getDiscoveryPercentage();
   if (discoveryPercentage > 0.15 && !HAS_FIRED_MIDDLE_EVENT) {
+    console.log('middle1');
     middleDiscoveryCallback();
     HAS_FIRED_MIDDLE_EVENT = true;
   }
+
+  if (discoveryPercentage > 0.27 && !HAS_FIRED_MIDDE_2_EVENT) {
+    console.log('middle2');
+    middleDiscovery2Callback();
+    HAS_FIRED_MIDDE_2_EVENT = true;
+  }
+
   return discoveryPercentage;
 };
 
@@ -1015,6 +1040,7 @@ module.exports.on = function (event, cb) {
   if (event === 'foundFirstConnection') foundFirstConnectionCallback = cb;
   if (event === 'displayInitialImportantConnections') displayIntroSpecialCallback = cb;
   if (event === 'middleOfDiscovery') middleDiscoveryCallback = cb;
+  if (event === 'middleOfDiscovery2') middleDiscovery2Callback = cb;
 };
 
 module.exports.setInitialSpotlightParams = function (params) {
@@ -1165,8 +1191,10 @@ module.exports.init = function (cb) {
   STARTED = false;
   SHOUD_FOLLOW_MOUSE = false;
   HAS_FIRED_MIDDLE_EVENT = false;
+  HAS_FIRED_MIDDE_2_EVENT = false;
   FIRST = true;
   HAS_PROGRESSED_AT_LEAST_ONCE = false;
+  HAS_DISCOVERED_INITIAL_POINTS = false;
   pointTransitionParams.randomMovementRate = 1;
   revealSpotlight(cb);
 };
@@ -4486,7 +4514,21 @@ var narrative = [
   },
   {
     hidden: false,
-    text: 'AND WITHIN THOSE SHAPES<br>YOU\'LL FIND NEW DIMENSIONS'
+    text: 'IF YOU KEEP ON LOOKING'
+  },
+  {
+    hidden: true
+  },
+  {
+    hidden: false,
+    text: 'YOU\'LL FIND<br>NEW DIMENSIONS'
+  },
+  {
+    hidden: true
+  },
+  {
+    hidden: false,
+    text: 'THINGS ARE CONNECTED<br>YOU ARE THE CONNECTION'
   },
   {
     hidden: true

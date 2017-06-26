@@ -137,6 +137,7 @@ scene2d.on('stoppedDrawing', function () {
 });
 
 scene2d.on('foundSpecial', function () {
+  console.log('specials found', SPECIALS_FOUND);
   if (SPECIALS_FOUND === 0) textHandler.proceed();
   SPECIALS_FOUND++;
   console.log('founds a special connection');
@@ -147,6 +148,7 @@ scene2d.on('revealedSpecial', function () {
 });
 
 scene2d.on('foundFirstConnection', function () {
+  console.log('found first connection');
   textHandler.proceed();
 });
 
@@ -157,8 +159,16 @@ scene2d.on('middleOfDiscovery', function () {
   }, 6000);
 });
 
+scene2d.on('middleOfDiscovery2', function () {
+  textHandler.proceed();
+  setTimeout(function () {
+    textHandler.proceed();
+  }, 6000);
+});
+
 scene2d.on('displayInitialImportantConnections', function () {
   conductor.startIntroKicks();
+  console.log('displaying initial');
   textHandler.proceed();
 });
 
@@ -178,10 +188,12 @@ conductor.on('lastNotesPlayed', function (p) {
       console.log('finished 🍎');
       setTimeout(function () {
         console.log('start showing the last text');
+        textHandler.proceed();
       }, 3000);
 
       setTimeout(function () {
         console.log('start fading the last text');
+        textHandler.proceed();
       }, 10000);
 
       setTimeout(function () {
@@ -198,7 +210,7 @@ conductor.on('lastNotesPlayed', function (p) {
         ALREADY_FINISHED = false;
         SPECIALS_FOUND = 0;
         WARMUP_3D_INTERVAL = 120;
-      }, 13000);
+      }, 15000);
     });
   }
 });
