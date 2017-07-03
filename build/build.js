@@ -111,29 +111,33 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-    if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
-      conductor.endSecondSection(function (p) {
-        scene3d.reactToAudio();
+  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
+    conductor.endSecondSection(function (p) {
+      scene3d.reactToAudio();
 
-        if (p === 1) {
-          scene3d.explodeTheMesh();
-          scene3d.removeHoverAnimations();
-          setTimeout(function () {
-            scene3d.explodeTheWireFrame(scene3d.toggleIntersect);
-            IS_LIMBO = true;
-          }, 2000);
-        }
-      });
-      scene3d.stopMovement();
-      return;
-    }
+      if (p === 1) {
+        scene3d.explodeTheMesh();
+        scene3d.removeHoverAnimations();
+        setTimeout(function () {
+          scene3d.explodeTheWireFrame(scene3d.toggleIntersect);
+          IS_LIMBO = true;
+        }, 2000);
+      }
+    });
+    scene3d.stopMovement();
+    return;
+  }
 
-    if (IS_LIMBO) {
-      var isLastClick = conductor.playLimboMelody(scene3d.reactToAudio);
-      if (isLastClick) scene3d.stopFiringClickEvents();
-      return;
-    }
-    conductor.playLeadMelody(scene3d.reactToAudio);
+  if (IS_LIMBO) {
+    var isLastClick = conductor.playLimboMelody(scene3d.reactToAudio);
+    if (isLastClick) scene3d.stopFiringClickEvents();
+    return;
+  }
+
+  var shouldFinish = scene3d.isRoseCenterVisible();
+  console.log('SHOULD', shouldFinish);
+  conductor.setShouldFinish(shouldFinish);
+  conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
 scene2d.on('revealStart', function () {
@@ -246,7 +250,7 @@ var throttled3DMouseDown = _.throttle(scene3d.mousedown, 500, {
   trailing: false
 });
 
-var throttled2DMouseDown = _.throttle(function(){
+var throttled2DMouseDown = _.throttle(function () {
   var discoveryPercentage = scene2d.mousedown();
   conductor.proceed(discoveryPercentage);
   document.getElementById('progress-bar').style.width = ((discoveryPercentage / config.discoveryThreshold) * 100) + '%';
@@ -2131,6 +2135,7 @@ var LOADED = false;
 var INTERSECT_TOGGLED = false;
 var SHOULD_INTERSECT = true;
 var SHOULD_FIRE_CLICK_EVENTS = true;
+var IS_ROSE_CENTER_VISIBLE = false;
 
 function restartGlobalVariables() {
   SHOUD_EMIT_MOUSE_ON_EVENT = true;
@@ -2439,6 +2444,18 @@ function raycast() {
   }
 }
 
+function isRoseCenterVisible() {
+  if (!SHOULD_SPIN || !SHOULD_INTERSECT) return;
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  var objects = [mesh, roseMesh];
+  var intersects = raycaster.intersectObjects(objects);
+  if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
+    IS_ROSE_CENTER_VISIBLE = true;
+  } else {
+    IS_ROSE_CENTER_VISIBLE = false;
+  }
+}
+
 function addSpheres() {
   var geom = new THREE.SphereGeometry(0.005);
   groupMaterial = new THREE.MeshStandardMaterial({
@@ -2548,6 +2565,7 @@ module.exports.init = function (triangles, done) {
 
     setInterval(raycast, 100);
     setInterval(updateMousePosition, 100);
+    setInterval(isRoseCenterVisible, 200);
 
     SHOUD_UPDATE = true;
     done();
@@ -2733,6 +2751,10 @@ module.exports.finish = function (cb) {
     mouseOff();
     cb();
   });
+};
+
+module.exports.isRoseCenterVisible = function(){
+  return IS_ROSE_CENTER_VISIBLE;
 };
 
 },{"../2d/pt":7,"../colours":22,"../globals":24,"./aura":14,"./generate3DGeometry":15,"./materials":17,"./renderer":18,"./rose":19,"async":71,"dynamics.js":131,"lodash":174,"three":247}],21:[function(require,module,exports){
@@ -3053,16 +3075,21 @@ tomReverbSendGain.gain.value = 0.10;
 // synthGain.gain.value = 0;
 // leadGain.gain.value = 0;
 // kickGain.gain.value = 0;
+// kickDrumGain.gain.value = 0;
 // bgGain.gain.value = 0;
 // guitarGain.gain.value = 0;
 // snareGain.gain.value = 0;
 // bassGain.gain.value = 0;
 // hihatGain.gain.value = 0;
 // keysGain.gain.value = 0;
-// pianoGain.gain.value = 0;
-// epicPercGain.gain.value = 0;
 // backMelodyGain.gain.value = 0;
+// epicPercGain.gain.value = 0;
+// tomGain.gain.value = 0;
 // epicRevGain.gain.value = 0;
+// pianoGain.gain.value = 0;
+// newGuitarGain.gain.value = 0;
+// bassMSGain.gain.value = 0;
+// tomReverbSendGain.gain.value = 0;
 
 load('./assets/audio/ir3.mp3', function (err, buffer) {
   convolver.buffer = buffer;
@@ -3377,6 +3404,10 @@ module.exports.on = function (type, cb) {
   if (type === 'finish') secondSection.on('finish', cb);
   if (type === 'secondPartProgress') secondSection.on('secondPartProgress', cb);
   if (type === 'lastNotesPlayed') roseLeadMelody.on('lastNotesPlayed', cb);
+};
+
+module.exports.setShouldFinish = function (shouldFinish) {
+  secondSection.setShouldFinish(shouldFinish);
 };
 
 },{"../globals":24,"./audio":26,"./background":27,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./epicRev":33,"./guitar":35,"./introKicks":36,"./leadSynth":39,"./mtof":43,"./music":45,"./roseLeadMelody":48,"./secondSection":49,"./sweetPads":50,"lodash":174,"teoria":239}],29:[function(require,module,exports){
@@ -4126,6 +4157,7 @@ var SHOULD_ADD_DRUMS = false;
 var SHOULD_PLAY_BACK_MELODY = false;
 var SHOULD_PLAY_SYNTH = true;
 var PROGRESS_SPEED = 0.0015;
+var SHOULD_FINISH = false;
 var finishListener = _.noop;
 var secondPartProgressListener = _.noop;
 
@@ -4280,13 +4312,13 @@ var interval = null;
 module.exports.start = function () {
   beet.start();
   interval = setInterval(function () {
-    if (progress >= 1) {
+    if (progress >= 1 && SHOULD_FINISH) {
       finish();
       return window.clearInterval(interval);
     }
     background.proceedRaw(progress);
     progress += PROGRESS_SPEED;
-    // progress += 0.01;
+    // progress += 0.1;
     // console.log(progress);
     secondPartProgressListener(progress);
   }, 100);
@@ -4317,6 +4349,11 @@ module.exports.reset = function () {
   SHOULD_ADD_DRUMS = false;
   SHOULD_PLAY_BACK_MELODY = false;
   SHOULD_PLAY_SYNTH = true;
+  SHOULD_FINISH = false;
+};
+
+module.exports.setShouldFinish = function () {
+  SHOULD_FINISH = true;
 };
 
 },{"./audio":26,"./background":27,"./context":29,"./epicPerc":31,"./epicPerc2":32,"./guitar":35,"./kick":37,"./kickDrum":38,"./moogKeys":41,"./music":45,"./tom":51,"beet.js":73,"lodash":174,"markovian":175,"teoria":239}],50:[function(require,module,exports){
