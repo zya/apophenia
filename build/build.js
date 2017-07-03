@@ -1763,18 +1763,18 @@ var shellMaterial = new THREE.MeshStandardMaterial({
   vertexColors: THREE.FaceColors,
   transparent: true,
   opacity: 0,
-  envMap: reflectionCube,
+  // envMap: reflectionCube,
   envMapIntensity: 0.3,
-  // emissive: 0x1c00499,
+  emissive: colours.background.hex(),
   // emissiveIntensity: 0.03,
-  roughness: 0.6,
-  metalness: 0.9,
+  roughness: 0.65,
+  metalness: 0.85,
   // color: new THREE.Color(background.hex()),
   // emissiveMap: stoneBumpMap,
   normalMap: dotsNormalMap,
-  normalScale: new THREE.Vector2(0.05, 0.05)
+  normalScale: new THREE.Vector2(0.05, 0.05),
+  refractionRatio: 10
   // combine: THREE.MixOperation,
-  // reflectivity: 0.25,
   // specular: 0xaa0000,
   // refractionRatio: 0.3
   // normalScale: new THREE.Vector2(0, 0)
@@ -1964,8 +1964,9 @@ var material = new THREE.MeshPhongMaterial({
   side: THREE.DoubleSide,
   emissive: 'red',
   // color: 'red',
-  emissiveIntensity: 0.05,
+  emissiveIntensity: 0.1,
   shading: THREE.SmoothShading,
+  vertexColors: THREE.FaceColors,
   shininess: 30,
   normalMap: dotsNormalMap,
   normalScale: new THREE.Vector3(0.1, 0.1),
@@ -2000,6 +2001,11 @@ module.exports.load = function (cb) {
     geometry.morphTargets.push({
       name: 'random',
       vertices: targets
+    });
+
+    geometry.faces.forEach(function (face) {
+      face.color = new THREE.Color(_.random(0.6, 1.0), _.random(0.4, 1.0), _.random(0.4, 0.9));
+      // face.color = new THREE.Color(_.random(0.1, 0.4), _.random(0.1, 0.2), _.random(0.1, 0.3));
     });
 
     rose = new THREE.Mesh(geometry, material);
@@ -2129,7 +2135,7 @@ var SHOUD_EMIT_MOUSE_ON_EVENT = true;
 var SHOUD_EMIT_MOUSE_OFF_EVENT = false;
 var SHOULD_SPIN = false;
 var MESH_SHOULD_SPIN = true;
-var SHOUD_UPDATE = false;
+var SHOULD_UPDATE = false;
 var IS_HOVER = false;
 var LOADED = false;
 var INTERSECT_TOGGLED = false;
@@ -2142,7 +2148,7 @@ function restartGlobalVariables() {
   SHOUD_EMIT_MOUSE_OFF_EVENT = false;
   SHOULD_SPIN = false;
   MESH_SHOULD_SPIN = true;
-  SHOUD_UPDATE = false;
+  SHOULD_UPDATE = false;
   IS_HOVER = false;
   INTERSECT_TOGGLED = false;
   SHOULD_INTERSECT = true;
@@ -2208,7 +2214,7 @@ redLight.castShadow = true;
 redLight.shadow.mapSize.width = 2048;
 redLight.shadow.mapSize.height = 2048;
 
-var blueLightIntensitiInitial = 0.35;
+var blueLightIntensitiInitial = 0.25;
 var blueLight = new THREE.PointLight('blue');
 blueLight.intensity = 0;
 blueLight.distance = 6;
@@ -2219,7 +2225,7 @@ blueLight.position.z = 0.3;
 // blueLight.shadowMapWidth = 2048;
 // blueLight.shadowMapHeight = 2048;
 
-var spotLightForRoseIntensityInitial = 1.4;
+var spotLightForRoseIntensityInitial = 1.25;
 var spotLightForRose = new THREE.SpotLight('white');
 spotLightForRose.position.set(0, 0, 0.6);
 spotLightForRose.intensity = 0;
@@ -2232,10 +2238,10 @@ spotLightForRose.decay = 1.7;
 // spotLightForRose.shadow.mapSize.height = 2048;
 // spotLightForRose.shadowCameraVisible = true;
 
-var dynamicSpotLightInitialIntensity = 0.2;
-var dynamicSpotLight = new THREE.SpotLight('white');
+var dynamicSpotLightInitialIntensity = 0.25;
+var dynamicSpotLight = new THREE.SpotLight('blue');
 dynamicSpotLight.position.set(-5, 1, 4);
-dynamicSpotLight.intensity = dynamicSpotLightInitialIntensity;
+dynamicSpotLight.intensity = 0;
 dynamicSpotLight.distance = 40;
 dynamicSpotLight.angle = 0.9;
 dynamicSpotLight.penumbra = 1.0;
@@ -2267,6 +2273,12 @@ function scaleUpTo3D(done) {
         z: 1.0,
         x: 1.1,
         y: 1.1
+      }, {
+        duration: duration
+      });
+
+      dynamics.animate(dynamicSpotLight, {
+        intensity: dynamicSpotLightInitialIntensity
       }, {
         duration: duration
       });
@@ -2548,6 +2560,9 @@ module.exports.init = function (triangles, done) {
 
     rose.setSize(geometry.boundingBox.max.x);
     aura.setSize(geometry.boundingBox.max.x);
+    spotLightForRose.position.set(0, 0, geometry.boundingBox.max.z / 1.5);
+    dynamicSpotLight.position.set(-5, 1, geometry.boundingBox.max.z * 5);
+    blueLight.position.set(0, 0, geometry.boundingBox.max.z / 2.5);
 
     mesh.rotation.z = Math.PI;
     mesh.rotation.y = Math.PI;
@@ -2565,9 +2580,9 @@ module.exports.init = function (triangles, done) {
 
     setInterval(raycast, 100);
     setInterval(updateMousePosition, 100);
-    setInterval(isRoseCenterVisible, 200);
+    setInterval(isRoseCenterVisible, 100);
 
-    SHOUD_UPDATE = true;
+    SHOULD_UPDATE = true;
     done();
   });
 };
@@ -2606,7 +2621,7 @@ module.exports.render = function () {
     roseMaterial.needsUpdate = true;
   }
 
-  if (SHOUD_UPDATE) {
+  if (SHOULD_UPDATE) {
     mesh.scale.copy(wireframe.scale);
     mesh.scale.sub(new THREE.Vector3(0.001, 0.001, 0.001));
     wireframe.rotation.copy(mesh.rotation);
@@ -2753,7 +2768,7 @@ module.exports.finish = function (cb) {
   });
 };
 
-module.exports.isRoseCenterVisible = function(){
+module.exports.isRoseCenterVisible = function () {
   return IS_ROSE_CENTER_VISIBLE;
 };
 
