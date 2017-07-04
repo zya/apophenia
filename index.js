@@ -93,7 +93,10 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
+  var isRoseCenterVisible = scene3d.isRoseCenterVisible();
+  conductor.setShouldFinish(isRoseCenterVisible);
+
+  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO && isRoseCenterVisible) {
     conductor.endSecondSection(function (p) {
       scene3d.reactToAudio();
 
@@ -116,9 +119,6 @@ scene3d.on('roseClick', function () {
     return;
   }
 
-  var shouldFinish = scene3d.isRoseCenterVisible();
-  console.log('SHOULD', shouldFinish);
-  conductor.setShouldFinish(shouldFinish);
   conductor.playLeadMelody(scene3d.reactToAudio);
 });
 

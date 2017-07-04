@@ -111,7 +111,10 @@ scene3d.on('roseHoverOff', function () {
 });
 
 scene3d.on('roseClick', function () {
-  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO) {
+  var isRoseCenterVisible = scene3d.isRoseCenterVisible();
+  conductor.setShouldFinish(isRoseCenterVisible);
+
+  if (SECOND_SECTION_HAS_FINISHED && SHOULD_FINISH && !IS_LIMBO && isRoseCenterVisible) {
     conductor.endSecondSection(function (p) {
       scene3d.reactToAudio();
 
@@ -134,9 +137,6 @@ scene3d.on('roseClick', function () {
     return;
   }
 
-  var shouldFinish = scene3d.isRoseCenterVisible();
-  console.log('SHOULD', shouldFinish);
-  conductor.setShouldFinish(shouldFinish);
   conductor.playLeadMelody(scene3d.reactToAudio);
 });
 
@@ -2458,7 +2458,7 @@ function raycast() {
 
 function isRoseCenterVisible() {
   if (!SHOULD_SPIN || !SHOULD_INTERSECT) return;
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  raycaster.setFromCamera(new THREE.Vector2(-0.3, 0), camera);
   var objects = [mesh, roseMesh];
   var intersects = raycaster.intersectObjects(objects);
   if (intersects.length > 0 && intersects[0].object.id === roseMesh.id) {
