@@ -1489,7 +1489,7 @@ module.exports = function (triangles, cb) {
     var geometry = new THREE.Geometry();
 
     geometry.vertices = data.vertices.map(function (vertex) {
-      var target = new THREE.Vector3(0, 0, _.random(-5, 5));
+      var target = new THREE.Vector3(0, 0, _.random(-7, 7));
       targets.push(target);
       return new THREE.Vector3(vertex.x, vertex.y, vertex.z);
     });
@@ -1532,6 +1532,7 @@ module.exports = function (triangles, cb) {
     triangles: triangles,
     space: space
   };
+
 
   worker.postMessage(JSON.stringify(message));
 };
@@ -1740,21 +1741,6 @@ var colours = require('../colours');
 var urlPath = location.pathname;
 var dotsNormalMap = textureLoader.load(urlPath + 'assets/images/dots-normal-map-resized.jpg');
 
-var path = urlPath + 'assets/images/skybox/';
-
-var format = '.jpg';
-var urls = [
-	path + 'px' + format,
-  path + 'nx' + format,
-	path + 'py' + format,
-  path + 'ny' + format,
-	path + 'pz' + format,
-  path + 'nz' + format
-];
-
-var reflectionCube = new THREE.CubeTextureLoader().load(urls);
-reflectionCube.format = THREE.RGBFormat;
-
 var shellMaterial = new THREE.MeshStandardMaterial({
   morphTargets: true,
   morphNormals: true,
@@ -1763,21 +1749,12 @@ var shellMaterial = new THREE.MeshStandardMaterial({
   vertexColors: THREE.FaceColors,
   transparent: true,
   opacity: 0,
-  // envMap: reflectionCube,
-  envMapIntensity: 0.3,
+  envMapIntensity: 0.2,
   emissive: colours.background.hex(),
-  // emissiveIntensity: 0.03,
-  roughness: 0.65,
+  roughness: 0.45,
   metalness: 0.85,
-  // color: new THREE.Color(background.hex()),
-  // emissiveMap: stoneBumpMap,
   normalMap: dotsNormalMap,
-  normalScale: new THREE.Vector2(0.05, 0.05),
-  refractionRatio: 10
-  // combine: THREE.MixOperation,
-  // specular: 0xaa0000,
-  // refractionRatio: 0.3
-  // normalScale: new THREE.Vector2(0, 0)
+  normalScale: new THREE.Vector2(0.01, 0.01)
 });
 
 var depth = new THREE.ShaderMaterial({
@@ -1939,6 +1916,8 @@ module.exports.hide = function () {
   });
 };
 
+module.exports.renderer = renderer;
+
 },{"../../node_modules/three/examples/js/nodes/postprocessing/NodePass":276,"../../node_modules/three/examples/js/postprocessing/BokehPass":282,"../../node_modules/three/examples/js/postprocessing/EffectComposer":283,"../../node_modules/three/examples/js/postprocessing/RenderPass":284,"../../node_modules/three/examples/js/postprocessing/ShaderPass":285,"../../node_modules/three/examples/js/postprocessing/UnrealBloomPass":286,"../../node_modules/three/examples/js/shaders/BokehShader":287,"../../node_modules/three/examples/js/shaders/ConvolutionShader":288,"../../node_modules/three/examples/js/shaders/CopyShader":289,"../../node_modules/three/examples/js/shaders/FXAAShader":290,"../../node_modules/three/examples/js/shaders/LuminosityHighPassShader":291,"../colours":22,"./allTheNodes":13,"dynamics.js":131,"three":247}],19:[function(require,module,exports){
 'use strict';
 
@@ -1969,7 +1948,7 @@ var material = new THREE.MeshPhongMaterial({
   vertexColors: THREE.FaceColors,
   shininess: 30,
   normalMap: dotsNormalMap,
-  normalScale: new THREE.Vector3(0.1, 0.1),
+  normalScale: new THREE.Vector3(0.05, 0.05),
   morphTargets: true,
   transparent: true,
   opacity: 0
@@ -2110,6 +2089,10 @@ module.exports.reset = function () {
   rose.scale.set(scale, scale, scale);
 };
 
+module.exports.setVisible = function (visible) {
+  rose.visible = visible;
+};
+
 },{"../../node_modules/three/examples/js/loaders/OBJLoader":248,"dynamics.js":131,"lodash":174,"three":247}],20:[function(require,module,exports){
 'use strict';
 
@@ -2130,6 +2113,9 @@ var aura = require('./aura');
 var auraMesh = aura.mesh;
 
 var geometry, mesh, wireframe, camera, group, groupMaterial;
+var cubeCamera = new THREE.CubeCamera(1, 1000, 512); // parameters: near, far, resolution
+cubeCamera.renderTarget.texture.minFilter = THREE.LinearMipMapLinearFilter; // mipmap filter
+
 // var controls;
 var SHOUD_EMIT_MOUSE_ON_EVENT = true;
 var SHOUD_EMIT_MOUSE_OFF_EVENT = false;
@@ -2193,10 +2179,14 @@ rose.load(function (err, mesh, material) {
   roseMaterial = material;
   scene.add(roseMesh);
   scene.add(auraMesh);
+  scene.add(cubeCamera);
+  cubeCamera.updateCubeMap(renderer.renderer, scene);
 });
 
 // main material
 var material = materials.shell;
+material.envMap = cubeCamera.renderTarget.texture;
+// rose.setEnvMap(cubeCamera.renderTarget.texture);
 
 // wire frame material
 var wireframeMaterial = materials.wireframe;
@@ -2204,7 +2194,7 @@ var wireframeMaterial = materials.wireframe;
 // var lightHelper = new THREE.SpotLightHelper(spotLight);
 // scene.add(lightHelper);
 
-var redLightIntensityInitial = 0.01;
+var redLightIntensityInitial = 0.02;
 var redLight = new THREE.PointLight('red');
 redLight.intensity = 0;
 redLight.distance = 9;
@@ -2214,7 +2204,7 @@ redLight.castShadow = true;
 redLight.shadow.mapSize.width = 2048;
 redLight.shadow.mapSize.height = 2048;
 
-var blueLightIntensitiInitial = 0.25;
+var blueLightIntensitiInitial = 0.22;
 var blueLight = new THREE.PointLight('blue');
 blueLight.intensity = 0;
 blueLight.distance = 6;
@@ -2225,7 +2215,7 @@ blueLight.position.z = 0.3;
 // blueLight.shadowMapWidth = 2048;
 // blueLight.shadowMapHeight = 2048;
 
-var spotLightForRoseIntensityInitial = 1.25;
+var spotLightForRoseIntensityInitial = 1.15;
 var spotLightForRose = new THREE.SpotLight('white');
 spotLightForRose.position.set(0, 0, 0.6);
 spotLightForRose.intensity = 0;
@@ -2238,9 +2228,9 @@ spotLightForRose.decay = 1.7;
 // spotLightForRose.shadow.mapSize.height = 2048;
 // spotLightForRose.shadowCameraVisible = true;
 
-var dynamicSpotLightInitialIntensity = 0.25;
+var dynamicSpotLightInitialIntensity = 0.18;
 var dynamicSpotLight = new THREE.SpotLight('blue');
-dynamicSpotLight.position.set(-5, 1, 4);
+dynamicSpotLight.position.set(-5, 1, 8);
 dynamicSpotLight.intensity = 0;
 dynamicSpotLight.distance = 40;
 dynamicSpotLight.angle = 0.9;
@@ -2456,6 +2446,14 @@ function raycast() {
   }
 }
 
+function calculateLightIntensities(reference) {
+  var intensity = (reference * 3);
+  spotLightForRoseIntensityInitial *= intensity * 0.8;
+  dynamicSpotLightInitialIntensity *= intensity;
+  redLightIntensityInitial *= intensity;
+  blueLightIntensitiInitial *= intensity;
+}
+
 function isRoseCenterVisible() {
   if (!SHOULD_SPIN || !SHOULD_INTERSECT) return;
   raycaster.setFromCamera(new THREE.Vector2(-0.3, 0), camera);
@@ -2558,10 +2556,12 @@ module.exports.init = function (triangles, done) {
     // wireframe.castShadow = true;
     wireframe.scale.set(1, 1, 0.01);
 
-    rose.setSize(geometry.boundingBox.max.x);
-    aura.setSize(geometry.boundingBox.max.x);
+    var reference = Math.max(geometry.boundingBox.max.x, geometry.boundingBox.max.y);
+    rose.setSize(reference);
+    aura.setSize(reference);
+    calculateLightIntensities(reference);
     spotLightForRose.position.set(0, 0, geometry.boundingBox.max.z / 1.5);
-    dynamicSpotLight.position.set(-5, 1, geometry.boundingBox.max.z * 5);
+    dynamicSpotLight.position.set(-5, 1, geometry.boundingBox.max.z * 4);
     blueLight.position.set(0, 0, geometry.boundingBox.max.z / 2.5);
 
     mesh.rotation.z = Math.PI;
@@ -2608,6 +2608,7 @@ function addInsideMeshes(done) {
   done();
 }
 
+var count = 0;
 module.exports.render = function () {
   if (SHOULD_SPIN) {
     if (MESH_SHOULD_SPIN) mesh.rotation.y += spin.speed;
@@ -2627,7 +2628,7 @@ module.exports.render = function () {
     wireframe.rotation.copy(mesh.rotation);
 
     spotLightForRose.lookAt(roseMesh);
-    dynamicSpotLight.lookAt(roseMesh.position);
+    // dynamicSpotLight.lookAt(roseMesh.position);
 
     wireframeMaterial.needsUpdate = true;
     groupMaterial.needsUpdate = true;
@@ -2640,8 +2641,8 @@ module.exports.render = function () {
     // redLight.position.x += (mouseOffsetX - redLight.position.x) * 0.1;
     // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
     // redLight.position.y += (mouseOffsetY - redLight.position.y) * 0.1;
-    dynamicSpotLight.position.x += ((mouseOffsetX * 3) - dynamicSpotLight.position.x) * 0.03;
-    dynamicSpotLight.position.y += ((mouseOffsetY * 2) - dynamicSpotLight.position.y) * 0.03;
+    dynamicSpotLight.position.x += ((mouseOffsetX) - dynamicSpotLight.position.x) * 0.06;
+    dynamicSpotLight.position.y += ((mouseOffsetY) - dynamicSpotLight.position.y) * 0.03;
     redLight.position.x += (((mouseOffsetX * 0.5) - redLight.position.x) * 0.1);
     // redLight.position.y += (((mouseOffsetY * 1.3) - redLight.position.y) * 0.1) * -1;
 
@@ -2649,6 +2650,13 @@ module.exports.render = function () {
     aura.update();
   }
 
+  if (count % 5 === 0) {
+    console.log('updating the cube map');
+    rose.setVisible(false);
+    cubeCamera.updateCubeMap(renderer.renderer, scene);
+    rose.setVisible(true);
+  }
+  count++;
   renderer.render(scene, camera);
 };
 
@@ -3039,13 +3047,15 @@ var newGuitarGain = context.createGain();
 var bassMSGain = context.createGain();
 var tomGain = context.createGain();
 var tomReverbSendGain = context.createGain();
+var masterGain = context.createGain();
 
-limiter.ratio.value = 20;
+limiter.ratio.value = 10;
 limiter.attack.value = 0.01;
 limiter.release.value = 0.01;
 limiter.threshold.value = -1;
 
-limiter.connect(context.destination);
+limiter.connect(masterGain);
+masterGain.connect(context.destination);
 convolver.connect(limiter);
 synthGain.connect(convolver);
 synthGain.connect(convolver);
@@ -3070,7 +3080,7 @@ tomReverbSendGain.connect(convolver);
 
 synthGain.gain.value = 0.10;
 leadGain.gain.value = 0.10;
-kickGain.gain.value = 0.46;
+kickGain.gain.value = 0.43;
 kickDrumGain.gain.value = 0.82;
 bgGain.gain.value = 0.09;
 guitarGain.gain.value = 0.013;
@@ -3086,6 +3096,7 @@ pianoGain.gain.value = 0.35;
 newGuitarGain.gain.value = 0.06;
 bassMSGain.gain.value = 0.45;
 tomReverbSendGain.gain.value = 0.10;
+masterGain.gain.value = 0.80;
 
 // synthGain.gain.value = 0;
 // leadGain.gain.value = 0;
