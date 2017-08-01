@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <title>Apophenia: You'll only see if you are looking</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:100,300,500,700,900|Lato:400,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:100,300,500,700,900|Lato:400,700,900" rel="stylesheet">
     <style>
     html, body {
       width: 100vw;
@@ -56,7 +56,7 @@
     }
 
     #intro {
-      font-size: 2.5em;
+      font-size: 2.5vmax;
     }
 
     #description {
@@ -68,6 +68,7 @@
     #play {
       font-size: 10vmax;
       color: white;
+      padding-top: -500px;
     }
 
     #play-icon {
@@ -103,9 +104,11 @@
       z-index: 5000;
       top: 45vh;
       /*font-family: 'Merriweather', serif;*/
-      font-family: 'Source Code Pro', monospace;
-      font-size: 1em;
-      font-weight: 500;
+      /*font-family: 'Source Code Pro', monospace;*/
+      font-family: 'Lato', sans-serif;
+      font-size: 1.1vmax;
+      font-weight: 700;
+      /*line-height: 95%;*/
       color: white;
       width: 100%;
       opacity: 0;
@@ -122,14 +125,14 @@
 
     .information {
       position: fixed;
-      bottom: 4vmax;
+      bottom: 2vmax;
       width: 100vw;
     }
 
     .credits {
       position: fixed;
       width: 100vw;
-      bottom: 14.5vmax;
+      /*bottom: 14.5vmax;*/
     }
 
     .information-text {
@@ -137,32 +140,87 @@
       font-family: 'Source Code Pro', monospace;
       font-size: 0.7vmax;
       font-weight: 100;
+      word-spacing: -0.15vmax;
     }
 
     .big {
-      font-size: 1.4vmax;
-      font-weight: 400;
+      font-family: 'Lato', sans-serif;
+      font-size: 1.67vmax;
+      word-spacing: 0.2vmax;
+      font-weight: 700;
+    }
+
+    .medium {
+      font-size: 0.73vmax;
+      word-spacing: -0.15vmax;
     }
 
     .information-icon {
-      font-size: 2.2vmax;
-      margin-bottom: 0.6vmax;
+      font-size: 1.3vmax;
+      margin-bottom: 0.2vmax;
+
     }
+
+    @media (max-width: 767px) {
+      .information-icon {
+        font-size: 1.8vmax;
+        margin-bottom: 0.6vmax;
+      }
+
+      .information-text {
+        /*font-family: 'Dosis', sans-serif;*/
+        font-size: 1.0vmax;
+      }
+
+      .medium {
+        font-size: 1.0vmax;
+      }
+
+      .big {
+        font-size: 1.9vmax;
+      }
+
+      #intro {
+        font-size: 2.7vmax;
+      }
+    }
+
+    @media (min-width: 1400px) {
+      #intro {
+        font-size: 2.1vmax;
+      }
+
+      .information-text {
+        font-size: 0.4vmax;
+      }
+
+      .big {
+        font-size: 1.47vmax;
+        word-spacing: 0.2vmax;
+      }
+
+      .medium {
+        font-size: 0.65vmax;
+        word-spacing: -0.15vmax;
+      }
+
+      #narrative {
+        font-size: 1.1vmax;
+      }
+    }
+
     </style>
   </head>
   <body>
     <div id="narrative"></div>
     <div id="text">
       <div id="intro">APOPHENIA</div>
-      <!-- <div id="description">
-        YOU'LL ONLY SEE WHEN YOU ARE LOOKING
-      </div> -->
       <div id="play">
         <i class="fa fa-cog fa-spin" id="loading" aria-hidden="true"></i>
         <i class="fa fa-circle" id="play-icon" aria-hidden="true"></i>
       </div>
       <div class="credits">
-        <div class="information-text">AN INTERACTIVE PIECE BY</div>
+        <div class="information-text medium">AN INTERACTIVE PIECE BY</div>
         <div class="information-text big">EHSAN ZIYA</div>
       </div>
       <div class="information">

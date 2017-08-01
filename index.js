@@ -303,7 +303,10 @@ setTimeout(ready, DEBUG ? 0 : DELAY_TIME_TO_START);
 function start() {
   text.style.opacity = 0;
   setTimeout(conductor.startBackgroundMelody, 3000);
-  play.style.display = 'none';
+  play.style.opacity = 0;
+  setTimeout(function () {
+    play.style.display = 'none';
+  }, 3000);
   scene2d.startFollowingMouse();
   conductor.playIntro();
   setTimeout(scene2d.addIntro, 3500);
