@@ -4555,6 +4555,12 @@ module.exports = playLead;
 },{"./2d/changePointColour":3,"./2d/ripples":9,"./music/conductor":28,"./music/context":29,"random-float":208}],55:[function(require,module,exports){
 'use strict';
 
+var colours = require('./colours');
+
+var orange = 'rgb(' + colours.orange.x + ',' + colours.orange.y + ',' + colours.orange.z + ')';
+var blue = 'rgb(' + colours.lightBlue.x + ',' + colours.lightBlue.y + ',' + colours.lightBlue.z + ')';
+var red = 'rgb(' + colours.red.x + ',' + colours.red.y + ',' + colours.red.z + ')';
+
 var narrative = [
   {
     hidden: false,
@@ -4566,28 +4572,28 @@ var narrative = [
   },
   {
     hidden: false,
-    text: 'THINGS ARE CONNECTED<br>BUT SOME CONNECTIONS<br>ARE MORE IMPORTANT THAN OTHERS'
+    text: 'THINGS ARE CONNECTED<br>BUT SOME CONNECTIONS<br>ARE MORE <span style="color: orange; text-shadow: 0px 0px 0px grey;">IMPORTANT</span> THAN OTHERS'.replace('orange', orange)
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'WITHIN THE CONNECTIONS<br>YOU\'LL START TO SEE SHAPES'
+    text: 'WITHIN THE CONNECTIONS<br>YOU\'LL START TO SEE <span style="color: blue; text-shadow: 0px 0px 0px grey;">SHAPES</span>'.replace('blue', blue)
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'IF YOU KEEP ON LOOKING'
+    text: 'AND IF YOU KEEP ON LOOKING'
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'YOU\'LL SOON FIND<br>NEW DIMENSIONS'
+    text: 'YOU\'LL FIND<br>NEW <span style="color: red; text-shadow: 0px 0px 0px grey;">DIMENSIONS</span>'.replace('red', red)
   },
   {
     hidden: true
@@ -4637,7 +4643,7 @@ module.exports.reset = function () {
   currentIndex = 0;
 };
 
-},{}],56:[function(require,module,exports){
+},{"./colours":22}],56:[function(require,module,exports){
 var accidentalValues = {
   'bb': -2,
   'b': -1,
