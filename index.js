@@ -221,6 +221,7 @@ conductor.on('lastNotesPlayed', function (p) {
 
 conductor.on('secondPartProgress', function (progress) {
   scene3d.zoom(progress);
+  progressBar2.style.width = Math.min((progress * 100), 100) + '%';
 });
 
 window.addEventListener('mousemove', function (evt) {
@@ -235,7 +236,8 @@ var throttled3DMouseDown = _.throttle(scene3d.mousedown, 500, {
 var throttled2DMouseDown = _.throttle(function () {
   var discoveryPercentage = scene2d.mousedown();
   conductor.proceed(discoveryPercentage);
-  document.getElementById('progress-bar').style.width = ((discoveryPercentage / config.discoveryThreshold) * 100) + '%';
+  document.getElementById('progress-bar').style.width = Math.min(((discoveryPercentage / config.discoveryThreshold) * 100), 100) + '%';
+  if (discoveryPercentage === 0) progressBar2.style.width = 0 + '%';
 
   if (discoveryPercentage > config.discoveryThreshold && !HAS_TRANSITIONED) {
     HAS_TRANSITIONED = true;
@@ -261,6 +263,7 @@ window.addEventListener('mousedown', mouseDown);
 var play = document.getElementById('play-icon');
 var loading = document.getElementById('loading');
 var text = document.getElementById('text');
+var progressBar2 = document.getElementById('progress-bar-2');
 // text.style.display = 'none';
 
 play.addEventListener('click', start);
