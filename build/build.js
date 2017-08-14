@@ -2221,7 +2221,7 @@ blueLight.position.z = 0.3;
 // blueLight.shadowMapWidth = 2048;
 // blueLight.shadowMapHeight = 2048;
 
-var spotLightForRoseIntensityInitial = 1.15;
+var spotLightForRoseIntensityInitial = 1.05;
 var spotLightForRose = new THREE.SpotLight('white');
 spotLightForRose.position.set(0, 0, 0.6);
 spotLightForRose.intensity = 0;
