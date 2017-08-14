@@ -34,6 +34,7 @@ var stats = new Stats();
 var HAS_TRANSITIONED = false;
 var IS_LIMBO = false;
 var SECOND_SECTION_HAS_FINISHED = false;
+var HAVE_TRIGGERED_MID_INDICATION_EVENT = false;
 var SHOUD_RENDER_3D = false;
 var SHOULD_RENDER_2D = true;
 var DEBUG = false;
@@ -227,6 +228,7 @@ conductor.on('lastNotesPlayed', function (p) {
         HAS_TRANSITIONED = false;
         IS_LIMBO = false;
         SECOND_SECTION_HAS_FINISHED = false;
+        HAVE_TRIGGERED_MID_INDICATION_EVENT = false;
         SHOUD_RENDER_3D = false;
         SHOULD_RENDER_2D = true;
         ALREADY_FINISHED = false;
@@ -240,6 +242,13 @@ conductor.on('lastNotesPlayed', function (p) {
 conductor.on('secondPartProgress', function (progress) {
   scene3d.zoom(progress);
   progressBar2.style.width = Math.min((progress * 100), 100) + '%';
+  if (progress > 0.35 && !HAVE_TRIGGERED_MID_INDICATION_EVENT) {
+    textHandler.proceed();
+    setTimeout(function () {
+      textHandler.proceed();
+    }, 7000);
+    HAVE_TRIGGERED_MID_INDICATION_EVENT = true;
+  }
 });
 
 window.addEventListener('mousemove', function (evt) {
@@ -4597,6 +4606,13 @@ var narrative = [
   {
     hidden: false,
     text: 'YOU\'LL FIND<br>NEW <span style="color: red; text-shadow: 0px 0px 0px grey;">DIMENSIONS</span>'.replace('red', red)
+  },
+  {
+    hidden: true
+  },
+  {
+    hidden: false,
+    text: 'EXPLORE YOUR FINDINGS<br>THEY WON\'T LAST LONG'.replace('red', red)
   },
   {
     hidden: true
