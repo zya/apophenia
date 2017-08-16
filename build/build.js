@@ -336,6 +336,7 @@ function start() {
   play.style.opacity = 0;
   setTimeout(function () {
     play.style.display = 'none';
+    text.style.display = 'none';
   }, 3000);
   scene2d.startFollowingMouse();
   conductor.playIntro();
@@ -4638,11 +4639,16 @@ module.exports.proceed = function () {
 
   var delta = Date.now() - lastAnimationStarted;
   var time = 1000;
+  var animationDuration = 3500;
 
   if (currentState.hidden) {
     setTimeout(function () {
       lastAnimationStarted = Date.now();
       element.style.opacity = 0;
+      setTimeout(function () {
+        element.innerHTML = '';
+        element.style.visibility = 'hidden';
+      }, animationDuration);
     }, time);
     return;
   }
@@ -4654,6 +4660,7 @@ module.exports.proceed = function () {
   setTimeout(function () {
     element.innerHTML = currentState.text;
     lastAnimationStarted = Date.now();
+    element.style.visibility = 'visible';
     element.style.opacity = 1;
   }, time);
 };

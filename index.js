@@ -318,6 +318,7 @@ function start() {
   play.style.opacity = 0;
   setTimeout(function () {
     play.style.display = 'none';
+    text.style.display = 'none';
   }, 3000);
   scene2d.startFollowingMouse();
   conductor.playIntro();
