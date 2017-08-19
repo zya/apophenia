@@ -2010,7 +2010,7 @@ module.exports.load = function (cb) {
     rose.rotation.y = initialRotation;
     rose.castShadow = true;
     rose.receiveShadow = true;
-
+    rose.visible = false;
     cb(null, rose, material);
   });
 };
@@ -2077,6 +2077,7 @@ module.exports.reduce = function () {
 };
 
 module.exports.reveal = function () {
+  rose.visible = true;
   material.opacity = 1;
   material.transparent = false;
   material.needsUpdate = true;
