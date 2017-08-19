@@ -27,6 +27,7 @@ var ALREADY_FINISHED = false;
 var SPECIALS_FOUND = 0;
 var FRAME = 0;
 var WARMUP_3D_INTERVAL = 120;
+var FRAME_RATE = 1000 / 50;
 
 // stats.showPanel(0);
 stats.dom.style.top = '';
@@ -296,7 +297,12 @@ function render() {
 
   FRAME++;
   stats.end();
-  requestAnimationFrame(render);
+
+  if (SHOULD_RENDER_2D) return requestAnimationFrame(render);
+
+  setTimeout(function () {
+    requestAnimationFrame(render);
+  }, FRAME_RATE);
 }
 
 function ready() {

@@ -45,6 +45,7 @@ var ALREADY_FINISHED = false;
 var SPECIALS_FOUND = 0;
 var FRAME = 0;
 var WARMUP_3D_INTERVAL = 120;
+var FRAME_RATE = 1000 / 50;
 
 // stats.showPanel(0);
 stats.dom.style.top = '';
@@ -314,7 +315,12 @@ function render() {
 
   FRAME++;
   stats.end();
-  requestAnimationFrame(render);
+
+  if (SHOULD_RENDER_2D) return requestAnimationFrame(render);
+
+  setTimeout(function () {
+    requestAnimationFrame(render);
+  }, FRAME_RATE);
 }
 
 function ready() {
@@ -2640,16 +2646,13 @@ function addInsideMeshes(done) {
 
 var count = 0;
 module.exports.render = function () {
+  var delta = globals.getDelta();
   if (SHOULD_SPIN) {
-    if (MESH_SHOULD_SPIN) mesh.rotation.y += spin.speed;
+    if (MESH_SHOULD_SPIN) mesh.rotation.y += (delta * spin.speed);
 
-    auraMesh.rotation.y -= 0.006;
-    group.rotation.y -= 0.003;
-    group.rotation.x -= 0.001;
-  }
-
-  if (LOADED && IS_ROSE_CENTER_VISIBLE) {
-    // roseMaterial.needsUpdate = true;
+    auraMesh.rotation.y -= (delta * 0.006);
+    group.rotation.y -= (delta * 0.003);
+    group.rotation.x -= (delta * 0.001);
   }
 
   if (SHOULD_UPDATE) {
