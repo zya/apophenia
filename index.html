@@ -143,6 +143,10 @@
       position: fixed;
       bottom: 2vmax;
       width: 100vw;
+      display: flex;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
     }
 
     .information:hover{
@@ -180,7 +184,30 @@
     .information-icon {
       font-size: 1.3vmax;
       margin-bottom: 0.2vmax;
+    }
 
+    .info-row {
+      /*display: flex;*/
+      padding: 10px;
+    }
+
+    #chrome {
+      display: none;
+      font-size: 1.1vmax;
+    }
+
+    a:visited {
+      text-decoration: none;
+      color: white;
+    }
+
+    a:link {
+      text-decoration: none;
+      color: white;
+    }
+
+    .phones {
+      color: black;
     }
 
     @media (max-width: 767px) {
@@ -246,8 +273,14 @@
         <div class="information-text big">EHSAN ZIYA</div>
       </div>
       <div class="information">
-        <i class="fa fa-headphones information-icon" aria-hidden="true"></i>
-        <div class="information-text">FOR BEST EXPERIENCE<br>USE HEADPHONES</div>
+        <div class="info-row">
+          <i class="fa fa-headphones information-icon" aria-hidden="true"></i>
+          <div class="information-text">FOR BEST EXPERIENCE<br>USE HEADPHONES</div>
+        </div>
+        <div class="info-row" id="chrome">
+          <a href="https://www.google.com/chrome/browser/desktop/index.html" class="fa fa-chrome information-icon" aria-hidden="true"></a>
+          <div class="information-text">FOR BEST EXPERIENCE<br>USE CHROME</div>
+        </div>
       </div>
     </div>
     <div id="pt"></div>

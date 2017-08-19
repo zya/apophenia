@@ -6,6 +6,7 @@
   "dependencies": {
     "async": "^2.0.1",
     "beet.js": "^1.7.0",
+    "bowser": "^1.7.2",
     "dynamics.js": "^1.1.5",
     "faster-delaunay": "^1.0.0",
     "fastidious-envelope-generator": "^1.0.2",

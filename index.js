@@ -3,6 +3,7 @@
 var _ = require('lodash');
 var Stats = require('stats.js');
 var async = require('async');
+var bowser = require('bowser');
 
 var conductor = require('./lib/music/conductor');
 var scene2d = require('./lib/2d/scene2D');
@@ -327,6 +328,10 @@ function start() {
   setTimeout(function () {
     textHandler.proceed();
   }, 4000);
+}
+
+if (!bowser.chrome) {
+  document.getElementById('chrome').style.display = 'inline';
 }
 
 conductor.startBackground();
