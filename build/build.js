@@ -1816,7 +1816,8 @@ require('../../node_modules/three/examples/js/nodes/postprocessing/NodePass');
 var camera, scene;
 
 var renderer = new THREE.WebGLRenderer({
-  alpha: true
+  alpha: true,
+  antialias: false
 });
 
 var dpr = 1;
@@ -2025,7 +2026,7 @@ module.exports.updateRotation = function (x, y) {
 module.exports.setSize = function (reference) {
   scale = reference / (geometry.boundingBox.max.y * 3);
   rose.userData.scale = scale;
-  rose.scale.set(0, 0, 0);
+  rose.scale.set(0.001, 0.001, 0.001);
 };
 
 module.exports.update = function () {
@@ -2108,6 +2109,8 @@ module.exports.reset = function () {
 module.exports.setVisible = function (visible) {
   rose.visible = visible;
 };
+
+module.exports.mesh = rose;
 
 },{"../../node_modules/three/examples/js/loaders/OBJLoader":248,"dynamics.js":131,"lodash":174,"three":247}],20:[function(require,module,exports){
 'use strict';
@@ -2639,8 +2642,8 @@ module.exports.render = function () {
     group.rotation.x -= 0.001;
   }
 
-  if (LOADED) {
-    roseMaterial.needsUpdate = true;
+  if (LOADED && IS_ROSE_CENTER_VISIBLE) {
+    // roseMaterial.needsUpdate = true;
   }
 
   if (SHOULD_UPDATE) {
