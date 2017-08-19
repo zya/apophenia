@@ -27,11 +27,12 @@
     "browserify": "^13.0.0",
     "concurrently": "^2.1.0",
     "jshint": "^2.9.2",
+    "uglify-js": "^3.0.28",
     "watchify": "^3.7.0"
   },
   "scripts": {
     "watch": "concurrently 'watchify index.js -o build/build.js' 'live-server'",
-    "build": "browserify index.js -o build/build.js",
+    "build": "browserify index.js | uglifyjs -c > build/build.min.js",
     "update-pages": "git checkout gh-pages && git rebase master && git push origin gh-pages && git checkout master"
   },
   "author": "",
