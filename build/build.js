@@ -2015,7 +2015,7 @@ module.exports.load = function (cb) {
     rose.rotation.y = initialRotation;
     rose.castShadow = true;
     rose.receiveShadow = true;
-
+    rose.visible = false;
     cb(null, rose, material);
   });
 };
@@ -2082,6 +2082,7 @@ module.exports.reduce = function () {
 };
 
 module.exports.reveal = function () {
+  rose.visible = true;
   material.opacity = 1;
   material.transparent = false;
   material.needsUpdate = true;
@@ -4511,19 +4512,27 @@ var Envelope = require('fastidious-envelope-generator');
 var context = require('./context');
 var destination = require('./audio').synthDestination;
 
+var SHOULD_USE_STEREO_PANNER = typeof context.createStereoPanner === 'function';
+
 function Voice(id, frequency) {
   this.id = id;
 
   var osc = context.createOscillator();
   osc.frequency.value = frequency;
   var gain = context.createGain();
-  var panner = context.createStereoPanner();
+
+  var panner = SHOULD_USE_STEREO_PANNER ? context.createStereoPanner() : context.createPanner();
   this.env = new Envelope(context, gain.gain);
   this.env.mode = 'ASR';
   osc.connect(gain);
   gain.connect(panner);
   panner.connect(destination);
-  panner.pan.value = _.random(-0.7, 0.7);
+  if (SHOULD_USE_STEREO_PANNER) {
+    panner.pan.value = _.random(-0.7, 0.7);
+  } else {
+    panner.panningModel = 'equalower';
+    panner.setPosition(_.random(-0.7, 0.7), _.random(-0.7, 0.7), _.random(-0.7, 0.7));
+  }
   gain.gain.value = 0;
   this.osc = osc;
   this.gain = gain;
@@ -4590,7 +4599,7 @@ var red = 'rgb(' + colours.red.x + ',' + colours.red.y + ',' + colours.red.z + '
 var narrative = [
   {
     hidden: false,
-    text: 'THINGS ARE CONNECTED<br>YOU\'LL ONLY SEE<br>WHEN YOU ARE LOOKING'
+    text: 'THINGS ARE CONNECTED.<br>YOU\'LL ONLY SEE<br>WHEN YOU ARE LOOKING.'
   },
   {
     hidden: true,
@@ -4598,42 +4607,42 @@ var narrative = [
   },
   {
     hidden: false,
-    text: 'THINGS ARE CONNECTED<br>BUT SOME CONNECTIONS<br>ARE MORE <span style="color: orange; text-shadow: 0px 0px 0px grey;">IMPORTANT</span> THAN OTHERS'.replace('orange', orange)
+    text: 'THINGS ARE CONNECTED.<br>BUT SOME CONNECTIONS<br>ARE MORE <span style="color: orange; text-shadow: 0px 0px 0px grey;">IMPORTANT</span> THAN OTHERS.'.replace('orange', orange)
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'WITHIN THE CONNECTIONS<br>YOU\'LL START TO SEE <span style="color: blue; text-shadow: 0px 0px 0px grey;">SHAPES</span>'.replace('blue', blue)
+    text: 'WITHIN THE CONNECTIONS,<br>YOU\'LL START TO SEE <span style="color: blue; text-shadow: 0px 0px 0px grey;">SHAPES</span>.'.replace('blue', blue)
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'AND IF YOU KEEP ON LOOKING'
+    text: 'AND IF YOU KEEP ON LOOKING...'
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'YOU\'LL FIND<br>NEW <span style="color: red; text-shadow: 0px 0px 0px grey;">DIMENSIONS</span>'.replace('red', red)
+    text: 'YOU\'LL FIND<br>NEW <span style="color: red; text-shadow: 0px 0px 0px grey;">DIMENSIONS</span>.'.replace('red', red)
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'EXPLORE YOUR FINDINGS<br>THEY WON\'T LAST LONG'.replace('red', red)
+    text: 'EXPLORE YOUR FINDINGS.<br>THEY WON\'T LAST LONG.'.replace('red', red)
   },
   {
     hidden: true
   },
   {
     hidden: false,
-    text: 'THINGS ARE CONNECTED<br>YOU ARE THE CONNECTION'
+    text: 'THINGS ARE CONNECTED.<br>YOU ARE THE CONNECTION.'
   },
   {
     hidden: true
