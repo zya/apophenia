@@ -4506,19 +4506,27 @@ var Envelope = require('fastidious-envelope-generator');
 var context = require('./context');
 var destination = require('./audio').synthDestination;
 
+var SHOULD_USE_STEREO_PANNER = typeof context.createStereoPanner === 'function';
+
 function Voice(id, frequency) {
   this.id = id;
 
   var osc = context.createOscillator();
   osc.frequency.value = frequency;
   var gain = context.createGain();
-  var panner = context.createStereoPanner();
+
+  var panner = SHOULD_USE_STEREO_PANNER ? context.createStereoPanner() : context.createPanner();
   this.env = new Envelope(context, gain.gain);
   this.env.mode = 'ASR';
   osc.connect(gain);
   gain.connect(panner);
   panner.connect(destination);
-  panner.pan.value = _.random(-0.7, 0.7);
+  if (SHOULD_USE_STEREO_PANNER) {
+    panner.pan.value = _.random(-0.7, 0.7);
+  } else {
+    panner.panningModel = 'equalower';
+    panner.setPosition(_.random(-0.7, 0.7), _.random(-0.7, 0.7), _.random(-0.7, 0.7));
+  }
   gain.gain.value = 0;
   this.osc = osc;
   this.gain = gain;
