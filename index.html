@@ -3,260 +3,291 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <title>Apophenia: You'll only see if you are looking</title>
+    <title>APOPHENIA by Ehsan Ziya</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:100,300,500,700,900|Lato:400,700,900" rel="stylesheet">
+    <meta charset="utf-8">
+
+    <title>APOPHENIA by Ehsan Ziya</title>
+    <meta name="description" content="APOPHENIA by Ehsan Ziya | Interactive Music" />
+
+    <meta name="twitter:card" value="APOPHENIA by Ehsan Ziya | Interactive Music">
+    <!-- <meta name="twitter:image" content="http://flowers.zya.cc/assets/og-image.jpg"> -->
+    <meta name="twitter:site" content="@atour">
+    <meta name="twitter:creator" content="@atour" />
+
+    <meta property="og:title" content="APOPHENIA by Ehsan Ziya | Interactive Music" />
+    <meta property="og:type" content="article" />
+    <!-- <meta property="og:url" content="http://flowers.zya.cc/" /> -->
+    <!-- <meta property="og:image" content="http://flowers.zya.cc/assets/og-image.jpg" /> -->
+    <!-- <meta property="og:image:width" content="1200"/> -->
+    <!-- <meta property="og:image:height" content="630"/> -->
+    <meta property="og:description" content="New Interactive Music Piece by Ehsan Ziya" />
+
+    <link rel="apple-touch-icon" sizes="57x57" href="./assets/favicons/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="./assets/favicons/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="./assets/favicons/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="./assets/favicons/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="./assets/favicons/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="./assets/favicons/apple-touch-icon-120x120.png">
+    <link rel="icon" type="image/png" href="./assets/favicons/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="./assets/favicons/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png" href="./assets/favicons/favicon-16x16.png" sizes="16x16">
+    <link rel="manifest" href="./assets/favicons/manifest.json">
+    <link rel="mask-icon" href="./assets/favicons/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#1a1a1a">
     <style>
-    html, body {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background-color: #FBFBFB;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-      background-color: rgb(1, 8, 15);
-    }
+      html, body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #FBFBFB;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        background-color: rgb(1, 8, 15);
+      }
 
-    #pt {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      padding: 0;
-      margin: auto;
-      /*opacity: 0;*/
-      transition: opacity 3s ease-in;
-      /*margin-top: 5vmin;*/
-    }
+      #pt {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+        margin: auto;
+        /*opacity: 0;*/
+        transition: opacity 3s ease-in;
+        /*margin-top: 5vmin;*/
+      }
 
-    .test {
-      position: fixed;
-      margin: 0;
-      left:0;
-      top:0;
-      padding: 0;
-      z-index: 3000;
-    }
+      .test {
+        position: fixed;
+        margin: 0;
+        left:0;
+        top:0;
+        padding: 0;
+        z-index: 3000;
+      }
 
-    #text {
-      position: fixed;
-      top: 36vh;
-      font-family: 'Lato', sans-serif;
-      font-weight: 900;
-      color: white;
-      z-index: 100;
-      width: 100vw;
-      text-align: center;
-      transition: opacity 3s ease-in;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -o-user-select: none;
-      user-select: none;
-      line-height: 1;
-    }
+      #text {
+        position: fixed;
+        top: 36vh;
+        font-family: 'Lato', sans-serif;
+        font-weight: 900;
+        color: white;
+        z-index: 100;
+        width: 100vw;
+        text-align: center;
+        transition: opacity 3s ease-in;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -o-user-select: none;
+        user-select: none;
+        line-height: 1;
+      }
 
-    #intro {
-      font-size: 2.5vmax;
-    }
+      #intro {
+        font-size: 2.5vmax;
+      }
 
-    #description {
-      font-family: 'Source Code Pro', monospace;
-      font-size: 1em;
-      font-weight: 500;
-    }
+      #description {
+        font-family: 'Source Code Pro', monospace;
+        font-size: 1em;
+        font-weight: 500;
+      }
 
-    #play {
-      font-size: 10vmax;
-      color: white;
-      padding-top: -500px;
-    }
+      #play {
+        font-size: 10vmax;
+        color: white;
+        padding-top: -500px;
+      }
 
-    #play-icon {
-      display: none;
-      color: grey;
-      opacity: 0;
-    }
+      #play-icon {
+        display: none;
+        color: grey;
+        opacity: 0;
+      }
 
-    #play-icon:hover {
-      cursor: pointer;
-      color: white;
-    }
+      #play-icon:hover {
+        cursor: pointer;
+        color: white;
+      }
 
-    #loading {
-      font-size: 5vmax;
-      color: grey;
-    }
+      #loading {
+        font-size: 5vmax;
+        color: grey;
+      }
 
-    .progress-bar {
-      position: fixed;
-      left: 0;
-      top: 0px;
-      /*bottom: 5px;*/
-      /*width: 100%;*/
-      width: 0;
-      height: 5px;
-      background-color: red;
-      z-index: 100000;
-      transition: width 2.5s ease-out;
-    }
+      .progress-bar {
+        position: fixed;
+        left: 0;
+        top: 0px;
+        /*bottom: 5px;*/
+        /*width: 100%;*/
+        width: 0;
+        height: 5px;
+        background-color: red;
+        z-index: 100000;
+        transition: width 2.5s ease-out;
+      }
 
-    #progress-bar-2 {
-      top: 5px;
-      width: 0;
-      background-color: blue;
-    }
+      #progress-bar-2 {
+        top: 5px;
+        width: 0;
+        background-color: blue;
+      }
 
-    #narrative {
-      position: fixed;
-      z-index: 5000;
-      top: 45vh;
-      /*font-family: 'Merriweather', serif;*/
-      /*font-family: 'Source Code Pro', monospace;*/
-      font-family: 'Lato', sans-serif;
-      font-size: 1.1vmax;
-      font-weight: 700;
-      /*line-height: 95%;*/
-      color: white;
-      width: 100%;
-      opacity: 0;
-      transition: opacity 3.5s ease-in;
-      /*-webkit-text-stroke-width: 1px;
-      -webkit-text-stroke-color: black;*/
-      text-shadow: 0px 0px 10px grey;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -o-user-select: none;
-      user-select: none;
-    }
+      #narrative {
+        position: fixed;
+        z-index: 5000;
+        top: 45vh;
+        /*font-family: 'Merriweather', serif;*/
+        /*font-family: 'Source Code Pro', monospace;*/
+        font-family: 'Lato', sans-serif;
+        font-size: 1.1vmax;
+        font-weight: 700;
+        /*line-height: 95%;*/
+        color: white;
+        width: 100%;
+        opacity: 0;
+        transition: opacity 3.5s ease-in;
+        /*-webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: black;*/
+        text-shadow: 0px 0px 10px grey;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -o-user-select: none;
+        user-select: none;
+      }
 
-    #narrative:hover{
-      cursor: default;
-    }
+      #narrative:hover{
+        cursor: default;
+      }
 
-    #text:hover{
-      cursor: default;
-    }
+      #text:hover{
+        cursor: default;
+      }
 
-    .information {
-      position: fixed;
-      bottom: 2vmax;
-      width: 100vw;
-      display: flex;
-      text-align: center;
-      align-items: center;
-      justify-content: center;
-    }
+      .information {
+        position: fixed;
+        bottom: 2vmax;
+        width: 100vw;
+        display: flex;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .information:hover{
-      cursor: default;
-    }
+      .information:hover{
+        cursor: default;
+      }
 
-    .credits {
-      position: fixed;
-      width: 100vw;
-      margin-top: 0.5vh;
-      /*bottom: 14.5vmax;*/
-    }
-
-    .information-text {
-      /*font-family: 'Dosis', sans-serif;*/
-      font-family: 'Source Code Pro', monospace;
-      font-size: 0.7vmax;
-      font-weight: 100;
-      word-spacing: -0.15vmax;
-      line-height: 1.1;
-    }
-
-    .big {
-      font-family: 'Lato', sans-serif;
-      font-size: 1.67vmax;
-      word-spacing: 0.2vmax;
-      font-weight: 700;
-    }
-
-    .medium {
-      font-size: 0.73vmax;
-      word-spacing: -0.15vmax;
-    }
-
-    .information-icon {
-      font-size: 1.3vmax;
-      margin-bottom: 0.2vmax;
-    }
-
-    .info-row {
-      /*display: flex;*/
-      padding: 10px;
-    }
-
-    #chrome {
-      display: none;
-      font-size: 1.1vmax;
-    }
-
-    a:visited {
-      text-decoration: none;
-      color: white;
-    }
-
-    a:link {
-      text-decoration: none;
-      color: white;
-    }
-
-    .phones {
-      color: black;
-    }
-
-    @media (max-width: 767px) {
-      .information-icon {
-        font-size: 1.8vmax;
-        margin-bottom: 0.6vmax;
+      .credits {
+        position: fixed;
+        width: 100vw;
+        margin-top: 0.5vh;
+        /*bottom: 14.5vmax;*/
       }
 
       .information-text {
         /*font-family: 'Dosis', sans-serif;*/
-        font-size: 1.0vmax;
-      }
-
-      .medium {
-        font-size: 1.0vmax;
-      }
-
-      .big {
-        font-size: 1.9vmax;
-      }
-
-      #intro {
-        font-size: 2.7vmax;
-      }
-    }
-
-    @media (min-width: 1400px) {
-      #intro {
-        font-size: 2.1vmax;
-      }
-
-      .information-text {
-        font-size: 0.5vmax;
+        font-family: 'Source Code Pro', monospace;
+        font-size: 0.7vmax;
+        font-weight: 100;
+        word-spacing: -0.15vmax;
+        line-height: 1.1;
       }
 
       .big {
-        font-size: 1.47vmax;
+        font-family: 'Lato', sans-serif;
+        font-size: 1.67vmax;
         word-spacing: 0.2vmax;
+        font-weight: 700;
       }
 
       .medium {
-        font-size: 0.65vmax;
+        font-size: 0.73vmax;
         word-spacing: -0.15vmax;
       }
 
-      #narrative {
+      .information-icon {
+        font-size: 1.3vmax;
+        margin-bottom: 0.2vmax;
+      }
+
+      .info-row {
+        /*display: flex;*/
+        padding: 10px;
+      }
+
+      #chrome {
+        display: none;
         font-size: 1.1vmax;
       }
-    }
+
+      a:visited {
+        text-decoration: none;
+        color: white;
+      }
+
+      a:link {
+        text-decoration: none;
+        color: white;
+      }
+
+      .phones {
+        color: black;
+      }
+
+      @media (max-width: 767px) {
+        .information-icon {
+          font-size: 1.8vmax;
+          margin-bottom: 0.6vmax;
+        }
+
+        .information-text {
+          /*font-family: 'Dosis', sans-serif;*/
+          font-size: 1.0vmax;
+        }
+
+        .medium {
+          font-size: 1.0vmax;
+        }
+
+        .big {
+          font-size: 1.9vmax;
+        }
+
+        #intro {
+          font-size: 2.7vmax;
+        }
+      }
+
+      @media (min-width: 1400px) {
+        #intro {
+          font-size: 2.1vmax;
+        }
+
+        .information-text {
+          font-size: 0.5vmax;
+        }
+
+        .big {
+          font-size: 1.47vmax;
+          word-spacing: 0.2vmax;
+        }
+
+        .medium {
+          font-size: 0.65vmax;
+          word-spacing: -0.15vmax;
+        }
+
+        #narrative {
+          font-size: 1.1vmax;
+        }
+      }
 
     </style>
   </head>
