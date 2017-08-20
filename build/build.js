@@ -4631,7 +4631,7 @@ var narrative = [
   },
   {
     hidden: false,
-    text: 'AND IF YOU KEEP ON LOOKING...'
+    text: 'AND IF YOU KEEP LOOKING...'
   },
   {
     hidden: true
