@@ -289,7 +289,15 @@ function mouseDown() {
   throttled2DMouseDown();
 }
 
+function resize() {
+  location.reload();
+}
+
 window.addEventListener('mousedown', mouseDown);
+
+if (!DEBUG) {
+  window.addEventListener('resize', _.debounce(resize, 300));
+}
 
 var play = document.getElementById('play-icon');
 var loading = document.getElementById('loading');
@@ -4598,110 +4606,8 @@ function playLead(point, index) {
 module.exports = playLead;
 
 },{"./2d/changePointColour":3,"./2d/ripples":9,"./music/conductor":28,"./music/context":29,"random-float":209}],55:[function(require,module,exports){
-'use strict';
 
-var colours = require('./colours');
-
-var orange = 'rgb(' + colours.orange.x + ',' + colours.orange.y + ',' + colours.orange.z + ')';
-var blue = 'rgb(' + colours.lightBlue.x + ',' + colours.lightBlue.y + ',' + colours.lightBlue.z + ')';
-var red = 'rgb(' + colours.red.x + ',' + colours.red.y + ',' + colours.red.z + ')';
-
-var narrative = [
-  {
-    hidden: false,
-    text: 'THINGS ARE CONNECTED.<br>YOU\'LL ONLY SEE<br>WHEN YOU ARE LOOKING.'
-  },
-  {
-    hidden: true,
-    text: null
-  },
-  {
-    hidden: false,
-    text: 'THINGS ARE CONNECTED.<br>BUT SOME CONNECTIONS<br>ARE MORE <span style="color: orange; text-shadow: 0px 0px 0px grey;">IMPORTANT</span> THAN OTHERS.'.replace('orange', orange)
-  },
-  {
-    hidden: true
-  },
-  {
-    hidden: false,
-    text: 'WITHIN THE CONNECTIONS,<br>YOU\'LL START TO SEE <span style="color: blue; text-shadow: 0px 0px 0px grey;">SHAPES</span>.'.replace('blue', blue)
-  },
-  {
-    hidden: true
-  },
-  {
-    hidden: false,
-    text: 'AND IF YOU KEEP LOOKING...'
-  },
-  {
-    hidden: true
-  },
-  {
-    hidden: false,
-    text: 'YOU\'LL FIND<br>NEW <span style="color: red; text-shadow: 0px 0px 0px grey;">DIMENSIONS</span>.'.replace('red', red)
-  },
-  {
-    hidden: true
-  },
-  {
-    hidden: false,
-    text: 'EXPLORE YOUR FINDINGS.<br>THEY WON\'T LAST LONG.'.replace('red', red)
-  },
-  {
-    hidden: true
-  },
-  {
-    hidden: false,
-    text: 'THINGS ARE CONNECTED.<br>YOU ARE THE CONNECTION.'
-  },
-  {
-    hidden: true
-  }
-];
-
-var element = document.getElementById('narrative');
-
-var currentIndex = 0;
-var lastAnimationStarted = 0;
-
-module.exports.proceed = function () {
-  var currentState = narrative[currentIndex];
-  if (!currentState) return;
-  currentIndex++;
-
-  var delta = Date.now() - lastAnimationStarted;
-  var time = 1000;
-  var animationDuration = 3500;
-
-  if (currentState.hidden) {
-    setTimeout(function () {
-      lastAnimationStarted = Date.now();
-      element.style.opacity = 0;
-      setTimeout(function () {
-        element.innerHTML = '';
-        element.style.visibility = 'hidden';
-      }, animationDuration);
-    }, time);
-    return;
-  }
-
-  if (delta < 3000) {
-    time = 3000;
-  }
-
-  setTimeout(function () {
-    element.innerHTML = currentState.text;
-    lastAnimationStarted = Date.now();
-    element.style.visibility = 'visible';
-    element.style.opacity = 1;
-  }, time);
-};
-
-module.exports.reset = function () {
-  currentIndex = 0;
-};
-
-},{"./colours":22}],56:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 var accidentalValues = {
   'bb': -2,
   'b': -1,
@@ -28882,8 +28788,8 @@ if (typeof self === 'object') {
 }
 
 },{"crypto":83}],83:[function(require,module,exports){
-
-},{}],84:[function(require,module,exports){
+arguments[4][55][0].apply(exports,arguments)
+},{"dup":55}],84:[function(require,module,exports){
 (function (Buffer){
 // based on the aes implimentation in triple sec
 // https://github.com/keybase/triplesec

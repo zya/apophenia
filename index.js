@@ -271,7 +271,15 @@ function mouseDown() {
   throttled2DMouseDown();
 }
 
+function resize() {
+  location.reload();
+}
+
 window.addEventListener('mousedown', mouseDown);
+
+if (!DEBUG) {
+  window.addEventListener('resize', _.debounce(resize, 300));
+}
 
 var play = document.getElementById('play-icon');
 var loading = document.getElementById('loading');
