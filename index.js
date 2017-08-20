@@ -201,12 +201,14 @@ conductor.on('lastNotesPlayed', function (p) {
       setTimeout(function () {
         console.log('start fading the last text');
         textHandler.proceed();
+        scene2d.clean();
       }, 10000);
 
       setTimeout(function () {
         scene3d.hideCanvas();
         scene2d.init(function () {
-          play.style.display = 'inline';
+          play.style.visibility = 'visible';
+          text.style.visibility = 'visible';
         });
         textHandler.reset();
         HAS_TRANSITIONED = false;
@@ -323,9 +325,10 @@ function start() {
   text.style.opacity = 0;
   setTimeout(conductor.startBackgroundMelody, 3000);
   play.style.opacity = 0;
+  play.style.visibility = 'hidden';
   setTimeout(function () {
-    play.style.display = 'none';
-    text.style.display = 'none';
+    // play.style.display = 'none';
+    text.style.visibility = 'hidden';
   }, 3000);
   scene2d.startFollowingMouse();
   conductor.playIntro();
