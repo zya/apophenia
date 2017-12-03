@@ -49,7 +49,7 @@ var FRAME = 0;
 var WARMUP_3D_INTERVAL = 120;
 var FRAME_RATE = 1000 / 50;
 
-// stats.showPanel(0);
+stats.showPanel(0);
 stats.dom.style.top = '';
 stats.dom.style.bottom = '0px';
 // document.body.appendChild(stats.dom);
@@ -92,6 +92,7 @@ if (DEBUG) {
 
 window.startWithoutAudio = function () {
   NO_AUDIO_DEBUG = true;
+  document.body.appendChild(stats.dom);
   setTimeout(function () {
     async.series([
       scene2d.transition,
@@ -100,14 +101,23 @@ window.startWithoutAudio = function () {
   }, 500);
 };
 
-window.startWithout3DRendering = function () {
+window.startWithout3D = function () {
   ONLY_AUDIO_DEBUG = true;
+  document.body.appendChild(stats.dom);
   setTimeout(function () {
     async.series([
       scene2d.transition,
       transitionTo3D
     ]);
   }, 500);
+};
+
+window.startWithAudioAnd3D = function () {
+  document.body.appendChild(stats.dom);
+  async.series([
+    scene2d.transition,
+    transitionTo3D
+  ]);
 };
 
 scene3d.on('spinStart', function () {
