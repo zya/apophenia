@@ -39,6 +39,8 @@ var HAVE_TRIGGERED_MID_INDICATION_EVENT = false;
 var SHOUD_RENDER_3D = false;
 var SHOULD_RENDER_2D = true;
 var DEBUG = false;
+var ONLY_AUDIO_DEBUG = false;
+var NO_AUDIO_DEBUG = false;
 var SHOULD_FINISH = true;
 var DELAY_TIME_TO_START = 5000;
 var ALREADY_FINISHED = false;
@@ -88,6 +90,26 @@ if (DEBUG) {
   }, 500);
 }
 
+window.startWithoutAudio = function () {
+  NO_AUDIO_DEBUG = true;
+  setTimeout(function () {
+    async.series([
+      scene2d.transition,
+      transitionTo3D
+    ]);
+  }, 500);
+};
+
+window.startWithout3DRendering = function () {
+  ONLY_AUDIO_DEBUG = true;
+  setTimeout(function () {
+    async.series([
+      scene2d.transition,
+      transitionTo3D
+    ]);
+  }, 500);
+};
+
 scene3d.on('spinStart', function () {
   console.log('started spinning');
   conductor.addDrumsToSecondSection();
@@ -96,7 +118,8 @@ scene3d.on('spinStart', function () {
 scene3d.on('growStart', function () {
   console.log('started growing');
   conductor.playDimensionSounds();
-  conductor.startSecondSection();
+
+  if (!NO_AUDIO_DEBUG) conductor.startSecondSection();
 });
 
 scene3d.on('growFinish', function () {
@@ -314,14 +337,14 @@ function render() {
 
   if (SHOULD_RENDER_2D) {
     scene2d.render();
-    if (FRAME % WARMUP_3D_INTERVAL === 0) {
+    if (FRAME % WARMUP_3D_INTERVAL === 0 && !ONLY_AUDIO_DEBUG) {
       scene3d.render();
       console.log('warming up');
       FRAME = 0;
     }
   }
 
-  if (SHOUD_RENDER_3D) scene3d.render();
+  if (SHOUD_RENDER_3D && !ONLY_AUDIO_DEBUG) scene3d.render();
 
   FRAME++;
   stats.end();
@@ -371,7 +394,6 @@ if (!bowser.chrome) {
 
 conductor.startBackground();
 requestAnimationFrame(render);
-
 },{"./config":1,"./lib/2d/scene2D":10,"./lib/3d/scene3D":20,"./lib/globals":24,"./lib/music/conductor":28,"./lib/text":55,"async":71,"bowser":81,"lodash":168,"stats.js":222}],3:[function(require,module,exports){
 'use strict';
 
