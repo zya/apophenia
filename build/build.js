@@ -12,7 +12,8 @@ module.exports={
   "smallRippleRate": 1.4,
   "smallRippleStartOpacity": 0.5,
   "smallRippleRateOpacity": 0.005,
-  "discoveryThreshold": 0.40
+  "discoveryThreshold": 0.40,
+  "shadow": false
 }
 
 },{}],2:[function(require,module,exports){
@@ -1424,6 +1425,7 @@ var _ = require('lodash');
 var dynamics = require('dynamics.js');
 
 var colours = require('../colours');
+var config = require('../../config');
 var scale = 0;
 
 var animatables = {
@@ -1465,7 +1467,7 @@ var material = new THREE.MeshPhongMaterial({
 });
 
 var aura = new THREE.Mesh(geometry, material);
-aura.castShadow = true;
+if (config.shadow) aura.castShadow = true;
 
 module.exports.mesh = aura;
 
@@ -1544,7 +1546,7 @@ module.exports.reset = function () {
   material.opacity = 1;
 };
 
-},{"../colours":22,"dynamics.js":132,"lodash":168,"three":233}],15:[function(require,module,exports){
+},{"../../config":1,"../colours":22,"dynamics.js":132,"lodash":168,"three":233}],15:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
@@ -1855,6 +1857,7 @@ module.exports.dotsNormalMap = dotsNormalMap;
 
 var dynamics = require('dynamics.js');
 var colours = require('../colours');
+var config = require('../../config');
 
 var THREE = require('three');
 window.THREE = THREE;
@@ -1889,10 +1892,12 @@ renderer.domElement.className = 'test';
 renderer.domElement.style.visibility = 'hidden';
 renderer.domElement.style.opacity = 0;
 
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+if (config.shadow) {
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.renderReverseSided = false;
+}
 // renderer.shadowMap.cullFace = THREE.CullFaceBack;
-renderer.shadowMap.renderReverseSided = false;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('pt').appendChild(renderer.domElement);
 
@@ -1993,7 +1998,7 @@ module.exports.hide = function () {
 
 module.exports.renderer = renderer;
 
-},{"../../node_modules/three/examples/js/nodes/postprocessing/NodePass":262,"../../node_modules/three/examples/js/postprocessing/BokehPass":268,"../../node_modules/three/examples/js/postprocessing/EffectComposer":269,"../../node_modules/three/examples/js/postprocessing/RenderPass":270,"../../node_modules/three/examples/js/postprocessing/ShaderPass":271,"../../node_modules/three/examples/js/postprocessing/UnrealBloomPass":272,"../../node_modules/three/examples/js/shaders/BokehShader":273,"../../node_modules/three/examples/js/shaders/ConvolutionShader":274,"../../node_modules/three/examples/js/shaders/CopyShader":275,"../../node_modules/three/examples/js/shaders/FXAAShader":276,"../../node_modules/three/examples/js/shaders/LuminosityHighPassShader":277,"../colours":22,"./allTheNodes":13,"dynamics.js":132,"three":233}],19:[function(require,module,exports){
+},{"../../config":1,"../../node_modules/three/examples/js/nodes/postprocessing/NodePass":262,"../../node_modules/three/examples/js/postprocessing/BokehPass":268,"../../node_modules/three/examples/js/postprocessing/EffectComposer":269,"../../node_modules/three/examples/js/postprocessing/RenderPass":270,"../../node_modules/three/examples/js/postprocessing/ShaderPass":271,"../../node_modules/three/examples/js/postprocessing/UnrealBloomPass":272,"../../node_modules/three/examples/js/shaders/BokehShader":273,"../../node_modules/three/examples/js/shaders/ConvolutionShader":274,"../../node_modules/three/examples/js/shaders/CopyShader":275,"../../node_modules/three/examples/js/shaders/FXAAShader":276,"../../node_modules/three/examples/js/shaders/LuminosityHighPassShader":277,"../colours":22,"./allTheNodes":13,"dynamics.js":132,"three":233}],19:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -2001,6 +2006,8 @@ var _ = require('lodash');
 var dynamics = require('dynamics.js');
 window.THREE = THREE;
 require('../../node_modules/three/examples/js/loaders/OBJLoader');
+
+var config = require('../../config');
 
 var textureLoader = new THREE.TextureLoader();
 var urlPath = location.pathname;
@@ -2066,8 +2073,10 @@ module.exports.load = function (cb) {
     rose.scale.set(scale, scale, scale);
     rose.rotation.z = initialRotation;
     rose.rotation.y = initialRotation;
-    rose.castShadow = true;
-    rose.receiveShadow = true;
+    if (config.shadow) {
+      rose.castShadow = true;
+      rose.receiveShadow = true;
+    }
     rose.visible = false;
     cb(null, rose, material);
   });
@@ -2171,7 +2180,7 @@ module.exports.setVisible = function (visible) {
 
 module.exports.mesh = rose;
 
-},{"../../node_modules/three/examples/js/loaders/OBJLoader":234,"dynamics.js":132,"lodash":168,"three":233}],20:[function(require,module,exports){
+},{"../../config":1,"../../node_modules/three/examples/js/loaders/OBJLoader":234,"dynamics.js":132,"lodash":168,"three":233}],20:[function(require,module,exports){
 'use strict';
 
 var THREE = require('three');
@@ -2189,6 +2198,7 @@ var materials = require('./materials');
 var rose = require('./rose');
 var aura = require('./aura');
 var auraMesh = aura.mesh;
+var config = require('../../config');
 
 var geometry, mesh, wireframe, camera, group, groupMaterial;
 var cubeCamera = new THREE.CubeCamera(1, 1000, 512); // parameters: near, far, resolution
@@ -2283,9 +2293,9 @@ redLight.intensity = 0;
 redLight.distance = 9;
 redLight.decay = 0.02;
 redLight.position.z = 0.2;
-redLight.castShadow = true;
-redLight.shadow.mapSize.width = 2048;
-redLight.shadow.mapSize.height = 2048;
+// redLight.castShadow = true;
+// redLight.shadow.mapSize.width = 2048;
+// redLight.shadow.mapSize.height = 2048;
 
 var blueLightIntensitiInitial = 0.22;
 var blueLight = new THREE.PointLight('blue');
@@ -2319,7 +2329,7 @@ dynamicSpotLight.distance = 40;
 dynamicSpotLight.angle = 0.9;
 dynamicSpotLight.penumbra = 1.0;
 dynamicSpotLight.decay = 1.7;
-dynamicSpotLight.castShadow = true;
+if (config.shadow) dynamicSpotLight.castShadow = true;
 // dynamicSpotLight.shadowCameraVisible = true;
 dynamicSpotLight.shadow.mapSize.width = 2048 * 2;
 dynamicSpotLight.shadow.mapSize.height = 2048 * 2;
@@ -2631,8 +2641,10 @@ module.exports.init = function (triangles, done) {
     geometry = geometries.main;
 
     mesh = new THREE.Mesh(geometry, material);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
+    if (config.shadow) {
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+    }
     mesh.id2 = 'mainMesh';
     wireframe = new THREE.Mesh(geometry, wireframeMaterial);
 
@@ -2860,7 +2872,7 @@ module.exports.isRoseCenterVisible = function () {
   return IS_ROSE_CENTER_VISIBLE;
 };
 
-},{"../2d/pt":7,"../colours":22,"../globals":24,"./aura":14,"./generate3DGeometry":15,"./materials":17,"./renderer":18,"./rose":19,"async":71,"dynamics.js":132,"lodash":168,"three":233}],21:[function(require,module,exports){
+},{"../../config":1,"../2d/pt":7,"../colours":22,"../globals":24,"./aura":14,"./generate3DGeometry":15,"./materials":17,"./renderer":18,"./rose":19,"async":71,"dynamics.js":132,"lodash":168,"three":233}],21:[function(require,module,exports){
 'use strict';
 
 var _ = require('lodash');
